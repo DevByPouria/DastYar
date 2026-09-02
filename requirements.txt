@@ -1,0 +1,9 @@
+python-telegram-bot==20.6
+pytesseract
+Pillow
+jdatetime
+matplotlib
+requests
+easyocr
+beautifulsoup4
+lxml
