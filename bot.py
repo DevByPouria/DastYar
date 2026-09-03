@@ -11,7 +11,7 @@ import product_search as search
 # ========== تنظیمات اولیه ==========
 TOKEN = os.getenv('TOKEN')
 PORT = int(os.getenv('PORT', 10000))
-ADMIN_ID = 7012983895  # ⚠️ شماره کاربری خودت رو اینجا بذار!
+ADMIN_ID = 123456789  # ⚠️ شماره کاربری خودت رو اینجا بذار!
 
 # ========== وب‌سرور برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
@@ -72,21 +72,26 @@ def get_price_menu():
 # ========== استارت ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    
-    # ذخیره اطلاعات کاربر
     db.save_user(user)
     
-    await update.message.reply_text(
-        f"👋 سلام {user.first_name or 'کاربر عزیز'}! به **دستیار مالی هوشمند** خوش اومدی.\n\n"
-        f"📌 **اطلاعات شما ثبت شد:**\n"
-        f"🆔 شناسه: `{user.id}`\n"
-        f"👤 نام: {user.first_name or 'ندارد'} {user.last_name or ''}\n"
-        f"📛 یوزرنیم: @{user.username if user.username else 'ندارد'}\n"
-        f"🌐 زبان: {user.language_code or 'نامشخص'}\n\n"
-        "💡 از منوی زیر یکی از گزینه‌ها رو انتخاب کن:",
-        reply_markup=get_main_menu(),
-        parse_mode='Markdown'
+    # ساخت پیام بدون Markdown
+    first_name = user.first_name or 'کاربر عزیز'
+    user_id = user.id
+    username = f"@{user.username}" if user.username else 'ندارد'
+    full_name = f"{user.first_name or ''} {user.last_name or ''}".strip() or 'ندارد'
+    language = user.language_code or 'نامشخص'
+    
+    message = (
+        f"👋 سلام {first_name}! به دستیار مالی هوشمند خوش اومدی.\n\n"
+        f"📌 اطلاعات شما ثبت شد:\n"
+        f"🆔 شناسه: {user_id}\n"
+        f"👤 نام: {full_name}\n"
+        f"📛 یوزرنیم: {username}\n"
+        f"🌐 زبان: {language}\n\n"
+        "💡 از منوی زیر یکی از گزینه‌ها رو انتخاب کن:"
     )
+    
+    await update.message.reply_text(message, reply_markup=get_main_menu())
 
 # ========== دکمه‌ها ==========
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -124,12 +129,13 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == 'report':
         total_income, total_expense = db.get_monthly_summary(user_id)
         balance = total_income - total_expense
+        status = '✅ مثبت' if balance >= 0 else '❌ منفی'
         await query.edit_message_text(
-            f"📊 **گزارش ماهانه**\n\n"
+            f"📊 گزارش ماهانه\n\n"
             f"💰 درآمد: {total_income:,} تومان\n"
             f"💸 هزینه: {total_expense:,} تومان\n"
             f"📌 مانده: {balance:,} تومان\n"
-            f"💳 وضعیت: {'✅ مثبت' if balance >= 0 else '❌ منفی'}",
+            f"💳 وضعیت: {status}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
     
@@ -138,11 +144,11 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         transactions = db.get_all_transactions(user_id)
         if not transactions:
             await query.edit_message_text(
-                "📋 **تاریخچه تراکنش‌ها**\n\nهیچ تراکنشی ثبت نشده!",
+                "📋 تاریخچه تراکنش‌ها\n\nهیچ تراکنشی ثبت نشده!",
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
             )
             return
-        message = "📋 **۲۰ تراکنش اخیر**\n\n"
+        message = "📋 ۲۰ تراکنش اخیر\n\n"
         for amount, category, desc, trans_type, date in transactions:
             emoji = "💰" if trans_type == 'income' else "💸"
             message += f"{emoji} {date} - {category}: {amount:,} تومان"
@@ -156,16 +162,16 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== قیمت‌ها =====
     elif data == 'prices':
-        await query.edit_message_text("💎 **قیمت‌های لحظه‌ای بازار**", reply_markup=get_price_menu())
+        await query.edit_message_text("💎 قیمت‌های لحظه‌ای بازار", reply_markup=get_price_menu())
     
     elif data in ['price_gold', 'price_dollar', 'price_coin']:
-        price_data = db.get_all_prices()
+        price_data = prices.get_all_prices()
         key = {'price_gold': 'gold', 'price_dollar': 'dollar', 'price_coin': 'coin'}[data]
         emoji = {'gold': '⚜️', 'dollar': '💵', 'coin': '🪙'}[key]
         name = {'gold': 'طلا (گرم ۱۸)', 'dollar': 'دلار', 'coin': 'سکه امامی'}[key]
         price = price_data.get(key, 0)
         await query.edit_message_text(
-            f"{emoji} **{name}**\n\n"
+            f"{emoji} {name}\n\n"
             f"💰 قیمت: {price:,} تومان\n"
             f"🕐 {prices.get_current_time()}",
             reply_markup=InlineKeyboardMarkup([
@@ -175,7 +181,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     
     elif data in ['price_all', 'refresh_prices']:
-        price_data = db.get_all_prices()
+        price_data = prices.get_all_prices()
         await query.edit_message_text(
             prices.format_price_message(price_data),
             reply_markup=InlineKeyboardMarkup([
@@ -187,7 +193,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== جستجو =====
     elif data == 'search_product':
         await query.edit_message_text(
-            "🛍️ **جستجوی محصولات**\n\n🔹 نام محصول رو وارد کن (مثل گوشی، لپ‌تاپ):",
+            "🛍️ جستجوی محصولات\n\n🔹 نام محصول رو وارد کن (مثل گوشی، لپ‌تاپ):",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔍 جستجوی پیشرفته", callback_data='advanced_search')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
@@ -196,7 +202,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['state'] = 'waiting_search'
     
     elif data == 'advanced_search':
-        await query.edit_message_text("🔍 **جستجوی پیشرفته**\n\nدسته‌بندی مورد نظر رو انتخاب کن:", reply_markup=get_advanced_search_menu())
+        await query.edit_message_text("🔍 جستجوی پیشرفته\n\nدسته‌بندی مورد نظر رو انتخاب کن:", reply_markup=get_advanced_search_menu())
     
     elif data.startswith('search_'):
         category = data.replace('search_', '')
@@ -205,7 +211,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                  'clothing': 'پوشاک', 'book': 'کتاب'}
         category_name = names.get(category, 'محصولات')
         await query.edit_message_text(
-            f"🔍 **جستجو در {category_name}**\n\nنام محصول رو وارد کن:",
+            f"🔍 جستجو در {category_name}\n\nنام محصول رو وارد کن:",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='advanced_search')]])
         )
         context.user_data['state'] = 'waiting_search_advanced'
@@ -214,7 +220,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ===== راهنما =====
     elif data == 'help':
         await query.edit_message_text(
-            "📌 **راهنمای ربات**\n\n"
+            "📌 راهنمای ربات\n\n"
             "✅ ثبت هزینه و درآمد\n"
             "✅ گزارش ماهانه\n"
             "✅ تاریخچه تراکنش‌ها\n"
@@ -235,9 +241,8 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if contact.user_id == update.effective_user.id:
         db.update_user_phone(contact.user_id, contact.phone_number)
         await update.message.reply_text(
-            f"✅ شماره تلفن شما (`{contact.phone_number}`) ثبت شد.",
-            reply_markup=get_main_menu(),
-            parse_mode='Markdown'
+            f"✅ شماره تلفن شما ({contact.phone_number}) ثبت شد.",
+            reply_markup=get_main_menu()
         )
     else:
         await update.message.reply_text("❌ لطفاً شماره خودت رو ارسال کن.")
@@ -312,14 +317,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if not users:
             await update.message.reply_text("📊 هیچ کاربری ثبت نشده.")
             return
-        message = f"📊 **لیست کاربران ({count} نفر)**\n\n"
+        message = f"📊 لیست کاربران ({count} نفر)\n\n"
         for user in users[:10]:
             user_id, username, first_name, last_name, phone, lang, is_bot, first_seen, last_seen, interactions, active, data = user
             name = f"{first_name or ''} {last_name or ''}".strip() or "بدون نام"
             uname = f"@{username}" if username else "❌"
             phone_str = phone or "❌"
             message += f"🆔 {user_id} - {name}\n📛 {uname} - 📱 {phone_str}\n📅 {first_seen}\n\n"
-        await update.message.reply_text(message, parse_mode='Markdown')
+        await update.message.reply_text(message)
     
     else:
         await update.message.reply_text("🔹 لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
