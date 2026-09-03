@@ -11,7 +11,7 @@ import product_search as search
 # ========== تنظیمات اولیه ==========
 TOKEN = os.getenv('TOKEN')
 PORT = int(os.getenv('PORT', 10000))
-ADMIN_ID = 7012983895  # ⚠️ شماره کاربری خودت رو اینجا بذار!
+ADMIN_ID = 123456789  # ⚠️ شماره کاربری خودت رو اینجا بذار!
 
 # ========== وب‌سرور برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
@@ -74,7 +74,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     db.save_user(user)
     
-    # ساخت پیام بدون Markdown
     first_name = user.first_name or 'کاربر عزیز'
     user_id = user.id
     username = f"@{user.username}" if user.username else 'ندارد'
@@ -93,6 +92,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(message, reply_markup=get_main_menu())
 
+# ========== دستور ادمین ==========
+async def admin_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        await update.message.reply_text("⛔ شما دسترسی به این بخش ندارید.")
+        return
+    
+    users = db.get_all_users()
+    count = db.get_user_count()
+    
+    if not users:
+        await update.message.reply_text("📊 هیچ کاربری ثبت نشده.")
+        return
+    
+    message = f"📊 لیست کاربران ({count} نفر)\n\n"
+    for user in users[:10]:
+        user_id, username, first_name, last_name, phone, lang, is_bot, first_seen, last_seen, interactions, active, data = user
+        name = f"{first_name or ''} {last_name or ''}".strip() or "بدون نام"
+        uname = f"@{username}" if username else "❌"
+        phone_str = phone or "❌"
+        message += f"🆔 {user_id} - {name}\n"
+        message += f"📛 {uname} - 📱 {phone_str}\n"
+        message += f"📅 اولین بازدید: {first_seen}\n\n"
+    
+    if count > 10:
+        message += f"... و {count - 10} نفر دیگر"
+    
+    await update.message.reply_text(message)
+
 # ========== دکمه‌ها ==========
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -100,7 +127,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     data = query.data
     
-    # ===== اشتراک شماره تلفن =====
+    # ===== اشتراک شماره =====
     if data == 'share_phone':
         keyboard = [[InlineKeyboardButton("📱 ارسال شماره تلفن", request_contact=True)]]
         await query.edit_message_text(
@@ -253,7 +280,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     state = context.user_data.get('state')
     
-    # ثبت هزینه
+    # ===== ثبت هزینه =====
     if state == 'waiting_expense':
         try:
             amount = int(text.replace(',', ''))
@@ -263,7 +290,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
-    # ثبت درآمد
+    # ===== ثبت درآمد =====
     elif state == 'waiting_income':
         try:
             amount = int(text.replace(',', ''))
@@ -273,7 +300,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
-    # جستجوی ساده
+    # ===== جستجوی ساده =====
     elif state == 'waiting_search':
         await update.message.reply_text("⏳ در حال جستجو...")
         products = search.search_all_shops(text)
@@ -287,7 +314,7 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['state'] = None
     
-    # جستجوی پیشرفته
+    # ===== جستجوی پیشرفته =====
     elif state == 'waiting_search_advanced':
         category = context.user_data.get('search_category', '')
         names = {'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
@@ -307,25 +334,6 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['state'] = None
         context.user_data['search_category'] = None
     
-    # ===== دستور مخفی ادمین =====
-    elif text.startswith('/admin_users'):
-        if update.effective_user.id != ADMIN_ID:
-            await update.message.reply_text("⛔ شما دسترسی ندارید.")
-            return
-        users = db.get_all_users()
-        count = db.get_user_count()
-        if not users:
-            await update.message.reply_text("📊 هیچ کاربری ثبت نشده.")
-            return
-        message = f"📊 لیست کاربران ({count} نفر)\n\n"
-        for user in users[:10]:
-            user_id, username, first_name, last_name, phone, lang, is_bot, first_seen, last_seen, interactions, active, data = user
-            name = f"{first_name or ''} {last_name or ''}".strip() or "بدون نام"
-            uname = f"@{username}" if username else "❌"
-            phone_str = phone or "❌"
-            message += f"🆔 {user_id} - {name}\n📛 {uname} - 📱 {phone_str}\n📅 {first_seen}\n\n"
-        await update.message.reply_text(message)
-    
     else:
         await update.message.reply_text("🔹 لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
 
@@ -337,6 +345,7 @@ def main():
     app = Application.builder().token(TOKEN).build()
     
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("admin_users", admin_users))
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
