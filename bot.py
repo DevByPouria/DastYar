@@ -1,24 +1,30 @@
 import os
 import threading
+import asyncio
 from http.server import HTTPServer, BaseHTTPRequestHandler
-
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ContextTypes
+from telegram.request import HTTPXRequest
+import httpx
 
 import database as db
 import price_fetcher as prices
 import product_search as search
 
-# ========== توکن ==========
+# ========== توکن و پورت ==========
 TOKEN = os.getenv('TOKEN')
 PORT = int(os.getenv('PORT', 10000))
 
-# ========== وب‌سرور برای Render ==========
+# ========== وب‌سرور ساده برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b"Bot is running!")
+    
+    def do_HEAD(self):
+        self.send_response(200)
+        self.end_headers()
 
 def run_health_server():
     server = HTTPServer(('0.0.0.0', PORT), HealthHandler)
@@ -150,27 +156,41 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔄 جستجوی مجدد", callback_data='search_product')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
-            ])
+            ]),
+            disable_web_page_preview=True
         )
         context.user_data['state'] = None
     
     else:
         await update.message.reply_text("لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
 
+# ========== هندلر عکس ==========
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("📸 بخش اسکن فاکتور در حال توسعه است. لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
+
 # ========== اصلی ==========
 def main():
-    # وب‌سرور برای Render
+    # اجرای وب‌سرور برای Render
     threading.Thread(target=run_health_server, daemon=True).start()
     print(f"🌐 وب‌سرور روی پورت {PORT} روشن شد")
     
-    # ربات
-    app = Application.builder().token(TOKEN).build()
+    # تنظیم timeout بالاتر برای جلوگیری از TimedOut
+    http_client = httpx.AsyncClient(timeout=60.0)
+    request = HTTPXRequest(http_client=http_client)
+    
+    # ساخت اپلیکیشن با timeout بیشتر
+    app = Application.builder().token(TOKEN).request(request).build()
+    
+    # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
     print("🚀 ربات مالی هوشمند روشن شد!")
-    app.run_polling()
+    
+    # اجرای ربات با polling و timeout بیشتر
+    app.run_polling(poll_interval=1.0, timeout=60, drop_pending_updates=True)
 
 if __name__ == '__main__':
     main()
