@@ -1,7 +1,6 @@
 import random
 
 def search_all_shops(query):
-    """نسخه آزمایشی جستجو - برای نمایش نمونه محصولات"""
     sample_products = [
         {
             'name': f'محصول نمونه ۱ برای "{query}"',
