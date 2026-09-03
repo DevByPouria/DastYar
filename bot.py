@@ -11,7 +11,7 @@ import product_search as search
 # ========== تنظیمات اولیه ==========
 TOKEN = os.getenv('TOKEN')
 PORT = int(os.getenv('PORT', 10000))
-ADMIN_ID = 123456789  # ⚠️ شماره کاربری خودت رو اینجا بذار!
+ADMIN_ID = 7012983895  # ⚠️ شماره کاربری خودت رو اینجا بذار!
 
 # ========== وب‌سرور برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
