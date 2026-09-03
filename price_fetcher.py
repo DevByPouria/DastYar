@@ -1,35 +1,17 @@
-import requests
+import random
 from datetime import datetime
 
-def get_price(item):
-    """دریافت قیمت لحظه‌ای از tgju.org"""
-    urls = {
-        'gold': 'https://www.tgju.org/price-chart/geram18',
-        'dollar': 'https://www.tgju.org/price-chart/price_dollar_rl',
-        'coin': 'https://www.tgju.org/price-chart/sekeb'
-    }
-    
-    try:
-        response = requests.get(urls.get(item), timeout=10)
-        # اینجا باید داده رو از HTML استخراج کنی
-        # فعلاً مقدار تستی برمی‌گردونیم
-        return 0
-    except Exception as e:
-        print(f"Error fetching {item}: {e}")
-        return None
-
 def get_all_prices():
-    result = {}
-    items = ['gold', 'dollar', 'coin']
-    for item in items:
-        price = get_price(item)
-        if price is not None:
-            result[item] = price
-    return result
+    """نسخه آزمایشی قیمت‌ها - برای نمایش نمونه"""
+    return {
+        'gold': random.randint(1000000, 2000000),
+        'dollar': random.randint(50000, 100000),
+        'coin': random.randint(3000000, 6000000)
+    }
 
 def format_price_message(prices):
     if not prices:
-        return "❌ امکان دریافت قیمت‌ها وجود ندارد. لطفاً بعداً تلاش کنید."
+        return "❌ امکان دریافت قیمت‌ها وجود ندارد."
     
     message = "💰 **قیمت‌های لحظه‌ای بازار**\n"
     message += f"🕐 {datetime.now().strftime('%H:%M:%S')}\n\n"
