@@ -30,11 +30,12 @@ def format_product_message(products):
     if not products:
         return "❌ محصولی پیدا نشد. لطفاً عبارت دیگری را امتحان کنید."
     
-    message = "🛍️ **بهترین محصولات پیدا شده (نسخه آزمایشی)**\n\n"
+    message = "🛍️ بهترین محصولات پیدا شده (نسخه آزمایشی)\n\n"
     for i, product in enumerate(products, 1):
-        message += f"**{i}. {product['name']}**\n"
+        message += f"{i}. {product['name']}\n"
         message += f"💰 قیمت: {product['price']:,} تومان\n"
         message += f"⭐ امتیاز: {product['rating']}/5\n"
         message += f"🏪 فروشگاه: {product['shop']}\n"
-        message += f"🔗 [لینک خرید]({product['url']})\n\n"
+        message += f"🔗 لینک خرید: {product['url']}\n\n"
+    
     return message
