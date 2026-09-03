@@ -5,12 +5,15 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler, ContextTypes
 
+import database as db
+import price_fetcher as prices
+import product_search as search
+
 # ========== توکن ==========
 TOKEN = os.getenv('TOKEN')
-
-# ========== وب‌سرور برای رفع مشکل پورت در Render ==========
 PORT = int(os.getenv('PORT', 10000))
 
+# ========== وب‌سرور برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -27,7 +30,6 @@ def get_main_menu():
         [InlineKeyboardButton("💰 ثبت هزینه", callback_data='add_expense')],
         [InlineKeyboardButton("📈 ثبت درآمد", callback_data='add_income')],
         [InlineKeyboardButton("📊 گزارش ماهانه", callback_data='report')],
-        [InlineKeyboardButton("📸 اسکن فاکتور", callback_data='scan_bill')],
         [InlineKeyboardButton("💎 قیمت طلا و ارز", callback_data='prices')],
         [InlineKeyboardButton("🛍️ جستجوی محصولات", callback_data='search_product')],
         [InlineKeyboardButton("📋 تاریخچه", callback_data='history')],
@@ -40,7 +42,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "👋 سلام! به **دستیار مالی هوشمند** خوش اومدی.\n\n"
         "من می‌تونم این کارها رو برات انجام بدم:\n"
         "✅ ثبت هزینه و درآمد\n"
-        "✅ خواندن فاکتور با دوربین\n"
         "✅ گزارش ماهانه\n"
         "✅ قیمت لحظه‌ای طلا و دلار\n"
         "✅ جستجوی بهترین قیمت محصولات\n\n"
@@ -52,9 +53,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
+    user_id = update.effective_user.id
     
     if query.data == 'add_expense':
-        await query.edit_message_text("💸 مبلغ هزینه رو به تومان وارد کن:")
+        await query.edit_message_text("💸 مبلغ هزینه رو به تومان وارد کن (مثلاً ۲۵۰۰۰۰):")
         context.user_data['state'] = 'waiting_expense'
     
     elif query.data == 'add_income':
@@ -62,21 +64,54 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['state'] = 'waiting_income'
     
     elif query.data == 'report':
-        await query.edit_message_text("📊 گزارش ماهانه:\n\nدرآمد: ۰ تومان\nهزینه: ۰ تومان\nمانده: ۰ تومان")
-    
-    elif query.data == 'scan_bill':
-        await query.edit_message_text("📸 از فاکتور یا قبض خود عکس بفرست:")
-        context.user_data['state'] = 'waiting_photo'
+        total_income, total_expense = db.get_monthly_summary(user_id)
+        balance = total_income - total_expense
+        await query.edit_message_text(
+            f"📊 **گزارش ماهانه**\n\n"
+            f"💰 درآمد: {total_income:,} تومان\n"
+            f"💸 هزینه: {total_expense:,} تومان\n"
+            f"📌 مانده: {balance:,} تومان\n"
+            f"💳 وضعیت: {'✅ مثبت' if balance >= 0 else '❌ منفی'}",
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
+        )
     
     elif query.data == 'prices':
-        await query.edit_message_text("💰 قیمت لحظه‌ای:\n\nطلا: در حال دریافت...")
+        await query.edit_message_text("⏳ در حال دریافت قیمت‌های لحظه‌ای...")
+        price_data = prices.get_all_prices()
+        message = prices.format_price_message(price_data)
+        await query.edit_message_text(
+            message,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 بروزرسانی", callback_data='prices')],
+                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
+            ])
+        )
     
     elif query.data == 'search_product':
-        await query.edit_message_text("🔍 نام محصول مورد نظر را وارد کن:")
+        await query.edit_message_text("🔍 نام محصول مورد نظر را وارد کن (مثلاً گوشی، لپ‌تاپ، ساعت):")
         context.user_data['state'] = 'waiting_search'
     
     elif query.data == 'history':
-        await query.edit_message_text("📋 تاریخچه تراکنش‌ها:\n\nهیچ تراکنشی ثبت نشده.")
+        transactions = db.get_all_transactions(user_id)
+        if not transactions:
+            await query.edit_message_text(
+                "📋 **تاریخچه تراکنش‌ها**\n\nهیچ تراکنشی ثبت نشده!",
+                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
+            )
+            return
+        
+        message = "📋 **۲۰ تراکنش اخیر**\n\n"
+        for amount, category, desc, trans_type, date in transactions:
+            emoji = "💰" if trans_type == 'income' else "💸"
+            message += f"{emoji} {date} - {category}: {amount:,} تومان"
+            if desc:
+                message += f" ({desc})"
+            message += "\n"
+        
+        await query.edit_message_text(
+            message,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
+        )
     
     elif query.data == 'back_to_menu':
         await query.edit_message_text("👋 به منوی اصلی برگشتی.", reply_markup=get_main_menu())
@@ -84,41 +119,54 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========== هندلر متن ==========
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = update.message.text
+    user_id = update.effective_user.id
     state = context.user_data.get('state')
     
     if state == 'waiting_expense':
-        await update.message.reply_text(f"✅ هزینه {update.message.text} تومانی ثبت شد.")
-        context.user_data['state'] = None
+        try:
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "ثبت دستی", "expense")
+            await update.message.reply_text(f"✅ هزینه {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
+            context.user_data['state'] = None
+        except ValueError:
+            await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
     elif state == 'waiting_income':
-        await update.message.reply_text(f"✅ درآمد {update.message.text} تومانی ثبت شد.")
-        context.user_data['state'] = None
+        try:
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "ثبت دستی", "income")
+            await update.message.reply_text(f"✅ درآمد {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
+            context.user_data['state'] = None
+        except ValueError:
+            await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
     elif state == 'waiting_search':
-        await update.message.reply_text(f"🔍 در حال جستجوی «{update.message.text}»...\n(این بخش در حال توسعه است)")
+        await update.message.reply_text("⏳ در حال جستجو در فروشگاه‌های آنلاین...")
+        products = search.search_all_shops(text)
+        message = search.format_product_message(products)
+        await update.message.reply_text(
+            message,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 جستجوی مجدد", callback_data='search_product')],
+                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
+            ])
+        )
         context.user_data['state'] = None
     
     else:
         await update.message.reply_text("لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
 
-# ========== هندلر عکس ==========
-async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if context.user_data.get('state') == 'waiting_photo':
-        await update.message.reply_text("📸 عکس دریافت شد. در حال پردازش...\n(این بخش در حال توسعه است)")
-        context.user_data['state'] = None
-
 # ========== اصلی ==========
 def main():
-    # اجرای وب‌سرور برای Render
+    # وب‌سرور برای Render
     threading.Thread(target=run_health_server, daemon=True).start()
+    print(f"🌐 وب‌سرور روی پورت {PORT} روشن شد")
     
-    # ساخت اپلیکیشن
+    # ربات
     app = Application.builder().token(TOKEN).build()
-    
-    # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
-    app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
     print("🚀 ربات مالی هوشمند روشن شد!")
