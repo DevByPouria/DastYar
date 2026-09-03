@@ -2,7 +2,6 @@ import random
 from datetime import datetime
 
 def get_all_prices():
-    """قیمت‌های آزمایشی برای نمایش"""
     return {
         'gold': random.randint(1000000, 2000000),
         'dollar': random.randint(50000, 100000),
@@ -10,7 +9,6 @@ def get_all_prices():
     }
 
 def get_current_time():
-    """دریافت زمان فعلی برای نمایش"""
     return datetime.now().strftime('%H:%M:%S')
 
 def format_price_message(prices):
