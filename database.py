@@ -5,7 +5,6 @@ import json
 def get_db():
     conn = sqlite3.connect('data.db')
     
-    # جدول کاربران با تمام اطلاعات
     conn.execute('''
         CREATE TABLE IF NOT EXISTS users (
             user_id INTEGER PRIMARY KEY,
@@ -23,7 +22,6 @@ def get_db():
         )
     ''')
     
-    # جدول تراکنش‌ها
     conn.execute('''
         CREATE TABLE IF NOT EXISTS transactions (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,7 +107,6 @@ def get_today_users():
     conn.close()
     return count
 
-# ========== توابع مربوط به تراکنش‌ها ==========
 def add_transaction(user_id, amount, category, description, trans_type):
     conn = get_db()
     today = jdatetime.date.today().strftime("%Y/%m/%d")
