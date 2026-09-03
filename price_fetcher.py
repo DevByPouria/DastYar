@@ -15,14 +15,14 @@ def format_price_message(prices):
     if not prices:
         return "❌ امکان دریافت قیمت‌ها وجود ندارد."
     
-    message = "💎 **قیمت‌های لحظه‌ای بازار**\n"
+    message = "💎 قیمت‌های لحظه‌ای بازار\n"
     message += f"🕐 {get_current_time()}\n\n"
     
     if 'gold' in prices:
-        message += f"⚜️ **طلا (گرم ۱۸):** {prices['gold']:,} تومان\n"
+        message += f"⚜️ طلا (گرم ۱۸): {prices['gold']:,} تومان\n"
     if 'dollar' in prices:
-        message += f"💵 **دلار:** {prices['dollar']:,} تومان\n"
+        message += f"💵 دلار: {prices['dollar']:,} تومان\n"
     if 'coin' in prices:
-        message += f"🪙 **سکه امامی:** {prices['coin']:,} تومان\n"
+        message += f"🪙 سکه امامی: {prices['coin']:,} تومان\n"
     
     return message
