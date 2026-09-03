@@ -8,9 +8,10 @@ import database as db
 import price_fetcher as prices
 import product_search as search
 
-# ========== توکن و پورت ==========
+# ========== تنظیمات اولیه ==========
 TOKEN = os.getenv('TOKEN')
 PORT = int(os.getenv('PORT', 10000))
+ADMIN_ID = 123456789  # ⚠️ شماره کاربری خودت رو اینجا بذار!
 
 # ========== وب‌سرور برای Render ==========
 class HealthHandler(BaseHTTPRequestHandler):
@@ -27,102 +28,91 @@ def run_health_server():
     server = HTTPServer(('0.0.0.0', PORT), HealthHandler)
     server.serve_forever()
 
-# ========== منوی اصلی با دکمه‌های شیشه‌ای ==========
+# ========== منوها ==========
 def get_main_menu():
-    """منوی اصلی با طراحی شیشه‌ای و دکمه‌های زیبا"""
     keyboard = [
-        [
-            InlineKeyboardButton("💰 ثبت هزینه", callback_data='add_expense'),
-            InlineKeyboardButton("📈 ثبت درآمد", callback_data='add_income')
-        ],
-        [
-            InlineKeyboardButton("📊 گزارش ماهانه", callback_data='report'),
-            InlineKeyboardButton("📋 تاریخچه", callback_data='history')
-        ],
-        [
-            InlineKeyboardButton("💎 قیمت طلا و ارز", callback_data='prices'),
-            InlineKeyboardButton("🛍️ جستجوی محصولات", callback_data='search_product')
-        ],
-        [
-            InlineKeyboardButton("🔍 جستجوی پیشرفته", callback_data='advanced_search'),
-            InlineKeyboardButton("📌 راهنما", callback_data='help')
-        ]
+        [InlineKeyboardButton("💰 ثبت هزینه", callback_data='add_expense'),
+         InlineKeyboardButton("📈 ثبت درآمد", callback_data='add_income')],
+        [InlineKeyboardButton("📊 گزارش ماهانه", callback_data='report'),
+         InlineKeyboardButton("📋 تاریخچه", callback_data='history')],
+        [InlineKeyboardButton("💎 قیمت طلا و ارز", callback_data='prices'),
+         InlineKeyboardButton("🛍️ جستجوی محصولات", callback_data='search_product')],
+        [InlineKeyboardButton("🔍 جستجوی پیشرفته", callback_data='advanced_search'),
+         InlineKeyboardButton("📌 راهنما", callback_data='help')],
+        [InlineKeyboardButton("📱 ثبت شماره تلفن", callback_data='share_phone')]
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# ========== منوی جستجوی پیشرفته (دکمه‌های انتخابی) ==========
 def get_advanced_search_menu():
-    """دکمه‌های انتخاب دسته‌بندی برای جستجوی پیشرفته"""
     keyboard = [
-        [
-            InlineKeyboardButton("📱 گوشی", callback_data='search_phone'),
-            InlineKeyboardButton("💻 لپ‌تاپ", callback_data='search_laptop'),
-            InlineKeyboardButton("⌚ ساعت", callback_data='search_watch')
-        ],
-        [
-            InlineKeyboardButton("🎧 هدفون", callback_data='search_headphone'),
-            InlineKeyboardButton("📷 دوربین", callback_data='search_camera'),
-            InlineKeyboardButton("🔊 اسپیکر", callback_data='search_speaker')
-        ],
-        [
-            InlineKeyboardButton("🛋️ لوازم خانگی", callback_data='search_appliance'),
-            InlineKeyboardButton("👗 پوشاک", callback_data='search_clothing'),
-            InlineKeyboardButton("📚 کتاب", callback_data='search_book')
-        ],
-        [
-            InlineKeyboardButton("🔙 بازگشت به منو", callback_data='back_to_menu')
-        ]
+        [InlineKeyboardButton("📱 گوشی", callback_data='search_phone'),
+         InlineKeyboardButton("💻 لپ‌تاپ", callback_data='search_laptop'),
+         InlineKeyboardButton("⌚ ساعت", callback_data='search_watch')],
+        [InlineKeyboardButton("🎧 هدفون", callback_data='search_headphone'),
+         InlineKeyboardButton("📷 دوربین", callback_data='search_camera'),
+         InlineKeyboardButton("🔊 اسپیکر", callback_data='search_speaker')],
+        [InlineKeyboardButton("🛋️ لوازم خانگی", callback_data='search_appliance'),
+         InlineKeyboardButton("👗 پوشاک", callback_data='search_clothing'),
+         InlineKeyboardButton("📚 کتاب", callback_data='search_book')],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# ========== منوی قیمت‌ها (دکمه‌های انتخابی) ==========
 def get_price_menu():
-    """دکمه‌های انتخاب نوع قیمت"""
     keyboard = [
-        [
-            InlineKeyboardButton("⚜️ طلا", callback_data='price_gold'),
-            InlineKeyboardButton("💵 دلار", callback_data='price_dollar'),
-            InlineKeyboardButton("🪙 سکه", callback_data='price_coin')
-        ],
-        [
-            InlineKeyboardButton("📊 همه قیمت‌ها", callback_data='price_all'),
-            InlineKeyboardButton("🔄 بروزرسانی", callback_data='refresh_prices')
-        ],
-        [
-            InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')
-        ]
+        [InlineKeyboardButton("⚜️ طلا", callback_data='price_gold'),
+         InlineKeyboardButton("💵 دلار", callback_data='price_dollar'),
+         InlineKeyboardButton("🪙 سکه", callback_data='price_coin')],
+        [InlineKeyboardButton("📊 همه قیمت‌ها", callback_data='price_all'),
+         InlineKeyboardButton("🔄 بروزرسانی", callback_data='refresh_prices')],
+        [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
     ]
     return InlineKeyboardMarkup(keyboard)
 
-# ========== هندلر استارت ==========
+# ========== استارت ==========
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    
+    # ذخیره اطلاعات کاربر
+    db.save_user(user)
+    
     await update.message.reply_text(
-        "👋 سلام! به **دستیار مالی هوشمند** خوش اومدی.\n\n"
-        "✨ من یک ربات **شیشه‌ای** و **حرفه‌ای** هستم!\n\n"
-        "🔹 **ثبت هزینه و درآمد**\n"
-        "🔹 **گزارش‌های مالی ماهانه**\n"
-        "🔹 **قیمت لحظه‌ای طلا و ارز**\n"
-        "🔹 **جستجوی بهترین قیمت محصولات**\n\n"
-        "💡 یکی از دکمه‌های زیر رو انتخاب کن:",
-        reply_markup=get_main_menu()
+        f"👋 سلام {user.first_name or 'کاربر عزیز'}! به **دستیار مالی هوشمند** خوش اومدی.\n\n"
+        f"📌 **اطلاعات شما ثبت شد:**\n"
+        f"🆔 شناسه: `{user.id}`\n"
+        f"👤 نام: {user.first_name or 'ندارد'} {user.last_name or ''}\n"
+        f"📛 یوزرنیم: @{user.username if user.username else 'ندارد'}\n"
+        f"🌐 زبان: {user.language_code or 'نامشخص'}\n\n"
+        "💡 از منوی زیر یکی از گزینه‌ها رو انتخاب کن:",
+        reply_markup=get_main_menu(),
+        parse_mode='Markdown'
     )
 
-# ========== هندلر دکمه‌ها ==========
+# ========== دکمه‌ها ==========
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     user_id = update.effective_user.id
     data = query.data
     
-    # ======== ثبت هزینه ========
-    if data == 'add_expense':
+    # ===== اشتراک شماره تلفن =====
+    if data == 'share_phone':
+        keyboard = [[InlineKeyboardButton("📱 ارسال شماره تلفن", request_contact=True)]]
+        await query.edit_message_text(
+            "📱 لطفاً دکمه زیر رو بزن تا شماره‌ات رو برام بفرستی:\n\n"
+            "🔹 این شماره فقط برای ارتباط با شما ذخیره میشه.",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    
+    # ===== ثبت هزینه =====
+    elif data == 'add_expense':
         await query.edit_message_text(
             "💸 مبلغ هزینه رو به تومان وارد کن (مثلاً ۲۵۰۰۰۰):",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
         context.user_data['state'] = 'waiting_expense'
     
-    # ======== ثبت درآمد ========
+    # ===== ثبت درآمد =====
     elif data == 'add_income':
         await query.edit_message_text(
             "💰 مبلغ درآمد رو به تومان وارد کن:",
@@ -130,7 +120,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['state'] = 'waiting_income'
     
-    # ======== گزارش ========
+    # ===== گزارش =====
     elif data == 'report':
         total_income, total_expense = db.get_monthly_summary(user_id)
         balance = total_income - total_expense
@@ -143,7 +133,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
     
-    # ======== تاریخچه ========
+    # ===== تاریخچه =====
     elif data == 'history':
         transactions = db.get_all_transactions(user_id)
         if not transactions:
@@ -152,7 +142,6 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
             )
             return
-        
         message = "📋 **۲۰ تراکنش اخیر**\n\n"
         for amount, category, desc, trans_type, date in transactions:
             emoji = "💰" if trans_type == 'income' else "💸"
@@ -160,146 +149,98 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if desc:
                 message += f" ({desc})"
             message += "\n"
-        
         await query.edit_message_text(
             message,
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
     
-    # ======== قیمت‌ها ========
+    # ===== قیمت‌ها =====
     elif data == 'prices':
-        await query.edit_message_text(
-            "💎 **قیمت‌های لحظه‌ای بازار**\n\n"
-            "🔹 یکی از گزینه‌های زیر رو انتخاب کن:",
-            reply_markup=get_price_menu()
-        )
+        await query.edit_message_text("💎 **قیمت‌های لحظه‌ای بازار**", reply_markup=get_price_menu())
     
-    # ======== قیمت طلا ========
-    elif data == 'price_gold':
-        price_data = prices.get_all_prices()
-        gold_price = price_data.get('gold', 0)
+    elif data in ['price_gold', 'price_dollar', 'price_coin']:
+        price_data = db.get_all_prices()
+        key = {'price_gold': 'gold', 'price_dollar': 'dollar', 'price_coin': 'coin'}[data]
+        emoji = {'gold': '⚜️', 'dollar': '💵', 'coin': '🪙'}[key]
+        name = {'gold': 'طلا (گرم ۱۸)', 'dollar': 'دلار', 'coin': 'سکه امامی'}[key]
+        price = price_data.get(key, 0)
         await query.edit_message_text(
-            f"⚜️ **قیمت طلا (گرم ۱۸)**\n\n"
-            f"💰 قیمت: {gold_price:,} تومان\n"
-            f"🕐 {prices.get_current_time()}\n\n"
-            f"🔹 برای بروزرسانی، گزینه زیر رو بزن.",
+            f"{emoji} **{name}**\n\n"
+            f"💰 قیمت: {price:,} تومان\n"
+            f"🕐 {prices.get_current_time()}",
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 بروزرسانی", callback_data='price_gold')],
+                [InlineKeyboardButton("🔄 بروزرسانی", callback_data=data)],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
             ])
         )
     
-    # ======== قیمت دلار ========
-    elif data == 'price_dollar':
-        price_data = prices.get_all_prices()
-        dollar_price = price_data.get('dollar', 0)
+    elif data in ['price_all', 'refresh_prices']:
+        price_data = db.get_all_prices()
         await query.edit_message_text(
-            f"💵 **قیمت دلار**\n\n"
-            f"💰 قیمت: {dollar_price:,} تومان\n"
-            f"🕐 {prices.get_current_time()}\n\n"
-            f"🔹 برای بروزرسانی، گزینه زیر رو بزن.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 بروزرسانی", callback_data='price_dollar')],
-                [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
-            ])
-        )
-    
-    # ======== قیمت سکه ========
-    elif data == 'price_coin':
-        price_data = prices.get_all_prices()
-        coin_price = price_data.get('coin', 0)
-        await query.edit_message_text(
-            f"🪙 **قیمت سکه امامی**\n\n"
-            f"💰 قیمت: {coin_price:,} تومان\n"
-            f"🕐 {prices.get_current_time()}\n\n"
-            f"🔹 برای بروزرسانی، گزینه زیر رو بزن.",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 بروزرسانی", callback_data='price_coin')],
-                [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
-            ])
-        )
-    
-    # ======== همه قیمت‌ها ========
-    elif data == 'price_all' or data == 'refresh_prices':
-        price_data = prices.get_all_prices()
-        message = prices.format_price_message(price_data)
-        await query.edit_message_text(
-            message,
+            prices.format_price_message(price_data),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔄 بروزرسانی", callback_data='refresh_prices')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
             ])
         )
     
-    # ======== جستجوی محصولات ========
+    # ===== جستجو =====
     elif data == 'search_product':
         await query.edit_message_text(
-            "🛍️ **جستجوی محصولات**\n\n"
-            "🔹 نام محصول مورد نظر را وارد کن:\n"
-            "مثال: گوشی، لپ‌تاپ، ساعت، هدفون\n\n"
-            "💡 برای جستجوی پیشرفته، گزینه زیر رو بزن.",
+            "🛍️ **جستجوی محصولات**\n\n🔹 نام محصول رو وارد کن (مثل گوشی، لپ‌تاپ):",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔍 جستجوی پیشرفته", callback_data='advanced_search')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
             ])
         )
-        context.user_data['state'] = 'waiting_search_simple'
+        context.user_data['state'] = 'waiting_search'
     
-    # ======== جستجوی پیشرفته ========
     elif data == 'advanced_search':
-        await query.edit_message_text(
-            "🔍 **جستجوی پیشرفته**\n\n"
-            "🔹 دسته‌بندی مورد نظر را انتخاب کن:\n\n"
-            "💡 انتخاب دسته‌بندی باعث دقیق‌تر شدن نتایج میشه.",
-            reply_markup=get_advanced_search_menu()
-        )
+        await query.edit_message_text("🔍 **جستجوی پیشرفته**\n\nدسته‌بندی مورد نظر رو انتخاب کن:", reply_markup=get_advanced_search_menu())
     
-    # ======== جستجوی پیشرفته با دسته‌بندی ========
     elif data.startswith('search_'):
         category = data.replace('search_', '')
-        category_names = {
-            'phone': 'گوشی',
-            'laptop': 'لپ‌تاپ',
-            'watch': 'ساعت',
-            'headphone': 'هدفون',
-            'camera': 'دوربین',
-            'speaker': 'اسپیکر',
-            'appliance': 'لوازم خانگی',
-            'clothing': 'پوشاک',
-            'book': 'کتاب'
-        }
-        category_name = category_names.get(category, 'محصولات')
+        names = {'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
+                 'camera': 'دوربین', 'speaker': 'اسپیکر', 'appliance': 'لوازم خانگی',
+                 'clothing': 'پوشاک', 'book': 'کتاب'}
+        category_name = names.get(category, 'محصولات')
         await query.edit_message_text(
-            f"🔍 **جستجو در دسته‌بندی {category_name}**\n\n"
-            f"🔹 نام محصول مورد نظر را وارد کن:\n"
-            f"مثال: {category_name} سامسونگ، {category_name} شیائومی",
+            f"🔍 **جستجو در {category_name}**\n\nنام محصول رو وارد کن:",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='advanced_search')]])
         )
         context.user_data['state'] = 'waiting_search_advanced'
         context.user_data['search_category'] = category
     
-    # ======== راهنما ========
+    # ===== راهنما =====
     elif data == 'help':
         await query.edit_message_text(
             "📌 **راهنمای ربات**\n\n"
-            "✅ **ثبت هزینه**: هزینه‌های روزانه خود را ثبت کنید.\n"
-            "✅ **ثبت درآمد**: درآمدهای خود را ثبت کنید.\n"
-            "✅ **گزارش ماهانه**: خلاصه مالی ماه جاری را مشاهده کنید.\n"
-            "✅ **تاریخچه**: لیست ۲۰ تراکنش اخیر را ببینید.\n"
-            "✅ **قیمت طلا و ارز**: قیمت لحظه‌ای طلا، دلار و سکه.\n"
-            "✅ **جستجوی محصولات**: بهترین قیمت محصولات از دیجیکالا و ترب.\n\n"
-            "💡 برای بازگشت به منو، از دکمه‌ی بازگشت استفاده کن.",
+            "✅ ثبت هزینه و درآمد\n"
+            "✅ گزارش ماهانه\n"
+            "✅ تاریخچه تراکنش‌ها\n"
+            "✅ قیمت طلا و ارز\n"
+            "✅ جستجوی محصولات\n\n"
+            "💡 با دکمه‌های منو کار کن.",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
     
-    # ======== بازگشت به منو ========
+    # ===== بازگشت =====
     elif data == 'back_to_menu':
-        await query.edit_message_text(
-            "👋 به منوی اصلی برگشتی.\n\n"
-            "✨ یکی از گزینه‌های زیر رو انتخاب کن:",
-            reply_markup=get_main_menu()
-        )
+        await query.edit_message_text("👋 به منوی اصلی برگشتی.", reply_markup=get_main_menu())
         context.user_data['state'] = None
+
+# ========== هندلر شماره تلفن ==========
+async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    contact = update.message.contact
+    if contact.user_id == update.effective_user.id:
+        db.update_user_phone(contact.user_id, contact.phone_number)
+        await update.message.reply_text(
+            f"✅ شماره تلفن شما (`{contact.phone_number}`) ثبت شد.",
+            reply_markup=get_main_menu(),
+            parse_mode='Markdown'
+        )
+    else:
+        await update.message.reply_text("❌ لطفاً شماره خودت رو ارسال کن.")
 
 # ========== هندلر متن ==========
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -307,76 +248,53 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     state = context.user_data.get('state')
     
-    # ======== ثبت هزینه ========
+    # ثبت هزینه
     if state == 'waiting_expense':
         try:
-            amount = int(text.replace(',', '').replace('،', '').replace(' ', ''))
-            db.add_transaction(user_id, amount, "عمومی", "ثبت دستی", "expense")
-            await update.message.reply_text(
-                f"✅ هزینه {amount:,} تومانی ثبت شد.",
-                reply_markup=get_main_menu()
-            )
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "دستی", "expense")
+            await update.message.reply_text(f"✅ هزینه {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
             context.user_data['state'] = None
-        except ValueError:
-            await update.message.reply_text(
-                "❌ عدد رو درست وارد کن!",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
-            )
+        except:
+            await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
-    # ======== ثبت درآمد ========
+    # ثبت درآمد
     elif state == 'waiting_income':
         try:
-            amount = int(text.replace(',', '').replace('،', '').replace(' ', ''))
-            db.add_transaction(user_id, amount, "عمومی", "ثبت دستی", "income")
-            await update.message.reply_text(
-                f"✅ درآمد {amount:,} تومانی ثبت شد.",
-                reply_markup=get_main_menu()
-            )
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "دستی", "income")
+            await update.message.reply_text(f"✅ درآمد {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
             context.user_data['state'] = None
-        except ValueError:
-            await update.message.reply_text(
-                "❌ عدد رو درست وارد کن!",
-                reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
-            )
+        except:
+            await update.message.reply_text("❌ عدد رو درست وارد کن!")
     
-    # ======== جستجوی ساده ========
-    elif state == 'waiting_search_simple':
-        await update.message.reply_text("⏳ در حال جستجو در فروشگاه‌های آنلاین...")
+    # جستجوی ساده
+    elif state == 'waiting_search':
+        await update.message.reply_text("⏳ در حال جستجو...")
         products = search.search_all_shops(text)
-        message = search.format_product_message(products)
         await update.message.reply_text(
-            message,
+            search.format_product_message(products),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 جستجوی مجدد", callback_data='search_product')],
-                [InlineKeyboardButton("🔍 جستجوی پیشرفته", callback_data='advanced_search')],
+                [InlineKeyboardButton("🔄 دوباره", callback_data='search_product')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
             ]),
             disable_web_page_preview=True
         )
         context.user_data['state'] = None
     
-    # ======== جستجوی پیشرفته ========
+    # جستجوی پیشرفته
     elif state == 'waiting_search_advanced':
         category = context.user_data.get('search_category', '')
-        category_names = {
-            'phone': 'گوشی',
-            'laptop': 'لپ‌تاپ',
-            'watch': 'ساعت',
-            'headphone': 'هدفون',
-            'camera': 'دوربین',
-            'speaker': 'اسپیکر',
-            'appliance': 'لوازم خانگی',
-            'clothing': 'پوشاک',
-            'book': 'کتاب'
-        }
-        category_name = category_names.get(category, 'محصولات')
-        await update.message.reply_text(f"⏳ در حال جستجو در دسته‌بندی {category_name}...")
+        names = {'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
+                 'camera': 'دوربین', 'speaker': 'اسپیکر', 'appliance': 'لوازم خانگی',
+                 'clothing': 'پوشاک', 'book': 'کتاب'}
+        category_name = names.get(category, 'محصولات')
+        await update.message.reply_text(f"⏳ در حال جستجو در {category_name}...")
         products = search.search_all_shops(f"{text} {category_name}")
-        message = search.format_product_message(products)
         await update.message.reply_text(
-            message,
+            search.format_product_message(products),
             reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 جستجوی مجدد", callback_data='advanced_search')],
+                [InlineKeyboardButton("🔄 دوباره", callback_data='advanced_search')],
                 [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
             ]),
             disable_web_page_preview=True
@@ -384,31 +302,41 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['state'] = None
         context.user_data['search_category'] = None
     
-    # ======== پیام‌های دیگر ========
+    # ===== دستور مخفی ادمین =====
+    elif text.startswith('/admin_users'):
+        if update.effective_user.id != ADMIN_ID:
+            await update.message.reply_text("⛔ شما دسترسی ندارید.")
+            return
+        users = db.get_all_users()
+        count = db.get_user_count()
+        if not users:
+            await update.message.reply_text("📊 هیچ کاربری ثبت نشده.")
+            return
+        message = f"📊 **لیست کاربران ({count} نفر)**\n\n"
+        for user in users[:10]:
+            user_id, username, first_name, last_name, phone, lang, is_bot, first_seen, last_seen, interactions, active, data = user
+            name = f"{first_name or ''} {last_name or ''}".strip() or "بدون نام"
+            uname = f"@{username}" if username else "❌"
+            phone_str = phone or "❌"
+            message += f"🆔 {user_id} - {name}\n📛 {uname} - 📱 {phone_str}\n📅 {first_seen}\n\n"
+        await update.message.reply_text(message, parse_mode='Markdown')
+    
     else:
-        await update.message.reply_text(
-            "🔹 لطفاً از دکمه‌های منو استفاده کن.",
-            reply_markup=get_main_menu()
-        )
+        await update.message.reply_text("🔹 لطفاً از دکمه‌های منو استفاده کن.", reply_markup=get_main_menu())
 
-# ========== اصلی ==========
+# ========== اجرای اصلی ==========
 def main():
-    # اجرای وب‌سرور برای Render
     threading.Thread(target=run_health_server, daemon=True).start()
     print(f"🌐 وب‌سرور روی پورت {PORT} روشن شد")
     
-    # ساخت اپلیکیشن (بدون پارامتر اضافی)
     app = Application.builder().token(TOKEN).build()
     
-    # اضافه کردن هندلرها
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
+    app.add_handler(MessageHandler(filters.CONTACT, handle_contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
     
     print("🚀 ربات مالی هوشمند روشن شد!")
-    print("✨ نسخه با دکمه‌های شیشه‌ای و انتخابی")
-    
-    # اجرای ربات
     app.run_polling(poll_interval=1.0, drop_pending_updates=True)
 
 if __name__ == '__main__':
