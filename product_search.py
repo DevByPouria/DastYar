@@ -1,10 +1,6 @@
 import requests
-import json
-import re
-from bs4 import BeautifulSoup
 
 def search_digikala(query):
-    """جستجو در دیجیکالا و برگرداندن ۵ محصول برتر"""
     try:
         url = f"https://api.digikala.com/v1/product/search/?q={query}"
         response = requests.get(url, timeout=15)
@@ -13,7 +9,6 @@ def search_digikala(query):
         products = []
         if 'data' in data and 'products' in data['data']:
             for product in data['data']['products'][:10]:
-                # فیلتر کردن محصولات با کیفیت بالا
                 if product.get('rating', {}).get('rate', 0) >= 3:
                     products.append({
                         'name': product.get('title', 'بدون نام'),
@@ -24,7 +19,6 @@ def search_digikala(query):
                         'shop': 'دیجیکالا'
                     })
         
-        # مرتب‌سازی بر اساس قیمت (ارزان‌ترین اول)
         products.sort(key=lambda x: x['price'])
         return products[:5]
     except Exception as e:
@@ -32,7 +26,6 @@ def search_digikala(query):
         return []
 
 def search_torob(query):
-    """جستجو در ترب و برگرداندن ۵ محصول برتر"""
     try:
         url = f"https://api.torob.com/v3/search/?query={query}"
         response = requests.get(url, timeout=15)
@@ -58,18 +51,10 @@ def search_torob(query):
         return []
 
 def search_all_shops(query):
-    """جستجو در همه‌ی فروشگاه‌ها و ترکیب نتایج"""
     all_products = []
+    all_products.extend(search_digikala(query))
+    all_products.extend(search_torob(query))
     
-    # جستجو در دیجیکالا
-    digi_products = search_digikala(query)
-    all_products.extend(digi_products)
-    
-    # جستجو در ترب
-    torob_products = search_torob(query)
-    all_products.extend(torob_products)
-    
-    # حذف محصولات تکراری بر اساس نام
     seen = set()
     unique_products = []
     for product in all_products:
@@ -77,13 +62,10 @@ def search_all_shops(query):
             seen.add(product['name'])
             unique_products.append(product)
     
-    # مرتب‌سازی نهایی بر اساس قیمت
     unique_products.sort(key=lambda x: x['price'])
-    
     return unique_products[:5]
 
 def format_product_message(products):
-    """قالب‌بندی محصولات برای ارسال به کاربر"""
     if not products:
         return "❌ محصولی پیدا نشد. لطفاً عبارت دیگری را امتحان کنید."
     
