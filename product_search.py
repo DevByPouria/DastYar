@@ -2,18 +2,28 @@ import requests
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'fa-IR,fa;q=0.9',
-    'Referer': 'https://torob.com/'
-}
-
+# ---------------------------------------------------------
+# ۱. جستجو در ترب (Torob)
+# ---------------------------------------------------------
 def search_torob(query, limit=5):
     products = []
     try:
-        torob_url = f"https://api.torob.com/v4/base-product/search/?page=0&size={limit}&q={quote(query)}"
-        response = requests.get(torob_url, headers=HEADERS, timeout=8)
+        # ایجاد Session جهت حفظ هدرها و کوکی‌ها
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Accept-Language': 'fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Origin': 'https://torob.com',
+            'Referer': f'https://torob.com/search/?query={quote(query)}',
+            'Sec-Fetch-Dest': 'empty',
+            'Sec-Fetch-Mode': 'cors',
+            'Sec-Fetch-Site': 'same-site'
+        })
+        
+        # Endpoint دقیق API ترب
+        url = f"https://api.torob.com/v4/base-product/search/?page=0&size={limit}&query={quote(query)}"
+        response = session.get(url, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -40,17 +50,25 @@ def search_torob(query, limit=5):
                     'link': product_url,
                     'source': 'ترب'
                 })
+        else:
+            print(f"Torob HTTP Error: {response.status_code}")
     except Exception as e:
         print(f"Torob Search Error: {e}")
         
     return products
 
 
+# ---------------------------------------------------------
+# ۲. جستجو در دیجی‌کالا (Digikala)
+# ---------------------------------------------------------
 def search_digikala(query, limit=5):
     products = []
     try:
-        digi_url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
-        response = requests.get(digi_url, headers=HEADERS, timeout=8)
+        url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -80,11 +98,26 @@ def search_digikala(query, limit=5):
     return products
 
 
+# ---------------------------------------------------------
+# ۳. جستجو در باسلام (Basalam)
+# ---------------------------------------------------------
 def search_basalam(query, limit=5):
     products = []
     try:
-        basalam_url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
-        response = requests.get(basalam_url, headers=HEADERS, timeout=8)
+        # Endpoint جدید وب‌سایت باسلام
+        url = "https://search.basalam.com/ai-engine/v1/search"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'application/json, text/plain, */*',
+            'Referer': 'https://basalam.com/'
+        }
+        params = {
+            'q': query,
+            'from': 0,
+            'size': limit
+        }
+        
+        response = requests.get(url, headers=headers, params=params, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -115,12 +148,17 @@ def search_basalam(query, limit=5):
                     'link': product_url,
                     'source': 'باسلام'
                 })
+        else:
+            print(f"Basalam HTTP Error: {response.status_code}")
     except Exception as e:
         print(f"Basalam Search Error: {e}")
         
     return products
 
 
+# ---------------------------------------------------------
+# ۴. فراخوانی هم‌زمان منابع
+# ---------------------------------------------------------
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
         future_digi = executor.submit(search_digikala, query, 5)
@@ -138,10 +176,13 @@ def search_products(query):
     }
 
 
+# ---------------------------------------------------------
+# ۵. ساخت پیام‌های تفکیک‌شده برای تلگرام
+# ---------------------------------------------------------
 def format_product_messages(results_dict):
     messages = []
     
-    # 1. پیام دیجی‌کالا
+    # پیام دیجی‌کالا
     digi_items = results_dict.get('digi', [])
     if digi_items:
         msg = "🔴 **نتایج جستجو در دیجی‌کالا (۵ مورد برتر):**\n───────────────────\n"
@@ -151,7 +192,7 @@ def format_product_messages(results_dict):
     else:
         messages.append("🔴 **دیجی‌کالا:** متأسفانه محصولی یافت نشد.")
 
-    # 2. پیام ترب
+    # پیام ترب
     torob_items = results_dict.get('torob', [])
     if torob_items:
         msg = "🟦 **نتایج جستجو در ترب (۵ مورد برتر):**\n───────────────────\n"
@@ -161,7 +202,7 @@ def format_product_messages(results_dict):
     else:
         messages.append("🟦 **ترب:** متأسفانه محصولی یافت نشد.")
 
-    # 3. پیام باسلام
+    # پیام باسلام
     basalam_items = results_dict.get('basalam', [])
     if basalam_items:
         msg = "🟢 **نتایج جستجو در باسلام (۵ مورد برتر):**\n───────────────────\n"
