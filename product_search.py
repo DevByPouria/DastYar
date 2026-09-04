@@ -1,4 +1,5 @@
 import requests
+import re
 from urllib.parse import quote
 
 HEADERS = {
@@ -6,37 +7,63 @@ HEADERS = {
     'Accept': 'application/json'
 }
 
-# کلماتی که اگر در عنوان محصول باشند و کاربر دنبال آنها نباشد، نادیده گرفته می‌شوند
+# جایگزینی کلمات تلفظی با اعداد و کلمات استاندارد
+PERSIAN_NUMBER_MAP = {
+    'سون': '7', 'ایت': '8', 'ناین': '9', 'تن': '10',
+    'ایکس': 'x', 'پلاس': 'plus', 'پرومکس': 'pro max', 'پرو': 'pro',
+    'سیزده': '13', 'چهارده': '14', 'پانزده': '15', 'شانزده': '16'
+}
+
 ACCESSORY_KEYWORDS = [
     'قاب', 'کاور', 'گلس', 'محافظ', 'کیف', 'برچسب', 'پایه نگه‌دارنده', 
-    'هولدر', 'شارژر', 'کابل', 'بند', 'گارد', 'محافظ صفحه'
+    'هولدر', 'شارژر', 'کابل', 'بند', 'گارد', 'محافظ صفحه', 'باتری'
 ]
 
+def normalize_query(query):
+    """استانداردسازی عبارت جستجو (تبدیل سون به 7 و ...)"""
+    q = query.lower()
+    for fa, en in PERSIAN_NUMBER_MAP.items():
+        q = q.replace(fa, en)
+    return q
+
+def is_relevant(title, query_tokens):
+    """بررسی انطباق دقیق محصول با عبارت درخواستی کاربر"""
+    title_lower = title.lower()
+    # اگر کلماتی مثل 7 یا plus یا iphone در جستجو بوده، باید حتماً در عنوان هم باشند
+    for token in query_tokens:
+        if len(token) > 1 and token not in ['گوشی', 'موبایل', 'سامسونگ', 'اپل']:
+            if token not in title_lower:
+                return False
+    return True
+
 def search_torob(query):
-    """جستجو در موتور ترب (پوشش صدها فروشگاه آنلاین ایران)"""
     products = []
+    normalized_q = normalize_query(query)
+    query_tokens = [t for t in re.split(r'\s+', normalized_q) if t]
+    
     try:
-        url = f"https://api.torob.com/v4/base-product/search/?q={quote(query)}&page=0&size=10"
+        url = f"https://api.torob.com/v4/base-product/search/?q={quote(normalized_q)}&page=0&size=20"
         response = requests.get(url, headers=HEADERS, timeout=6)
         
         if response.status_code == 200:
-            data = response.json()
-            results = data.get('results', [])
+            results = response.json().get('results', [])
             
             for item in results:
                 title = item.get('name1', '')
+                title_lower = title.lower()
                 
-                # فیلتر هوشمند: اگر کاربر عبارت "قاب" یا "کاور" را سرچ نکرده، لوازم جانبی را حذف کن
-                is_accessory_search = any(acc in query for acc in ['قاب', 'کاور', 'گلس', 'کیف', 'شارژر', 'کابل', 'هولدر'])
-                if not is_accessory_search:
-                    if any(acc in title for acc in ACCESSORY_KEYWORDS):
-                        continue # اسکیپ کردن لوازم جانبی
+                # ۱. فیلتر حذف لوازم جانبی
+                is_acc_search = any(acc in query for acc in ['قاب', 'کاور', 'گلس', 'شارژر', 'کابل'])
+                if not is_acc_search and any(acc in title_lower for acc in ACCESSORY_KEYWORDS):
+                    continue
+                
+                # ۲. فیلتر انطباق دقیق (حذف گوشی‌های غیرمرتبط)
+                if not is_relevant(title, query_tokens):
+                    continue
                 
                 price_str = item.get('price_text', 'نامشخص')
                 price = item.get('price', 0)
                 random_key = item.get('random_key', '')
-                
-                # ساخت لینک مستقیم محصول در ترب
                 product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
                 
                 products.append({
@@ -50,79 +77,22 @@ def search_torob(query):
                 if len(products) >= 5:
                     break
     except Exception as e:
-        print(f"Error searching Torob: {e}")
-        
-    return products
-
-def search_digikala(query):
-    """جستجو در دیجی‌کالا با فیلتر هوشمند لوازم جانبی"""
-    products = []
-    try:
-        url = f"https://api.digikala.com/v1/search/?q={quote(query)}"
-        response = requests.get(url, headers=HEADERS, timeout=6)
-        
-        if response.status_code == 200:
-            data = response.json()
-            items = data.get('data', {}).get('products', [])
-            
-            for item in items:
-                title = item.get('title_fa', '')
-                
-                # فیلتر لوازم جانبی
-                is_accessory_search = any(acc in query for acc in ['قاب', 'کاور', 'گلس', 'کیف', 'شارژر', 'کابل'])
-                if not is_accessory_search:
-                    if any(acc in title for acc in ACCESSORY_KEYWORDS):
-                        continue
-                
-                price_data = item.get('default_variant', {}).get('price', {})
-                price = price_data.get('selling_price', 0) // 10  # ریال به تومان
-                
-                dk_id = item.get('id')
-                product_url = f"https://www.digikala.com/product/dk-{dk_id}/"
-                
-                products.append({
-                    'title': title,
-                    'price': price,
-                    'price_text': f"{price:,} تومان" if price > 0 else "ناموجود",
-                    'shop': 'دیجی‌کالا',
-                    'link': product_url
-                })
-                
-                if len(products) >= 3:
-                    break
-    except Exception as e:
-        print(f"Error searching Digikala: {e}")
+        print(f"Error Torob: {e}")
         
     return products
 
 def search_all_shops(query):
-    """ترکیب و اولویت‌بندی نتایج از تمامی منابع (ترب + دیجی‌کالا)"""
-    # اولویت اول: ترب (زیرا شامل صدها فروشگاه است)
-    results = search_torob(query)
-    
-    # اگر ترب نتیجه‌ای نداشت یا نتایج کم بود، دیجی‌کالا اضافه می‌شود
-    if len(results) < 3:
-        dk_results = search_digikala(query)
-        results.extend(dk_results)
-        
-    return results
+    return search_torob(query)
 
 def format_product_message(products):
-    """قالب‌بندی شکیل و هوشمند پیام نتایج"""
     if not products:
-        return "❌ متأسفانه محصولی یافت نشد.\nلطفاً نام محصول را دقیق‌تر یا به همراه برند وارد کنید."
+        return "❌ متأسفانه محصول مرتبطی یافت نشد.\nلطفاً نام محصول را دقیق‌تر وارد کنید (مثلاً: آیفون 7 پلاس)."
     
     message = "🔍 **نتایج یافت‌شده در صدها فروشگاه:**\n\n"
-    
     for idx, p in enumerate(products, 1):
-        title = p['title']
-        price = p['price_text']
-        shop = p['shop']
-        link = p['link']
-        
-        message += f"{idx}. **[{title}]({link})**\n"
-        message += f"💰 قیمت: `{price}`\n"
-        message += f"🏪 منبع: {shop}\n"
+        message += f"{idx}. **[{p['title']}]({p['link']})**\n"
+        message += f"💰 قیمت: `{p['price_text']}`\n"
+        message += f"🏪 منبع: {p['shop']}\n"
         message += "───────────────\n"
         
     return message
