@@ -1,4 +1,5 @@
 import os
+import random
 import logging
 from threading import Thread
 from flask import Flask
@@ -7,8 +8,41 @@ from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQu
 from product_search import search_products, format_product_message
 from gold_currency import get_gold_and_currency_prices, format_gold_currency_message
 
-# web server کوچک برای جلو گیری از Conflict در Render
+# ---------------------------------------------------------
+# ۱. تنظیمات مخفی‌سازی توکن و کاهش سطح لاگ‌ها
+# ---------------------------------------------------------
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("telegram.ext").setLevel(logging.WARNING)
+
+# ---------------------------------------------------------
+# ۲. تنظیمات شخص خاص (این بخش را ویرایش کنید)
+# ---------------------------------------------------------
+# یوزرنیم شخص خاص (بدون @). مثال: "zahra_123"
+SPECIAL_USERNAME = "Ayydddda_2007"  
+
+# آیدی عددی شخص خاص (در صورت عدم داشتن یوزرنیم، صفر بگذارید). مثال: 123456789
+SPECIAL_USER_ID = 6876769630  
+
+# لیست جملات عاشقانه اختصاصی که به صورت تصادفی انتخاب می‌شوند
+SPECIAL_WELCOME_MESSAGES = [
+    "به ربات خیلی خوش اومدی زندگی پوریا ❤️\n\n(از طرف پوریا)",
+    "پوریا خیلی خوش‌شانسه که تو رو توی زندگیش داره ✨\n\n(از طرف پوریا)",
+    "سلام به قشنگ‌ترین اتفاق زندگی پوریا 🥰 خوش اومدی!\n\n(از طرف پوریا)",
+    "امروز دنیا خیلی قشنگ‌تره چون تو اینجایی 🌸\n\n(از طرف پوریا)",
+    "ورودت به ربات مبارک تمام دارایی پوریا 💖\n\n(از طرف پوریا)",
+    "امیدوارم لحظه‌هات مثل لبخندت قشنگ باشه جانِ پوریا 💫\n\n(از طرف پوریا)",
+    "خوش اومدی همه‌کس پوریا 💖 بودنِ تو یعنی حالِ خوب!\n\n(از طرف پوریا)"
+]
+
+# ---------------------------------------------------------
+# ۳. وب‌سرور Flask جهت آنلاین نگه‌داشتن ربات در Render
+# ---------------------------------------------------------
 app_flask = Flask('')
+
 @app_flask.route('/')
 def home():
     return "Bot is active!"
@@ -23,16 +57,9 @@ def keep_alive():
 
 keep_alive()
 
-# تنظیم سطح لاگ عمومی
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
-
-# 🤫 مخفی کردن درخواست‌های httpx که حاوی توکن تلگرام هستند
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("telegram.ext").setLevel(logging.WARNING)
-
+# ---------------------------------------------------------
+# ۴. کیبوردها و تنظیمات ربات
+# ---------------------------------------------------------
 TOKEN = os.getenv("BOT_TOKEN")
 
 KEYBOARD = ReplyKeyboardMarkup(
@@ -40,17 +67,32 @@ KEYBOARD = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
-# دکمه شیشه‌ای زیر پیام قیمت‌ها
 REFRESH_BUTTON = InlineKeyboardMarkup([
     [InlineKeyboardButton("🔄 به‌روزرسانی قیمت‌ها", callback_data="refresh_prices")]
 ])
 
+# ---------------------------------------------------------
+# ۵. هندلرها (دستورات و پیام‌ها)
+# ---------------------------------------------------------
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "سلام! 👋 به ربات دستیار خوش آمدید.\n"
-        "یک گزینه را انتخاب کنید یا نام محصول مورد نظر خود را بفرستید:",
-        reply_markup=KEYBOARD
-    )
+    user = update.effective_user
+    
+    # بررسی هویت کاربر
+    is_special = False
+    if user.username and SPECIAL_USERNAME and user.username.lower() == SPECIAL_USERNAME.lower():
+        is_special = True
+    elif SPECIAL_USER_ID and user.id == SPECIAL_USER_ID:
+        is_special = True
+        
+    if is_special:
+        welcome_text = random.choice(SPECIAL_WELCOME_MESSAGES)
+        await update.message.reply_text(welcome_text, reply_markup=KEYBOARD)
+    else:
+        await update.message.reply_text(
+            "سلام! 👋 به ربات دستیار خوش آمدید.\n"
+            "یک گزینه را انتخاب کنید یا نام محصول مورد نظر خود را بفرستید:",
+            reply_markup=KEYBOARD
+        )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
@@ -72,7 +114,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await wait_msg.edit_text(response_text, parse_mode='Markdown', disable_web_page_preview=True)
 
-# هندلر کلیک روی دکمه شیشه‌ای "به‌روزرسانی"
 async def handle_refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("⏳ در حال دریافت قیمت‌های جدید...")
@@ -82,10 +123,12 @@ async def handle_refresh_callback(update: Update, context: ContextTypes.DEFAULT_
     
     try:
         await query.edit_message_text(msg, parse_mode='Markdown', reply_markup=REFRESH_BUTTON)
-    except Exception as e:
-        # اگر قیمت تغییر نکرده باشد تلگرام خطا می‌دهد که نادیده گرفته می‌شود
+    except Exception:
         pass
 
+# ---------------------------------------------------------
+# ۶. اجرای اصلی برنامه
+# ---------------------------------------------------------
 def main():
     if not TOKEN:
         print("Error: BOT_TOKEN is missing!")
