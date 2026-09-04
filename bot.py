@@ -218,7 +218,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
         )
     
-    # ===== جستجو =====
+   # ===== جستجو =====
     elif data == 'search_product':
         await query.edit_message_text(
             "🛍️ جستجوی محصولات\n\n🔹 نام محصول رو وارد کن (مثل گوشی، لپ‌تاپ):",
@@ -228,10 +228,10 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
         )
         context.user_data['state'] = 'waiting_search'
-    
+
     elif data == 'advanced_search':
         await query.edit_message_text("🔍 جستجوی پیشرفته\n\nدسته‌بندی مورد نظر رو انتخاب کن:", reply_markup=get_advanced_search_menu())
-    
+
     elif data.startswith('search_'):
         category = data.replace('search_', '')
         names = {'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
@@ -243,8 +243,8 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='advanced_search')]])
         )
         context.user_data['state'] = 'waiting_search_advanced'
-        context.user_data['search_category'] = category
-    
+        context.user_data['search_category'] = category_name
+        
     # ===== راهنما =====
     elif data == 'help':
         await query.edit_message_text(
@@ -306,15 +306,23 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except:
             await update.message.reply_text("❌ لطفاً مبلغ را به صورت عدد وارد کنید!")
     
-    # ۳. جستجوی عمومی محصولات (با داده واقعی و لینک Markdown)
-    elif state == 'waiting_search':
-        # ارسال پیام اولیه و ذخیره آن در متغیر status_msg
+    # ۳. جستجوی عمومی و پیشرفته محصولات
+    elif state in ['waiting_search', 'waiting_search_advanced']:
+        search_text = text
+        
+        # اگر در حالت جستجوی پیشرفته بود، اسم دسته‌بندی را به سرچ اضافه کن
+        if state == 'waiting_search_advanced':
+            category_name = context.user_data.get('search_category', '')
+            if category_name and category_name not in search_text:
+                search_text = f"{category_name} {search_text}"
+        
+        # ارسال پیام اولیه و ذخیره در متغیر
         status_msg = await update.message.reply_text("⏳ در حال جستجو در صدها فروشگاه...")
         
-        # دریافت نتایج از موتور جستجو
-        products = search.search_all_shops(text)
+        # اجرا و دریافت اطلاعات واقعی
+        products = search.search_all_shops(search_text)
         
-        # ویرایش همان پیام قبلی (به جای ارسال پیام جدید)
+        # جایگزینی همان پیام قبلی (ویرایش پیام)
         await status_msg.edit_text(
             search.format_product_message(products),
             reply_markup=InlineKeyboardMarkup([
@@ -324,34 +332,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown',
             disable_web_page_preview=True
         )
+        # پاکسازی وضعیت کاربر
         context.user_data['state'] = None
-    
-    # ۴. جستجوی پیشرفته محصولات (با داده واقعی و لینک Markdown)
-    elif state == 'waiting_search_advanced':
-        category = context.user_data.get('search_category', '')
-        names = {
-            'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
-            'camera': 'دوربین', 'speaker': 'اسپیکر', 'appliance': 'لوازم خانگی',
-            'clothing': 'پوشاک', 'book': 'کتاب'
-        }
-        category_name = names.get(category, 'محصولات')
-        await update.message.reply_text(f"⏳ در حال جستجوی واقعی در دسته‌بندی {category_name}...")
-        
-        products = search.search_all_shops(f"{text} {category_name}")
-        await update.message.reply_text(
-            search.format_product_message(products),
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 دوباره", callback_data='advanced_search')],
-                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
-            ]),
-            parse_mode='Markdown',
-            disable_web_page_preview=True
-        )
-        context.user_data['state'] = None
-        context.user_data['search_category'] = None
-    
-    else:
-        await update.message.reply_text("🔹 لطفاً از دکمه‌های منو استفاده کنید.", reply_markup=get_main_menu())
     
     # ===== ثبت هزینه =====
     if state == 'waiting_expense':
