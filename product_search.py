@@ -2,109 +2,149 @@ import requests
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# هدر استاندارد برای جلوگیری از مسدود شدن درخواست‌ها توسط سایت‌ها
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept-Language": "fa,en;q=0.9",
-}
+# ---------------------------------------------------------
+# ۱. توابع اختصاصی برای هر فروشگاه
+# ---------------------------------------------------------
 
-def search_torob(query: str, limit: int = 5) -> list:
-    """
-    جستجوی کالا در سایت ترب (Torob API)
-    """
-    url = f"https://api.torob.com/v4/base-product/search/?q={quote(query)}&page=0&size={limit}"
-    results = []
-    
+def search_torob(query):
+    products = []
     try:
-        response = requests.get(url, headers=HEADERS, timeout=8)
+        torob_url = f"https://api.torob.com/v4/base-product/search/?page=0&size=5&q={quote(query)}"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        response = requests.get(torob_url, headers=headers, timeout=6)
+        
         if response.status_code == 200:
             data = response.json()
-            products = data.get("results", [])
-            
-            for item in products[:limit]:
-                title = item.get("name1") or item.get("name2", "بدون عنوان")
-                price = item.get("price", 0)
-                prk = item.get("random_key", "")
+            for item in data.get('results', []):
+                title = item.get('name1') or item.get('name2', 'بدون عنوان')
+                price_text = item.get('price_text', 'نامشخص')
+                price = item.get('price', 0)
+                price_str = f"{price:,} تومان" if price else price_text
                 
-                # ساخت لینک مستقیم محصول در ترب
-                product_url = f"https://torob.com/p/{prk}/" if prk else "https://torob.com"
+                random_key = item.get('random_key', '')
+                product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
                 
-                formatted_price = f"{price:,} تومان" if isinstance(price, int) and price > 0 else "نامشخص"
-                
-                results.append({
-                    "source": "ترب",
-                    "title": title,
-                    "price": formatted_price,
-                    "raw_price": price if isinstance(price, int) else 0,
-                    "url": product_url
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'ترب'
                 })
     except Exception as e:
-        print(f"[!] خطا در دریافت اطلاعات از ترب: {e}")
-        
-    return results
+        print(f"Torob Search Error: {e}")
+    return products
 
 
-def search_basalam(query: str, limit: int = 5) -> list:
-    """
-    جستجوی کالا در بازار باسلام (Basalam API)
-    """
-    url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
-    results = []
-    
+def search_digikala(query):
+    products = []
     try:
-        response = requests.get(url, headers=HEADERS, timeout=8)
+        digi_url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
+        response = requests.get(digi_url, timeout=6)
+        
         if response.status_code == 200:
             data = response.json()
-            products = data.get("products", [])
+            items = data.get('data', {}).get('products', [])[:5]
             
-            for item in products[:limit]:
-                title = item.get("title", "بدون عنوان")
-                # قیمت در باسلام به ریال محاسبه می‌شود (تبدیل به تومان):
-                price_rials = item.get("price", 0)
+            for item in items:
+                title = item.get('title_fa', '')
+                price_rrp = item.get('price', {}).get('selling_price', 0) // 10
+                price_str = f"{price_rrp:,} تومان" if price_rrp > 0 else "ناموجود"
+                
+                product_id = item.get('id', '')
+                product_url = f"https://www.digikala.com/product/dk-{product_id}/"
+                
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'دیجی‌کالا'
+                })
+    except Exception as e:
+        print(f"Digikala Search Error: {e}")
+    return products
+
+
+def search_basalam(query):
+    products = []
+    try:
+        basalam_url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size=5"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
+        response = requests.get(basalam_url, headers=headers, timeout=6)
+        
+        if response.status_code == 200:
+            data = response.json()
+            items = data.get('products', [])[:5]
+            
+            for item in items:
+                title = item.get('title', 'بدون عنوان')
+                price_rials = item.get('price', 0)
                 price_toman = price_rials // 10 if price_rials else 0
+                price_str = f"{price_toman:,} تومان" if price_toman > 0 else "نامشخص"
                 
-                vendor = item.get("vendor", {})
-                vendor_identifier = vendor.get("identifier", "")
-                product_id = item.get("id", "")
+                vendor = item.get('vendor', {})
+                vendor_id = vendor.get('identifier', '')
+                product_id = item.get('id', '')
                 
-                # ساخت لینک محصول باسلام
-                product_url = f"https://basalam.com/{vendor_identifier}/product/{product_id}" if vendor_identifier and product_id else "https://basalam.com"
+                product_url = f"https://basalam.com/{vendor_id}/product/{product_id}" if vendor_id and product_id else "https://basalam.com"
                 
-                formatted_price = f"{price_toman:,} تومان" if price_toman > 0 else "نامشخص"
-                
-                results.append({
-                    "source": "باسلام",
-                    "title": title,
-                    "price": formatted_price,
-                    "raw_price": price_toman,
-                    "url": product_url
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'باسلام'
                 })
     except Exception as e:
-        print(f"[!] خطا در دریافت اطلاعات از باسلام: {e}")
-        
-    return results
+        print(f"Basalam Search Error: {e}")
+    return products
 
 
-def search_all_products(query: str, limit_per_source: int = 5, sort_by_price: bool = False) -> list:
-    """
-    جستجوی هم‌زمان (Fast Asynchronous Execution) در تمام فروشگاه‌ها
-    """
-    all_results = []
+# ---------------------------------------------------------
+# ۲. تابع تجمیع‌کننده هم‌زمان (Fast Parallel Search)
+# ---------------------------------------------------------
+
+def search_products(query):
+    products = []
     
-    # استفاده از ThreadPoolExecutor برای ارسال هم‌زمان درخواست‌ها و بالابردن سرعت
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        future_torob = executor.submit(search_torob, query, limit_per_source)
-        future_basalam = executor.submit(search_basalam, query, limit_per_source)
+    # ارسال هم‌زمان درخواست‌ها جهت بالابردن سرعت پاسخ‌دهی ربات
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = [
+            executor.submit(search_torob, query),
+            executor.submit(search_digikala, query),
+            executor.submit(search_basalam, query)
+        ]
         
-        for future in as_completed([future_torob, future_basalam]):
+        for future in as_completed(futures):
             try:
                 res = future.result()
-                all_results.extend(res)
+                products.extend(res)
             except Exception as e:
-                print(f"[!] خطا در اجرای جستجو: {e}")
-                
-    # مرتب‌سازی بر اساس قیمت (در صورت درخواست)
-    if sort_by_price:
-        all_results = sorted(all_results, key=lambda x: x["raw_price"])
+                print(f"Error gathering results: {e}")
 
-    return all_results
+    return products
+
+
+# ---------------------------------------------------------
+# ۳. قالب‌بندی پیام خروجی تلگرام
+# ---------------------------------------------------------
+
+def format_product_message(products):
+    if not products:
+        return "❌ متأسفانه محصولی با این عنوان در ترب، دیجی‌کالا و باسلام پیدا نشد."
+    
+    msg = "🛒 **نتایج جستجوی کالا (ترب، دیجی‌کالا، باسلام):**\n"
+    msg += "───────────────────\n\n"
+    
+    for idx, p in enumerate(products, 1):
+        if p['source'] == 'دیجی‌کالا':
+            source_badge = "🔴 [دیجی‌کالا]"
+        elif p['source'] == 'ترب':
+            source_badge = "🟦 [ترب]"
+        else:
+            source_badge = "🟢 [باسلام]"
+            
+        msg += f"{idx}. {source_badge} **{p['title']}**\n"
+        msg += f"💰 **قیمت:** {p['price']}\n"
+        msg += f"🔗 [مشاهده و خرید محصول]({p['link']})\n"
+        msg += "───────────────────\n"
+        
+    return msg
