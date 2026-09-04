@@ -1,64 +1,58 @@
 import requests
-from bs4 import BeautifulSoup
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 }
 
 def get_gold_and_currency_prices():
-    """استعلام قیمت طلا، سکه و ارز مستقیم از سایت tala.ir"""
+    """استعلام مستقیم و پایدار نرخ طلا، سکه و ارز از API سایت tala.ir"""
     prices = {}
-    url = "https://www.tala.ir/"
     
-    # لیست آیتم‌هایی که می‌خواهیم از سایت tala.ir استخراج کنیم
-    target_items = {
-        'dollar': '💵 دلار آمریکا',
-        'eur': '💶 یورو',
-        'geram18': '🪙 طلای ۱۸ عیار',
-        'sekeb': '🟡 سکه امامی',
-        'nim': '🟡 نیم سکه',
-        'rob': '🟡 ربع سکه'
-    }
+    # آدرس API مستقیم tala.ir
+    api_url = "https://www.tala.ir/ajax/prices"
 
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        
+        res = requests.get(api_url, headers=HEADERS, timeout=8)
         if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
+            data = res.json()
             
-            # tala.ir اطلاعات را در سطرها یا کادرهای قیمت مشخص نگهداری می‌کند
-            for key, label in target_items.items():
-                # جستجو بر اساس کلاس‌ها و شناسه المان‌های سایت tala.ir
-                element = soup.find('tr', {'data-id': key}) or soup.find(id=key) or soup.find('div', class_=f'price_{key}')
-                
-                if not element:
-                    # روش جایگزین: جستجوی متنی در جدول قیمت‌های tala.ir
-                    for row in soup.find_all('tr'):
-                        text = row.text.strip()
-                        if label.replace('💵 ', '').replace('💶 ', '').replace('🪙 ', '').replace('🟡 ', '') in text:
-                            cols = row.find_all('td')
-                            if len(cols) >= 2:
-                                price_val = cols[1].text.strip()
-                                if price_val:
-                                    prices[label] = price_val
-                            break
-                else:
-                    price_td = element.find('td', class_='price') or element.find('span', class_='value')
-                    if price_td:
-                        prices[label] = price_td.text.strip()
+            # در صورتی که API به صورت دیکشنری یا لیست دیتا بازگرداند
+            items_data = data.get('data', {}) if isinstance(data, dict) else data
+
+            # نگاشت شناسه‌های API سایت tala.ir به عناوین فارسی
+            mapping = {
+                'geram18': '🪙 طلای ۱۸ عیار',
+                'geram24': '🪙 طلای ۲۴ عیار',
+                'sekeb': '🟡 سکه امامی',
+                'bahar': '🟡 سکه بهار آزادی',
+                'nim': '🟡 نیم سکه',
+                'rob': '🟡 ربع سکه',
+                'dollar': '💵 دلار آمریکا',
+                'eur': '💶 یورو'
+            }
+
+            if isinstance(items_data, dict):
+                for key, label in mapping.items():
+                    if key in items_data:
+                        item_info = items_data[key]
+                        price_val = item_info.get('price') if isinstance(item_info, dict) else item_info
+                        if price_val:
+                            prices[label] = f"{int(price_val):,}"
 
     except Exception as e:
-        print(f"Error fetching prices from tala.ir: {e}")
+        print(f"Primary tala.ir API error: {e}")
 
-    # در صورت پاسخ ندادن یا عدم استخراج کامل، از ساختار کلی صفحات قیمت tala.ir استخراج انجام می‌شود
+    # مکانیزم رزرو (Fallback) از بخش عمومی tala.ir در صورت عدم پاسخگویی ای‌پي‌آی
     if not prices:
         try:
-            res = requests.get(url, headers=HEADERS, timeout=10)
-            soup = BeautifulSoup(res.text, 'html.parser')
-            # استخراج بر اساس جدول‌های اصلی صفحه اول tala.ir
-            tables = soup.find_all('table')
-            for table in tables:
-                for row in table.find_all('tr'):
+            url = "https://www.tala.ir/"
+            res = requests.get(url, headers=HEADERS, timeout=8)
+            if res.status_code == 200:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(res.text, 'html.parser')
+                
+                rows = soup.find_all('tr')
+                for row in rows:
                     cols = row.find_all('td')
                     if len(cols) >= 2:
                         title = cols[0].text.strip()
@@ -77,14 +71,14 @@ def get_gold_and_currency_prices():
                         elif 'یورو' in title and '💶 یورو' not in prices:
                             prices['💶 یورو'] = price
         except Exception as e:
-            print(f"Fallback tala.ir error: {e}")
+            print(f"Fallback tala.ir HTML error: {e}")
 
     return prices
 
 
 def format_gold_currency_message(prices):
     if not prices:
-        return "❌ در حال حاضر دریافت نرخ طلا و ارز از سایت tala.ir با خطا مواجه شد."
+        return "❌ در حال حاضر امکان دریافت نرخ از tala.ir وجود ندارد. لطفا لحظاتی بعد مجدداً تلاش کنید."
         
     msg = "💰 **نرخ لحظه‌ای طلا، سکه و ارز (تومان):**\n\n"
     for label, price in prices.items():
