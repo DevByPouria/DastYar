@@ -55,20 +55,27 @@ def get_all_prices():
     return prices
 
 def generate_price_image():
-    """تولید تصویر گرافیکی کارت‌ها"""
+    """تولید تصویر کارت‌ها با اعداد بزرگ‌تر و واضح"""
     prices = get_all_prices()
     
-    # تنظیم ابعاد شبکه ۶ در ۳
+    # ابعاد کارت‌ها کمی عریض‌تر و بلندتر شده‌اند تا عدد بزرگ‌تر را جا دهند
     cols, rows = 6, 3
-    card_w, card_h = 160, 90
-    pad_x, pad_y = 10, 10
+    card_w, card_h = 180, 100
+    pad_x, pad_y = 12, 12
     img_w = cols * card_w + (cols + 1) * pad_x
-    img_h = rows * card_h + (rows + 1) * pad_y + 45
+    img_h = rows * card_h + (rows + 1) * pad_y + 50
     
     img = Image.new('RGB', (img_w, img_h), color='#FFFFFF')
     draw = ImageDraw.Draw(img)
     
-    font_title = font_value = ImageFont.load_default()
+    # بارگذاری فونت وزیر در صورت وجود برای نمایش اعداد درشت‌تر و شکیل‌تر
+    font_path = os.path.join(os.path.dirname(__file__), "Vazirmatn.ttf")
+    try:
+        font_title = ImageFont.truetype(font_path, 16)
+        font_value = ImageFont.truetype(font_path, 20)  # سایز بزرگ‌تر برای اعداد
+        font_header = ImageFont.truetype(font_path, 18)
+    except:
+        font_title = font_value = font_header = ImageFont.load_default()
 
     items = list(prices.items())
     
@@ -77,28 +84,28 @@ def generate_price_image():
         c = idx % cols
         
         x = c * card_w + (c + 1) * pad_x
-        y = r * card_h + (r + 1) * pad_y + 40
+        y = r * card_h + (r + 1) * pad_y + 45
         
         # ۱. کادر عنوان (سرمه‌ای)
-        draw.rounded_rectangle([x, y, x + card_w, y + 38], radius=6, fill='#135270')
+        draw.rounded_rectangle([x, y, x + card_w, y + 42], radius=8, fill='#135270')
         # ۲. کادر قیمت (کرم)
-        draw.rounded_rectangle([x, y + 34, x + card_w, y + card_h], radius=6, fill='#FFFDE7', outline='#135270', width=1)
+        draw.rounded_rectangle([x, y + 38, x + card_w, y + card_h], radius=8, fill='#FFFDE7', outline='#135270', width=1)
         
-        # محاسبه مرکز متن عنوان
+        # محاسبه مرکز عنوان
         bbox_t = draw.textbbox((0, 0), title, font=font_title)
         tw = bbox_t[2] - bbox_t[0]
-        draw.text((x + (card_w - tw)/2, y + 12), title, fill='#FFFFFF', font=font_title)
+        draw.text((x + (card_w - tw)/2, y + 10), title, fill='#FFFFFF', font=font_title)
         
-        # محاسبه مرکز متن مقدار
+        # محاسبه مرکز عدد (بزرگ‌تر شده)
         bbox_v = draw.textbbox((0, 0), val, font=font_value)
         vw = bbox_v[2] - bbox_v[0]
-        draw.text((x + (card_w - vw)/2, y + 54), val, fill='#111111', font=font_value)
+        draw.text((x + (card_w - vw)/2, y + 56), val, fill='#111111', font=font_value)
 
-    # هدر بالای عکس
+    # هدر بالای تصویر
     header_text = f"⚡ LIVE MARKET - {get_current_time()} (Tehran Time) ⚡"
-    bbox_h = draw.textbbox((0, 0), header_text, font=font_title)
+    bbox_h = draw.textbbox((0, 0), header_text, font=font_header)
     hw = bbox_h[2] - bbox_h[0]
-    draw.text(((img_w - hw)/2, 12), header_text, fill='#135270', font=font_title)
+    draw.text(((img_w - hw)/2, 12), header_text, fill='#135270', font=font_header)
 
     bio = io.BytesIO()
     bio.name = 'prices.png'
