@@ -1,5 +1,4 @@
 import requests
-import re
 from urllib.parse import quote
 
 HEADERS = {
@@ -13,39 +12,25 @@ PERSIAN_NUMBER_MAP = {
     'سیزده': '13', 'چهارده': '14', 'پانزده': '15', 'شانزده': '16'
 }
 
-ACCESSORY_KEYWORDS = [
-    'قاب', 'کاور', 'گلس', 'محافظ', 'کیف', 'برچسب', 'پایه نگه‌دارنده', 
-    'هولدر', 'شارژر', 'کابل', 'بند', 'گارد', 'محافظ صفحه', 'باتری'
-]
-
 def normalize_query(query):
-    """جایگزینی کلمات فارسی با معادل استاندارد"""
     q = query.lower()
     for fa, en in PERSIAN_NUMBER_MAP.items():
         q = q.replace(fa, en)
     return q
 
-def search_torob(query):
+def search_all_shops(query):
     products = []
     normalized_q = normalize_query(query)
     
     try:
-        # ارسال مستقیم عبارت نرمال‌شده به API ترب
-        url = f"https://api.torob.com/v4/base-product/search/?q={quote(normalized_q)}&page=0&size=10"
+        url = f"https://api.torob.com/v4/base-product/search/?q={quote(normalized_q)}&page=0&size=5"
         response = requests.get(url, headers=HEADERS, timeout=6)
         
         if response.status_code == 200:
             results = response.json().get('results', [])
             
             for item in results:
-                title = item.get('name1', '')
-                title_lower = title.lower()
-                
-                # ۱. فیلتر فقط برای حذف لوازم جانبی (اگر کاربر دنبال لوازم جانبی نیست)
-                is_acc_search = any(acc in query for acc in ['قاب', 'کاور', 'گلس', 'شارژر', 'کابل'])
-                if not is_acc_search and any(acc in title_lower for acc in ACCESSORY_KEYWORDS):
-                    continue
-                
+                title = item.get('name1', 'بدون عنوان')
                 price_str = item.get('price_text', 'نامشخص')
                 price = item.get('price', 0)
                 random_key = item.get('random_key', '')
@@ -58,22 +43,16 @@ def search_torob(query):
                     'shop': 'ترب (چندین فروشگاه)',
                     'link': product_url
                 })
-                
-                if len(products) >= 5:
-                    break
     except Exception as e:
-        print(f"Error Torob: {e}")
+        print(f"Error Search: {e}")
         
     return products
-
-def search_all_shops(query):
-    return search_torob(query)
 
 def format_product_message(products):
     if not products:
         return "❌ متأسفانه محصول مرتبطی یافت نشد.\nلطفاً نام محصول را دقیق‌تر وارد کنید (مثلاً: آیفون 7 پلاس)."
     
-    message = "🔍 **نتایج یافت‌شده در صدها فروشگاه:**\n\n"
+    message = "🔍 **نتایج یافت‌شده در فروشگاه‌ها:**\n\n"
     for idx, p in enumerate(products, 1):
         message += f"{idx}. **[{p['title']}]({p['link']})**\n"
         message += f"💰 قیمت: `{p['price_text']}`\n"
