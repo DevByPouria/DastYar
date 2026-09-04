@@ -58,25 +58,21 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-    # 🪙 دریافت و نمایش قیمت طلا و سکه از price_fetcher.py
+    # 🪙 دریافت و نمایش قیمت طلا و سکه
     elif data == 'gold_price':
-        await query.edit_message_text("⏳ در حال دریافت قیمت‌های به روز طلا و سکه...")
+        # ابتدا یک پیام در حال بارگذاری نشان داده می‌شود
+        await query.edit_message_text("⏳ در حال دریافت قیمت‌های به‌روز طلا و سکه...")
         
-        # فراخوانی تابع از فایل price_fetcher
-        try:
-            gold_data = price_fetcher.get_gold_and_currency_prices() # یا هر نام تابعی که در فایل price_fetcher دارید
-            # اگر تابع شما متن آماده خروجی می‌دهد:
-            if isinstance(gold_data, str):
-                gold_msg = gold_data
-            else:
-                gold_msg = price_fetcher.format_gold_message(gold_data)
-        except Exception as e:
-            gold_msg = "❌ خطایی در دریافت قیمت طلا و سکه رخ داد. لطفاً بعداً تلاش کنید."
+        # فراخوانی مستقیم تابع دریافت قیمت
+        gold_msg = price_fetcher.get_gold_prices()
 
+        # نمایش نتیجه به کاربر
         await query.edit_message_text(
             gold_msg,
-            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 به‌روزرسانی", callback_data='gold_price')],
-                                                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]]),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 به‌روزرسانی", callback_data='gold_price')],
+                [InlineKeyboardButton("🔙 بازگشت به منو", callback_data='back_to_menu')]
+            ]),
             parse_mode='Markdown'
         )
 
