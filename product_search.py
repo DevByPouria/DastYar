@@ -1,25 +1,23 @@
 import requests
 from urllib.parse import quote
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
-# هدرهای کامل برای شبیه‌سازی مرورگر واقعی جهت جلوگیری از بلاک شدن توسط ترب و باسلام
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7',
+    'Accept-Language': 'fa-IR,fa;q=0.9',
     'Referer': 'https://torob.com/'
 }
 
-def search_torob(query):
+def search_torob(query, limit=5):
     products = []
     try:
-        # ساختار جدید و معتبر API ترب
-        torob_url = f"https://api.torob.com/v4/base-product/search/?page=0&size=5&q={quote(query)}"
+        torob_url = f"https://api.torob.com/v4/base-product/search/?page=0&size={limit}&q={quote(query)}"
         response = requests.get(torob_url, headers=HEADERS, timeout=8)
         
         if response.status_code == 200:
             data = response.json()
-            results = data.get('results', [])
+            results = data.get('results', [])[:limit]
             
             for item in results:
                 title = item.get('name1') or item.get('name2') or 'بدون عنوان'
@@ -33,7 +31,6 @@ def search_torob(query):
                 else:
                     price_str = "نامشخص"
                 
-                # استخراج کلید محصول برای ساخت لینک
                 random_key = item.get('random_key', '')
                 product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
                 
@@ -43,15 +40,13 @@ def search_torob(query):
                     'link': product_url,
                     'source': 'ترب'
                 })
-        else:
-            print(f"Torob Status Code: {response.status_code}")
     except Exception as e:
         print(f"Torob Search Error: {e}")
         
     return products
 
 
-def search_digikala(query):
+def search_digikala(query, limit=5):
     products = []
     try:
         digi_url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
@@ -59,7 +54,7 @@ def search_digikala(query):
         
         if response.status_code == 200:
             data = response.json()
-            items = data.get('data', {}).get('products', [])[:5]
+            items = data.get('data', {}).get('products', [])[:limit]
             
             for item in items:
                 title = item.get('title_fa', '')
@@ -85,16 +80,15 @@ def search_digikala(query):
     return products
 
 
-def search_basalam(query):
+def search_basalam(query, limit=5):
     products = []
     try:
-        # ساختار معتبر سرویس جستجوی باسلام
-        basalam_url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size=5"
+        basalam_url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
         response = requests.get(basalam_url, headers=HEADERS, timeout=8)
         
         if response.status_code == 200:
             data = response.json()
-            items = data.get('products', [])[:5]
+            items = data.get('products', [])[:limit]
             
             for item in items:
                 title = item.get('title', 'بدون عنوان')
@@ -121,8 +115,6 @@ def search_basalam(query):
                     'link': product_url,
                     'source': 'باسلام'
                 })
-        else:
-            print(f"Basalam Status Code: {response.status_code}")
     except Exception as e:
         print(f"Basalam Search Error: {e}")
         
@@ -130,45 +122,36 @@ def search_basalam(query):
 
 
 def search_products(query):
-    products = []
-    
-    # اجرای هم‌زمان با ذخیره صریح نتایج هر بخش
+    # دریافت دقیقا ۵ تا از هر منبع
     with ThreadPoolExecutor(max_workers=3) as executor:
-        future_torob = executor.submit(search_torob, query)
-        future_digi = executor.submit(search_digikala, query)
-        future_basalam = executor.submit(search_basalam, query)
+        future_digi = executor.submit(search_digikala, query, 5)
+        future_torob = executor.submit(search_torob, query, 5)
+        future_basalam = executor.submit(search_basalam, query, 5)
         
-        # دریافت ۳ نتیجه
-        torob_res = future_torob.result()
         digi_res = future_digi.result()
+        torob_res = future_torob.result()
         basalam_res = future_basalam.result()
         
-        # افزودن به صورت یکی در میان یا ترتیبی
-        products.extend(torob_res)
-        products.extend(digi_res)
-        products.extend(basalam_res)
-
-    return products
+    # ترکیب نتایج (مجموعاً ۱۵ محصول)
+    return digi_res + torob_res + basalam_res
 
 
 def format_product_message(products):
     if not products:
-        return "❌ متأسفانه محصولی با این عنوان پیدا نشد."
+        return "❌ متأسفانه محصولی پیدا نشد."
     
-    msg = "🛒 **نتایج جستجوی کالا (ترب، دیجی‌کالا، باسلام):**\n"
-    msg += "───────────────────\n\n"
+    msg = "🛒 **نتایج جستجوی کالا (۱۵ مورد برتر):**\n\n"
     
     for idx, p in enumerate(products, 1):
         if p['source'] == 'دیجی‌کالا':
-            source_badge = "🔴 [دیجی‌کالا]"
+            badge = "🔴 [دیجی‌کالا]"
         elif p['source'] == 'ترب':
-            source_badge = "🟦 [ترب]"
+            badge = "🟦 [ترب]"
         else:
-            source_badge = "🟢 [باسلام]"
+            badge = "🟢 [باسلام]"
             
-        msg += f"{idx}. {source_badge} **{p['title']}**\n"
-        msg += f"💰 **قیمت:** {p['price']}\n"
-        msg += f"🔗 [مشاهده و خرید محصول]({p['link']})\n"
-        msg += "───────────────────\n"
+        # قالب خلاصه‌تر برای جلوگیری از تجاوز از حد مجاز کاراکتر تلگرام
+        msg += f"{idx}. {badge} [{p['title']}]({p['link']})\n"
+        msg += f"   💰 **قیمت:** {p['price']}\n\n"
         
     return msg
