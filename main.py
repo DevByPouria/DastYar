@@ -23,10 +23,15 @@ def keep_alive():
 
 keep_alive()
 
+# تنظیم سطح لاگ عمومی
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
+
+# 🤫 مخفی کردن درخواست‌های httpx که حاوی توکن تلگرام هستند
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("telegram.ext").setLevel(logging.WARNING)
 
 TOKEN = os.getenv("BOT_TOKEN")
 
