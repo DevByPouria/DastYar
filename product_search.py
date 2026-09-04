@@ -7,7 +7,6 @@ HEADERS = {
     'Accept': 'application/json'
 }
 
-# جایگزینی کلمات تلفظی با اعداد و کلمات استاندارد
 PERSIAN_NUMBER_MAP = {
     'سون': '7', 'ایت': '8', 'ناین': '9', 'تن': '10',
     'ایکس': 'x', 'پلاس': 'plus', 'پرومکس': 'pro max', 'پرو': 'pro',
@@ -20,29 +19,19 @@ ACCESSORY_KEYWORDS = [
 ]
 
 def normalize_query(query):
-    """استانداردسازی عبارت جستجو (تبدیل سون به 7 و ...)"""
+    """جایگزینی کلمات فارسی با معادل استاندارد"""
     q = query.lower()
     for fa, en in PERSIAN_NUMBER_MAP.items():
         q = q.replace(fa, en)
     return q
 
-def is_relevant(title, query_tokens):
-    """بررسی انطباق دقیق محصول با عبارت درخواستی کاربر"""
-    title_lower = title.lower()
-    # اگر کلماتی مثل 7 یا plus یا iphone در جستجو بوده، باید حتماً در عنوان هم باشند
-    for token in query_tokens:
-        if len(token) > 1 and token not in ['گوشی', 'موبایل', 'سامسونگ', 'اپل']:
-            if token not in title_lower:
-                return False
-    return True
-
 def search_torob(query):
     products = []
     normalized_q = normalize_query(query)
-    query_tokens = [t for t in re.split(r'\s+', normalized_q) if t]
     
     try:
-        url = f"https://api.torob.com/v4/base-product/search/?q={quote(normalized_q)}&page=0&size=20"
+        # ارسال مستقیم عبارت نرمال‌شده به API ترب
+        url = f"https://api.torob.com/v4/base-product/search/?q={quote(normalized_q)}&page=0&size=10"
         response = requests.get(url, headers=HEADERS, timeout=6)
         
         if response.status_code == 200:
@@ -52,13 +41,9 @@ def search_torob(query):
                 title = item.get('name1', '')
                 title_lower = title.lower()
                 
-                # ۱. فیلتر حذف لوازم جانبی
+                # ۱. فیلتر فقط برای حذف لوازم جانبی (اگر کاربر دنبال لوازم جانبی نیست)
                 is_acc_search = any(acc in query for acc in ['قاب', 'کاور', 'گلس', 'شارژر', 'کابل'])
                 if not is_acc_search and any(acc in title_lower for acc in ACCESSORY_KEYWORDS):
-                    continue
-                
-                # ۲. فیلتر انطباق دقیق (حذف گوشی‌های غیرمرتبط)
-                if not is_relevant(title, query_tokens):
                     continue
                 
                 price_str = item.get('price_text', 'نامشخص')
