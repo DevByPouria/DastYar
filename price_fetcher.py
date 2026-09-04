@@ -1,4 +1,7 @@
+import os
 import io
+import time
+import threading
 import requests
 from datetime import datetime
 import pytz
@@ -8,13 +11,17 @@ HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 }
 
+# متغیرهای حافظه موقت (Cache) برای افزایش سرعت
+CACHED_PRICES = {}
+LAST_FETCH_TIME = 0
+CACHE_TTL = 60  # اعتبار قیمت‌ها به ثانیه (۱ دقیقه)
+
 def get_current_time():
-    """محاسبه ساعت دقیق تهران"""
     tehran_tz = pytz.timezone('Asia/Tehran')
     return datetime.now(tehran_tz).strftime('%H:%M:%S')
 
-def get_all_prices():
-    """دریافت قیمت‌ها و اختصاص آیکون/فینگلیش به هر کدام"""
+def fetch_prices_from_api():
+    """دریافت داده‌ها از شبکه (مرحله کند)"""
     prices = {
         '⚜️ Gold 18k': '23,364,421', 
         '🪙 Sekke Emami': '233,500,000', 
@@ -37,7 +44,7 @@ def get_all_prices():
     }
     
     try:
-        res = requests.get("https://brsapi.ir/FreeTomanExchangeApi/Short.json", headers=HEADERS, timeout=8)
+        res = requests.get("https://brsapi.ir/FreeTomanExchangeApi/Short.json", headers=HEADERS, timeout=3)
         if res.status_code == 200:
             data = res.json()
             for item in data.get('gold', []):
@@ -54,11 +61,22 @@ def get_all_prices():
         
     return prices
 
+def get_all_prices():
+    """دریافت سریع قیمت‌ها از حافظه کش بدون معطلی شبکه"""
+    global CACHED_PRICES, LAST_FETCH_TIME
+    now = time.time()
+    
+    # اگر کش خالی است یا بیشتر از ۶۰ ثانیه گذشته، بروزرسانی کن
+    if not CACHED_PRICES or (now - LAST_FETCH_TIME) > CACHE_TTL:
+        CACHED_PRICES = fetch_prices_from_api()
+        LAST_FETCH_TIME = now
+        
+    return CACHED_PRICES
+
 def generate_price_image():
-    """تولید تصویر کارت‌ها با اعداد بزرگ‌تر و واضح"""
+    """تولید فوق‌العاده سریع تصویر"""
     prices = get_all_prices()
     
-    # ابعاد کارت‌ها کمی عریض‌تر و بلندتر شده‌اند تا عدد بزرگ‌تر را جا دهند
     cols, rows = 6, 3
     card_w, card_h = 180, 100
     pad_x, pad_y = 12, 12
@@ -68,11 +86,10 @@ def generate_price_image():
     img = Image.new('RGB', (img_w, img_h), color='#FFFFFF')
     draw = ImageDraw.Draw(img)
     
-    # بارگذاری فونت وزیر در صورت وجود برای نمایش اعداد درشت‌تر و شکیل‌تر
     font_path = os.path.join(os.path.dirname(__file__), "Vazirmatn.ttf")
     try:
         font_title = ImageFont.truetype(font_path, 16)
-        font_value = ImageFont.truetype(font_path, 20)  # سایز بزرگ‌تر برای اعداد
+        font_value = ImageFont.truetype(font_path, 20)
         font_header = ImageFont.truetype(font_path, 18)
     except:
         font_title = font_value = font_header = ImageFont.load_default()
@@ -86,22 +103,17 @@ def generate_price_image():
         x = c * card_w + (c + 1) * pad_x
         y = r * card_h + (r + 1) * pad_y + 45
         
-        # ۱. کادر عنوان (سرمه‌ای)
         draw.rounded_rectangle([x, y, x + card_w, y + 42], radius=8, fill='#135270')
-        # ۲. کادر قیمت (کرم)
         draw.rounded_rectangle([x, y + 38, x + card_w, y + card_h], radius=8, fill='#FFFDE7', outline='#135270', width=1)
         
-        # محاسبه مرکز عنوان
         bbox_t = draw.textbbox((0, 0), title, font=font_title)
         tw = bbox_t[2] - bbox_t[0]
         draw.text((x + (card_w - tw)/2, y + 10), title, fill='#FFFFFF', font=font_title)
         
-        # محاسبه مرکز عدد (بزرگ‌تر شده)
         bbox_v = draw.textbbox((0, 0), val, font=font_value)
         vw = bbox_v[2] - bbox_v[0]
         draw.text((x + (card_w - vw)/2, y + 56), val, fill='#111111', font=font_value)
 
-    # هدر بالای تصویر
     header_text = f"⚡ LIVE MARKET - {get_current_time()} (Tehran Time) ⚡"
     bbox_h = draw.textbbox((0, 0), header_text, font=font_header)
     hw = bbox_h[2] - bbox_h[0]
@@ -109,6 +121,6 @@ def generate_price_image():
 
     bio = io.BytesIO()
     bio.name = 'prices.png'
-    img.save(bio, 'PNG')
+    img.save(bio, 'PNG', optimize=True)
     bio.seek(0)
     return bio
