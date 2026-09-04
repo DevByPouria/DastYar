@@ -1,128 +1,171 @@
-import re
+import random
 import requests
-from urllib.parse import quote, unquote
+from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
+# ---------------------------------------------------------
+# لیست پراکسی‌های استخراج‌شده از متنی که فرستادید
+# ---------------------------------------------------------
+PROXIES_LIST = [
+    "http://45.131.4.93:80",
+    "http://45.131.4.227:80",
+    "http://45.131.4.115:80",
+    "http://45.131.4.91:80",
+    "http://45.131.4.34:80",
+    "http://45.131.4.47:80",
+    "http://45.131.4.154:80",
+    "http://45.131.4.219:80",
+    "http://45.131.4.16:80",
+    "http://45.131.4.176:80",
+    "http://45.131.4.190:80",
+    "http://45.131.4.232:80",
+    "http://45.131.4.168:80",
+    "http://45.131.4.131:80",
+    "http://45.131.4.221:80",
+    "http://45.131.4.204:80",
+    "http://45.131.4.186:80",
+    "http://45.131.4.97:80",
+    "http://45.131.4.181:80",
+    "http://45.131.4.166:80"
+]
+
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept-Language': 'fa,en;q=0.9'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Accept': 'application/json, text/plain, */*',
+    'Accept-Language': 'fa-IR,fa;q=0.9'
 }
 
+def get_random_proxy():
+    proxy_url = random.choice(PROXIES_LIST)
+    return {"http": proxy_url, "https": proxy_url}
+
 # ---------------------------------------------------------
-# ۱. جستجوی دیجی‌کالا (ارتباط مستقیم)
+# ۱. جستجو در دیجی‌کالا (بدون نیاز به پراکسی)
 # ---------------------------------------------------------
 def search_digikala(query, limit=5):
     products = []
     try:
         url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
-        res = requests.get(url, headers=HEADERS, timeout=8)
-        if res.status_code == 200:
-            items = res.json().get('data', {}).get('products', [])[:limit]
+        response = requests.get(url, headers=HEADERS, timeout=8)
+        
+        if response.status_code == 200:
+            data = response.json()
+            items = data.get('data', {}).get('products', [])[:limit]
+            
             for item in items:
                 title = item.get('title_fa', '')
                 price_rrp = item.get('price', {}).get('selling_price', 0)
                 price_str = f"{price_rrp // 10:,} تومان" if price_rrp > 0 else "ناموجود"
-                p_id = item.get('id', '')
+                product_id = item.get('id', '')
+                
                 products.append({
                     'title': title,
                     'price': price_str,
-                    'link': f"https://www.digikala.com/product/dk-{p_id}/",
+                    'link': f"https://www.digikala.com/product/dk-{product_id}/",
                     'source': 'دیجی‌کالا'
                 })
     except Exception as e:
-        print(f"Digikala Error: {e}")
+        print(f"Digikala Search Error: {e}")
+        
     return products
 
 # ---------------------------------------------------------
-# ۲. جستجوی ترب (از طریق موتور میانجی جهت عبور از مسدودی سرور)
+# ۲. جستجو در ترب (با چرخش روی لیست پراکسی‌ها)
 # ---------------------------------------------------------
 def search_torob(query, limit=5):
     products = []
-    try:
-        # جستجوی مستقیم نتایج ترب در html موتور جستجو
-        search_url = f"https://html.duckduckgo.com/html/?q=site:torob.com/p/+{quote(query)}"
-        res = requests.get(search_url, headers=HEADERS, timeout=10)
-        
-        if res.status_code == 200:
-            # استخراج لینک‌ها و عناوین مربوط به محصولات ترب
-            matches = re.findall(r'<a class="result__url" href="([^"]+)".*?>(.*?)</a>.*?<a class="result__snippet".*?>(.*?)</a>', res.text, re.DOTALL)
+    url = f"https://api.torob.com/v4/base-product/search/?sort=buy_box_price&page=0&size={limit}&q={quote(query)}"
+    
+    # ۳ بار تلاش با پراکسی‌های مختلف در صورت بروز خطا
+    for _ in range(3):
+        try:
+            proxies = get_random_proxy()
+            response = requests.get(url, headers=HEADERS, proxies=proxies, timeout=5)
             
-            if not matches:
-                # الگوی رزرو برای استخراج لینک‌ها
-                links = re.findall(r'https://torob\.com/p/[a-zA-Z0-9-]+/', res.text)
-                titles = re.findall(r'<a class="result__a"[^>]*>(.*?)</a>', res.text)
-                for i in range(min(len(links), limit)):
-                    clean_title = re.sub('<[^<]+?>', '', titles[i]) if i < len(titles) else query
+            if response.status_code == 200:
+                data = response.json()
+                results = data.get('results', [])[:limit]
+                
+                for item in results:
+                    title = item.get('name1') or item.get('name2') or 'بدون عنوان'
+                    price = item.get('price', 0)
+                    price_text = item.get('price_text', '')
+                    
+                    if price and isinstance(price, int) and price > 0:
+                        price_str = f"{price:,} تومان"
+                    elif price_text:
+                        price_str = price_text
+                    else:
+                        price_str = "نامشخص"
+                    
+                    random_key = item.get('random_key', '')
+                    product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
+                    
                     products.append({
-                        'title': clean_title.strip(),
-                        'price': 'مشاهده در سایت',
-                        'link': links[i],
+                        'title': title,
+                        'price': price_str,
+                        'link': product_url,
                         'source': 'ترب'
                     })
-            else:
-                for match in matches[:limit]:
-                    raw_link = match[0]
-                    title_raw = match[1]
-                    clean_title = re.sub('<[^<]+?>', '', title_raw).strip()
-                    
-                    # استخراج لینک واقعی ترب از موتور جستجو
-                    actual_link = raw_link
-                    if "uddg=" in raw_link:
-                        actual_link = unquote(raw_link.split("uddg=")[1].split("&")[0])
-                    
-                    if "torob.com/p/" in actual_link:
-                        products.append({
-                            'title': clean_title if clean_title else query,
-                            'price': 'مشاهده در سایت',
-                            'link': actual_link,
-                            'source': 'ترب'
-                        })
-    except Exception as e:
-        print(f"Torob Engine Error: {e}")
-        
-    return products[:limit]
+                break # در صورت موفقیت از حلقه خارج می‌شود
+        except Exception as e:
+            print(f"Torob Proxy Error: {e}")
+            continue
+            
+    return products
 
 # ---------------------------------------------------------
-# ۳. جستجوی باسلام (از طریق موتور میانجی)
+# ۳. جستجو در باسلام (با چرخش روی لیست پراکسی‌ها)
 # ---------------------------------------------------------
 def search_basalam(query, limit=5):
     products = []
-    try:
-        search_url = f"https://html.duckduckgo.com/html/?q=site:basalam.com/product/+{quote(query)}"
-        res = requests.get(search_url, headers=HEADERS, timeout=10)
-        
-        if res.status_code == 200:
-            links = re.findall(r'https://basalam\.com/[^/]+/product/\d+', res.text)
-            titles = re.findall(r'<a class="result__a"[^>]*>(.*?)</a>', res.text)
+    url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
+    
+    # ۳ بار تلاش با پراکسی‌های مختلف در صورت بروز خطا
+    for _ in range(3):
+        try:
+            proxies = get_random_proxy()
+            response = requests.get(url, headers=HEADERS, proxies=proxies, timeout=5)
             
-            # حذف موارد تکراری
-            unique_links = list(dict.fromkeys(links))
+            if response.status_code == 200:
+                data = response.json()
+                items = data.get('products', [])[:limit]
+                
+                for item in items:
+                    title = item.get('title', 'بدون عنوان')
+                    price_rials = item.get('price', 0)
+                    price_str = f"{price_rials // 10:,} تومان" if price_rials > 0 else "نامشخص"
+                    
+                    vendor = item.get('vendor', {})
+                    vendor_id = vendor.get('identifier', '')
+                    product_id = item.get('id', '')
+                    product_url = f"https://basalam.com/{vendor_id}/product/{product_id}" if vendor_id and product_id else "https://basalam.com"
+                    
+                    products.append({
+                        'title': title,
+                        'price': price_str,
+                        'link': product_url,
+                        'source': 'باسلام'
+                    })
+                break # در صورت موفقیت از حلقه خارج می‌شود
+        except Exception as e:
+            print(f"Basalam Proxy Error: {e}")
+            continue
             
-            for i in range(min(len(unique_links), limit)):
-                clean_title = re.sub('<[^<]+?>', '', titles[i]) if i < len(titles) else query
-                products.append({
-                    'title': clean_title.strip(),
-                    'price': 'مشاهده در سایت',
-                    'link': unique_links[i],
-                    'source': 'باسلام'
-                })
-    except Exception as e:
-        print(f"Basalam Engine Error: {e}")
-        
-    return products[:limit]
+    return products
 
 # ---------------------------------------------------------
 # ۴. فراخوانی هم‌زمان
 # ---------------------------------------------------------
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
-        f_digi = executor.submit(search_digikala, query, 5)
-        f_torob = executor.submit(search_torob, query, 5)
-        f_basalam = executor.submit(search_basalam, query, 5)
+        future_digi = executor.submit(search_digikala, query, 5)
+        future_torob = executor.submit(search_torob, query, 5)
+        future_basalam = executor.submit(search_basalam, query, 5)
         
-        digi_res = f_digi.result()
-        torob_res = f_torob.result()
-        basalam_res = f_basalam.result()
+        digi_res = future_digi.result()
+        torob_res = future_torob.result()
+        basalam_res = future_basalam.result()
         
     return {
         'digi': digi_res,
@@ -131,7 +174,7 @@ def search_products(query):
     }
 
 # ---------------------------------------------------------
-# ۵. ساخت پیام‌های خروجی تلگرام
+# ۵. ساخت پیام‌های خروجی
 # ---------------------------------------------------------
 def format_product_messages(results_dict):
     messages = []
@@ -151,7 +194,7 @@ def format_product_messages(results_dict):
     if torob_items:
         msg = "🟦 **نتایج جستجو در ترب (۵ مورد برتر):**\n───────────────────\n"
         for idx, p in enumerate(torob_items, 1):
-            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید در ترب]({p['link']})\n\n"
+            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید]({p['link']})\n\n"
         messages.append(msg)
     else:
         messages.append("🟦 **ترب:** متأسفانه محصولی یافت نشد.")
@@ -161,7 +204,7 @@ def format_product_messages(results_dict):
     if basalam_items:
         msg = "🟢 **نتایج جستجو در باسلام (۵ مورد برتر):**\n───────────────────\n"
         for idx, p in enumerate(basalam_items, 1):
-            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید در باسلام]({p['link']})\n\n"
+            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید]({p['link']})\n\n"
         messages.append(msg)
     else:
         messages.append("🟢 **باسلام:** متأسفانه محصولی یافت نشد.")
