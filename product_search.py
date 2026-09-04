@@ -1,33 +1,9 @@
-import random
 import requests
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
-# ---------------------------------------------------------
-# لیست پراکسی‌های استخراج‌شده از متنی که فرستادید
-# ---------------------------------------------------------
-PROXIES_LIST = [
-    "http://45.131.4.93:80",
-    "http://45.131.4.227:80",
-    "http://45.131.4.115:80",
-    "http://45.131.4.91:80",
-    "http://45.131.4.34:80",
-    "http://45.131.4.47:80",
-    "http://45.131.4.154:80",
-    "http://45.131.4.219:80",
-    "http://45.131.4.16:80",
-    "http://45.131.4.176:80",
-    "http://45.131.4.190:80",
-    "http://45.131.4.232:80",
-    "http://45.131.4.168:80",
-    "http://45.131.4.131:80",
-    "http://45.131.4.221:80",
-    "http://45.131.4.204:80",
-    "http://45.131.4.186:80",
-    "http://45.131.4.97:80",
-    "http://45.131.4.181:80",
-    "http://45.131.4.166:80"
-]
+# کلید API خود را از سایت ScraperAPI اینجا بگذارید
+SCRAPER_API_KEY = "d9cdbb7ec5b0a6b5342a633f0be9f260"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -35,12 +11,8 @@ HEADERS = {
     'Accept-Language': 'fa-IR,fa;q=0.9'
 }
 
-def get_random_proxy():
-    proxy_url = random.choice(PROXIES_LIST)
-    return {"http": proxy_url, "https": proxy_url}
-
 # ---------------------------------------------------------
-# ۱. جستجو در دیجی‌کالا (بدون نیاز به پراکسی)
+# ۱. دیجی‌کالا (بدون نیاز به ScraperAPI)
 # ---------------------------------------------------------
 def search_digikala(query, limit=5):
     products = []
@@ -70,92 +42,97 @@ def search_digikala(query, limit=5):
     return products
 
 # ---------------------------------------------------------
-# ۲. جستجو در ترب (با چرخش روی لیست پراکسی‌ها)
+# ۲. ترب با ScraperAPI
 # ---------------------------------------------------------
 def search_torob(query, limit=5):
     products = []
-    url = f"https://api.torob.com/v4/base-product/search/?sort=buy_box_price&page=0&size={limit}&q={quote(query)}"
-    
-    # ۳ بار تلاش با پراکسی‌های مختلف در صورت بروز خطا
-    for _ in range(3):
-        try:
-            proxies = get_random_proxy()
-            response = requests.get(url, headers=HEADERS, proxies=proxies, timeout=5)
+    try:
+        target_url = f"https://api.torob.com/v4/base-product/search/?sort=buy_box_price&page=0&size={limit}&q={quote(query)}"
+        
+        # اگر کلید ست نشده بود مستقیم بزنه، اگر ست شده بود از ScraperAPI رد کنه
+        if SCRAPER_API_KEY and SCRAPER_API_KEY != "YOUR_SCRAPER_API_KEY":
+            api_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={quote(target_url)}&country_code=ir"
+        else:
+            api_url = target_url
+
+        response = requests.get(api_url, timeout=12)
+        
+        if response.status_code == 200:
+            data = response.json()
+            results = data.get('results', [])[:limit]
             
-            if response.status_code == 200:
-                data = response.json()
-                results = data.get('results', [])[:limit]
+            for item in results:
+                title = item.get('name1') or item.get('name2') or 'بدون عنوان'
+                price = item.get('price', 0)
+                price_text = item.get('price_text', '')
                 
-                for item in results:
-                    title = item.get('name1') or item.get('name2') or 'بدون عنوان'
-                    price = item.get('price', 0)
-                    price_text = item.get('price_text', '')
-                    
-                    if price and isinstance(price, int) and price > 0:
-                        price_str = f"{price:,} تومان"
-                    elif price_text:
-                        price_str = price_text
-                    else:
-                        price_str = "نامشخص"
-                    
-                    random_key = item.get('random_key', '')
-                    product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
-                    
-                    products.append({
-                        'title': title,
-                        'price': price_str,
-                        'link': product_url,
-                        'source': 'ترب'
-                    })
-                break # در صورت موفقیت از حلقه خارج می‌شود
-        except Exception as e:
-            print(f"Torob Proxy Error: {e}")
-            continue
-            
+                if price and isinstance(price, int) and price > 0:
+                    price_str = f"{price:,} تومان"
+                elif price_text:
+                    price_str = price_text
+                else:
+                    price_str = "نامشخص"
+                
+                random_key = item.get('random_key', '')
+                product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
+                
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'ترب'
+                })
+        else:
+            print(f"Torob HTTP Error Status: {response.status_code}")
+    except Exception as e:
+        print(f"Torob ScraperAPI Error: {e}")
+        
     return products
 
 # ---------------------------------------------------------
-# ۳. جستجو در باسلام (با چرخش روی لیست پراکسی‌ها)
+# ۳. باسلام با ScraperAPI
 # ---------------------------------------------------------
 def search_basalam(query, limit=5):
     products = []
-    url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
-    
-    # ۳ بار تلاش با پراکسی‌های مختلف در صورت بروز خطا
-    for _ in range(3):
-        try:
-            proxies = get_random_proxy()
-            response = requests.get(url, headers=HEADERS, proxies=proxies, timeout=5)
+    try:
+        target_url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
+        
+        if SCRAPER_API_KEY and SCRAPER_API_KEY != "YOUR_SCRAPER_API_KEY":
+            api_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={quote(target_url)}&country_code=ir"
+        else:
+            api_url = target_url
+
+        response = requests.get(api_url, timeout=12)
+        
+        if response.status_code == 200:
+            data = response.json()
+            items = data.get('products', [])[:limit]
             
-            if response.status_code == 200:
-                data = response.json()
-                items = data.get('products', [])[:limit]
+            for item in items:
+                title = item.get('title', 'بدون عنوان')
+                price_rials = item.get('price', 0)
+                price_str = f"{price_rials // 10:,} تومان" if price_rials > 0 else "نامشخص"
                 
-                for item in items:
-                    title = item.get('title', 'بدون عنوان')
-                    price_rials = item.get('price', 0)
-                    price_str = f"{price_rials // 10:,} تومان" if price_rials > 0 else "نامشخص"
-                    
-                    vendor = item.get('vendor', {})
-                    vendor_id = vendor.get('identifier', '')
-                    product_id = item.get('id', '')
-                    product_url = f"https://basalam.com/{vendor_id}/product/{product_id}" if vendor_id and product_id else "https://basalam.com"
-                    
-                    products.append({
-                        'title': title,
-                        'price': price_str,
-                        'link': product_url,
-                        'source': 'باسلام'
-                    })
-                break # در صورت موفقیت از حلقه خارج می‌شود
-        except Exception as e:
-            print(f"Basalam Proxy Error: {e}")
-            continue
-            
+                vendor = item.get('vendor', {})
+                vendor_id = vendor.get('identifier', '')
+                product_id = item.get('id', '')
+                product_url = f"https://basalam.com/{vendor_id}/product/{product_id}" if vendor_id and product_id else "https://basalam.com"
+                
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'باسلام'
+                })
+        else:
+            print(f"Basalam HTTP Error Status: {response.status_code}")
+    except Exception as e:
+        print(f"Basalam ScraperAPI Error: {e}")
+        
     return products
 
 # ---------------------------------------------------------
-# ۴. فراخوانی هم‌زمان
+# ۴. اجرای هم‌زمان
 # ---------------------------------------------------------
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
@@ -174,12 +151,11 @@ def search_products(query):
     }
 
 # ---------------------------------------------------------
-# ۵. ساخت پیام‌های خروجی
+# ۵. فرمت پیام‌ها
 # ---------------------------------------------------------
 def format_product_messages(results_dict):
     messages = []
     
-    # پیام دیجی‌کالا
     digi_items = results_dict.get('digi', [])
     if digi_items:
         msg = "🔴 **نتایج جستجو در دیجی‌کالا (۵ مورد برتر):**\n───────────────────\n"
@@ -189,7 +165,6 @@ def format_product_messages(results_dict):
     else:
         messages.append("🔴 **دیجی‌کالا:** متأسفانه محصولی یافت نشد.")
 
-    # پیام ترب
     torob_items = results_dict.get('torob', [])
     if torob_items:
         msg = "🟦 **نتایج جستجو در ترب (۵ مورد برتر):**\n───────────────────\n"
@@ -199,7 +174,6 @@ def format_product_messages(results_dict):
     else:
         messages.append("🟦 **ترب:** متأسفانه محصولی یافت نشد.")
 
-    # پیام باسلام
     basalam_items = results_dict.get('basalam', [])
     if basalam_items:
         msg = "🟢 **نتایج جستجو در باسلام (۵ مورد برتر):**\n───────────────────\n"
