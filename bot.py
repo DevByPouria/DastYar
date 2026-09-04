@@ -187,33 +187,34 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]])
         )
     
-    # ===== قیمت‌ها =====
+   # ===== بخش نمایش تصویر قیمت‌ها =====
     elif data == 'prices':
         await query.edit_message_text("💎 قیمت‌های لحظه‌ای بازار", reply_markup=get_price_menu())
-    
-    elif data in ['price_gold', 'price_dollar', 'price_coin']:
-        price_data = prices.get_all_prices()
-        key = {'price_gold': 'gold', 'price_dollar': 'dollar', 'price_coin': 'coin'}[data]
-        emoji = {'gold': '⚜️', 'dollar': '💵', 'coin': '🪙'}[key]
-        name = {'gold': 'طلا (گرم ۱۸)', 'dollar': 'دلار', 'coin': 'سکه امامی'}[key]
-        price = price_data.get(key, 0)
-        await query.edit_message_text(
-            f"{emoji} {name}\n\n"
-            f"💰 قیمت: {price:,} تومان\n"
-            f"🕐 {prices.get_current_time()}",
-            reply_markup=InlineKeyboardMarkup([
-                [InlineKeyboardButton("🔄 بروزرسانی", callback_data=data)],
-                [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
-            ])
+
+    elif data in ['price_gold', 'price_dollar', 'price_coin', 'price_all', 'refresh_prices']:
+        # حذف پیام متنی قبلی برای ارسال عکس جدید
+        await query.message.delete()
+        
+        status_msg = await context.bot.send_message(
+            chat_id=query.message.chat_id, 
+            text="⏳ در حال تولید تصویر قیمت‌ها..."
         )
-    
-    elif data in ['price_all', 'refresh_prices']:
-        price_data = prices.get_all_prices()
-        await query.edit_message_text(
-            prices.format_price_message(price_data),
+        
+        # تولید عکس جدول قیمت‌ها
+        photo_bytes = prices.generate_price_image()
+        
+        # حذف پیام در حال بارگذاری
+        await status_msg.delete()
+        
+        # ارسال عکس
+        await context.bot.send_photo(
+            chat_id=query.message.chat_id,
+            photo=photo_bytes,
+            caption="💎 **تابلو قیمت‌های زنده بازار**",
+            parse_mode='Markdown',
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔄 بروزرسانی", callback_data='refresh_prices')],
-                [InlineKeyboardButton("🔙 بازگشت", callback_data='prices')]
+                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
             ])
         )
     
@@ -259,7 +260,12 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ===== بازگشت =====
     elif data == 'back_to_menu':
-        await query.edit_message_text("👋 به منوی اصلی برگشتی.", reply_markup=get_main_menu())
+        await query.message.delete()
+        await context.bot.send_message(
+            chat_id=query.message.chat_id,
+            text="👋 به منوی اصلی برگشتی.",
+            reply_markup=get_main_menu()
+        )
         context.user_data['state'] = None
 
 # ========== هندلر شماره تلفن ==========
