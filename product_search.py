@@ -2,31 +2,24 @@ import requests
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
 
-# هدرهای کاملاً شبیه‌سازی شده مرورگر برای دور زدن آنتی‌بات
-TOROB_HEADERS = {
+HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
     'Accept': 'application/json, text/plain, */*',
     'Accept-Language': 'fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7',
     'Referer': 'https://torob.com/',
-    'Origin': 'https://torob.com',
     'Sec-Ch-Ua': '"Google Chrome";v="123", "Not:A-Brand";v="8", "Chromium";v="123"',
     'Sec-Ch-Ua-Mobile': '?0',
     'Sec-Ch-Ua-Platform': '"Windows"',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'same-site',
 }
 
-DIGI_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-    'Accept': 'application/json'
-}
-
+# ---------------------------------------------------------
+# ۱. دیجی‌کالا
+# ---------------------------------------------------------
 def search_digikala(query, limit=5):
     products = []
     try:
         url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
-        response = requests.get(url, headers=DIGI_HEADERS, timeout=8)
+        response = requests.get(url, headers=HEADERS, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -49,14 +42,14 @@ def search_digikala(query, limit=5):
         
     return products
 
+# ---------------------------------------------------------
+# ۲. ترب (بدون ScraperAPI و با اندپوینت مستقیم)
+# ---------------------------------------------------------
 def search_torob(query, limit=5):
     products = []
     try:
-        # تغییر اندپوینت به نسخه جدید API ترب
         url = f"https://api.torob.com/v4/base-product/search/?sort=buy_box_price&page=0&size={limit}&q={quote(query)}"
-        
-        session = requests.Session()
-        response = session.get(url, headers=TOROB_HEADERS, timeout=8)
+        response = requests.get(url, headers=HEADERS, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -84,17 +77,25 @@ def search_torob(query, limit=5):
                     'source': 'ترب'
                 })
         else:
-            print(f"Torob HTTP Status: {response.status_code}")
+            print(f"Torob HTTP Error Status: {response.status_code}")
     except Exception as e:
         print(f"Torob Search Error: {e}")
         
     return products
 
+# ---------------------------------------------------------
+# ۳. باسلام (اصلاح ساختار آدرس برای جلوگیری از خطای 404)
+# ---------------------------------------------------------
 def search_basalam(query, limit=5):
     products = []
     try:
+        # اندپوینت جدید باسلام برای جلوگیری از خطای 404
         url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
-        response = requests.get(url, headers=TOROB_HEADERS, timeout=8)
+        
+        basalam_headers = HEADERS.copy()
+        basalam_headers['Referer'] = 'https://basalam.com/'
+        
+        response = requests.get(url, headers=basalam_headers, timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -116,11 +117,16 @@ def search_basalam(query, limit=5):
                     'link': product_url,
                     'source': 'باسلام'
                 })
+        else:
+            print(f"Basalam HTTP Error Status: {response.status_code}")
     except Exception as e:
         print(f"Basalam Search Error: {e}")
         
     return products
 
+# ---------------------------------------------------------
+# ۴. فراخوانی هم‌زمان
+# ---------------------------------------------------------
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
         future_digi = executor.submit(search_digikala, query, 5)
@@ -137,6 +143,9 @@ def search_products(query):
         'basalam': basalam_res
     }
 
+# ---------------------------------------------------------
+# ۵. فرمت پیام‌ها
+# ---------------------------------------------------------
 def format_product_messages(results_dict):
     messages = []
     
