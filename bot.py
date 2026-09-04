@@ -274,11 +274,73 @@ async def handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("❌ لطفاً شماره خودت رو ارسال کن.")
 
-# ========== هندلر متن ==========
+# ========== هندلر متن (نسخه بروزرسانی شده برای لینک‌های واقعی) ==========
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
     user_id = update.effective_user.id
     state = context.user_data.get('state')
+    
+    # ۱. ثبت هزینه
+    if state == 'waiting_expense':
+        try:
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "دستی", "expense")
+            await update.message.reply_text(f"✅ هزینه {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
+            context.user_data['state'] = None
+        except:
+            await update.message.reply_text("❌ لطفاً مبلغ را به صورت عدد وارد کنید!")
+    
+    # ۲. ثبت درآمد
+    elif state == 'waiting_income':
+        try:
+            amount = int(text.replace(',', ''))
+            db.add_transaction(user_id, amount, "عمومی", "دستی", "income")
+            await update.message.reply_text(f"✅ درآمد {amount:,} تومانی ثبت شد.", reply_markup=get_main_menu())
+            context.user_data['state'] = None
+        except:
+            await update.message.reply_text("❌ لطفاً مبلغ را به صورت عدد وارد کنید!")
+    
+    # ۳. جستجوی عمومی محصولات (با داده واقعی و لینک Markdown)
+    elif state == 'waiting_search':
+        await update.message.reply_text("⏳ در حال دریافت اطلاعات واقعی از دیجیکالا...")
+        products = search.search_all_shops(text)
+        await update.message.reply_text(
+            search.format_product_message(products),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 دوباره", callback_data='search_product')],
+                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
+            ]),
+            parse_mode='Markdown',
+            disable_web_page_preview=True
+        )
+        context.user_data['state'] = None
+    
+    # ۴. جستجوی پیشرفته محصولات (با داده واقعی و لینک Markdown)
+    elif state == 'waiting_search_advanced':
+        category = context.user_data.get('search_category', '')
+        names = {
+            'phone': 'گوشی', 'laptop': 'لپ‌تاپ', 'watch': 'ساعت', 'headphone': 'هدفون',
+            'camera': 'دوربین', 'speaker': 'اسپیکر', 'appliance': 'لوازم خانگی',
+            'clothing': 'پوشاک', 'book': 'کتاب'
+        }
+        category_name = names.get(category, 'محصولات')
+        await update.message.reply_text(f"⏳ در حال جستجوی واقعی در دسته‌بندی {category_name}...")
+        
+        products = search.search_all_shops(f"{text} {category_name}")
+        await update.message.reply_text(
+            search.format_product_message(products),
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 دوباره", callback_data='advanced_search')],
+                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]
+            ]),
+            parse_mode='Markdown',
+            disable_web_page_preview=True
+        )
+        context.user_data['state'] = None
+        context.user_data['search_category'] = None
+    
+    else:
+        await update.message.reply_text("🔹 لطفاً از دکمه‌های منو استفاده کنید.", reply_markup=get_main_menu())
     
     # ===== ثبت هزینه =====
     if state == 'waiting_expense':
