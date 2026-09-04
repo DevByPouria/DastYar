@@ -122,7 +122,6 @@ def search_basalam(query, limit=5):
 
 
 def search_products(query):
-    # دریافت دقیقا ۵ تا از هر منبع
     with ThreadPoolExecutor(max_workers=3) as executor:
         future_digi = executor.submit(search_digikala, query, 5)
         future_torob = executor.submit(search_torob, query, 5)
@@ -132,26 +131,44 @@ def search_products(query):
         torob_res = future_torob.result()
         basalam_res = future_basalam.result()
         
-    # ترکیب نتایج (مجموعاً ۱۵ محصول)
-    return digi_res + torob_res + basalam_res
+    return {
+        'digi': digi_res,
+        'torob': torob_res,
+        'basalam': basalam_res
+    }
 
 
-def format_product_message(products):
-    if not products:
-        return "❌ متأسفانه محصولی پیدا نشد."
+def format_product_messages(results_dict):
+    messages = []
     
-    msg = "🛒 **نتایج جستجوی کالا (۱۵ مورد برتر):**\n\n"
-    
-    for idx, p in enumerate(products, 1):
-        if p['source'] == 'دیجی‌کالا':
-            badge = "🔴 [دیجی‌کالا]"
-        elif p['source'] == 'ترب':
-            badge = "🟦 [ترب]"
-        else:
-            badge = "🟢 [باسلام]"
-            
-        # قالب خلاصه‌تر برای جلوگیری از تجاوز از حد مجاز کاراکتر تلگرام
-        msg += f"{idx}. {badge} [{p['title']}]({p['link']})\n"
-        msg += f"   💰 **قیمت:** {p['price']}\n\n"
-        
-    return msg
+    # 1. پیام دیجی‌کالا
+    digi_items = results_dict.get('digi', [])
+    if digi_items:
+        msg = "🔴 **نتایج جستجو در دیجی‌کالا (۵ مورد برتر):**\n───────────────────\n"
+        for idx, p in enumerate(digi_items, 1):
+            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید]({p['link']})\n\n"
+        messages.append(msg)
+    else:
+        messages.append("🔴 **دیجی‌کالا:** متأسفانه محصولی یافت نشد.")
+
+    # 2. پیام ترب
+    torob_items = results_dict.get('torob', [])
+    if torob_items:
+        msg = "🟦 **نتایج جستجو در ترب (۵ مورد برتر):**\n───────────────────\n"
+        for idx, p in enumerate(torob_items, 1):
+            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید]({p['link']})\n\n"
+        messages.append(msg)
+    else:
+        messages.append("🟦 **ترب:** متأسفانه محصولی یافت نشد.")
+
+    # 3. پیام باسلام
+    basalam_items = results_dict.get('basalam', [])
+    if basalam_items:
+        msg = "🟢 **نتایج جستجو در باسلام (۵ مورد برتر):**\n───────────────────\n"
+        for idx, p in enumerate(basalam_items, 1):
+            msg += f"{idx}. **{p['title']}**\n💰 **قیمت:** {p['price']}\n🔗 [مشاهده و خرید]({p['link']})\n\n"
+        messages.append(msg)
+    else:
+        messages.append("🟢 **باسلام:** متأسفانه محصولی یافت نشد.")
+
+    return messages
