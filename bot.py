@@ -5,6 +5,7 @@ from telegram.ext import Application, CommandHandler, CallbackQueryHandler, Mess
 
 import database as db
 import product_search as search
+import price_fetcher  # 👈 اتصال فایل دریافت قیمت طلا و سکه
 
 # پیکربندی لاگ‌ها
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -12,7 +13,9 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 # کیبوردهای اصلی
 def get_main_menu():
     keyboard = [
-        [InlineKeyboardButton("🛍️ جستجوی محصول", callback_data='search_product')],
+        [InlineKeyboardButton("🛍️ جستجوی محصول", callback_data='search_product'),
+         InlineKeyboardButton("🪙 قیمت طلا و سکه", callback_data='gold_price')],  # 👈 دکمه طلا و سکه
+        
         [InlineKeyboardButton("📋 لیست خرید من (Wishlist)", callback_data='wishlist_menu')],
         [InlineKeyboardButton("❓ راهنما و پشتیبانی", callback_data='help_support')]
     ]
@@ -31,8 +34,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['state'] = None
     welcome_text = (
         "سلام! 👋 به **دستیار هوشمند خرید** خوش آمدید.\n\n"
-        "من به شما کمک می‌کنم ارزان‌ترین قیمت محصولات را در فروشگاه‌ها پیدا کنید "
-        "و لیست خرید خود را مدیریت کنید."
+        "من به شما کمک می‌کنم ارزان‌ترین قیمت محصولات را پیدا کنید، "
+        "از قیمت لحظه‌ای طلا و سکه باخبر شوید و لیست خرید خود را مدیریت کنید."
     )
     await update.message.reply_text(welcome_text, reply_markup=get_main_menu(), parse_mode='Markdown')
 
@@ -52,6 +55,28 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             "🛍️ **جستجوی محصولات**\n\n🔹 لطفاً نام محصول مورد نظرتان را بفرستید (مثال: گوشی آیفون 13، لپ تاپ ایسوس):",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]]),
+            parse_mode='Markdown'
+        )
+
+    # 🪙 دریافت و نمایش قیمت طلا و سکه از price_fetcher.py
+    elif data == 'gold_price':
+        await query.edit_message_text("⏳ در حال دریافت قیمت‌های به روز طلا و سکه...")
+        
+        # فراخوانی تابع از فایل price_fetcher
+        try:
+            gold_data = price_fetcher.get_gold_and_currency_prices() # یا هر نام تابعی که در فایل price_fetcher دارید
+            # اگر تابع شما متن آماده خروجی می‌دهد:
+            if isinstance(gold_data, str):
+                gold_msg = gold_data
+            else:
+                gold_msg = price_fetcher.format_gold_message(gold_data)
+        except Exception as e:
+            gold_msg = "❌ خطایی در دریافت قیمت طلا و سکه رخ داد. لطفاً بعداً تلاش کنید."
+
+        await query.edit_message_text(
+            gold_msg,
+            reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔄 به‌روزرسانی", callback_data='gold_price')],
+                                                [InlineKeyboardButton("🔙 بازگشت", callback_data='back_to_menu')]]),
             parse_mode='Markdown'
         )
 
@@ -103,13 +128,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
 
     if state == 'waiting_search':
-        # ارسال پیام موقت
         status_msg = await update.message.reply_text("⏳ در حال جستجو در فروشگاه‌ها...")
-        
-        # دریافت نتایج
         products = search.search_all_shops(text)
         
-        # ویرایش همان پیام قبلی (به جای ارسال پیام جدید)
         await status_msg.edit_text(
             search.format_product_message(products),
             reply_markup=InlineKeyboardMarkup([
@@ -121,18 +142,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         context.user_data['state'] = None
     else:
-        # پاسخ به پیام‌های متفرقه
         await update.message.reply_text(
             "لطفاً از دکمه‌های منو استفاده کنید یا روی '🛍️ جستجوی محصول' بزنید:",
             reply_markup=get_main_menu()
         )
 
 def main():
-    # ساخت دیتابیس
     db.init_db()
-    
-    # دریافت توکن از متغیرهای محیطی Render
-    TOKEN = os.getenv("BOT_TOKEN", "توکن_ربات_شما")
+    TOKEN = os.getenv("BOT_TOKEN", "123456789:YOUR_ACTUAL_BOT_TOKEN")
     
     application = Application.builder().token(TOKEN).build()
 
