@@ -1,56 +1,52 @@
-import os
 import io
 import requests
 from datetime import datetime
 import pytz
 from PIL import Image, ImageDraw, ImageFont
-import arabic_reshaper
-from bidi.algorithm import get_display
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 }
 
 def get_current_time():
+    """محاسبه ساعت دقیق تهران"""
     tehran_tz = pytz.timezone('Asia/Tehran')
     return datetime.now(tehran_tz).strftime('%H:%M:%S')
 
-def reshape_text(text):
-    if not text:
-        return ""
-    reshaped_text = arabic_reshaper.reshape(str(text))
-    return get_display(reshaped_text)
-
 def get_all_prices():
+    """دریافت قیمت‌ها و نگاشت به عناوین انگلیسی/فینگلیش"""
     prices = {
-        'انس طلا': '4477/60', 'مثقال ۱۷': '101,210,000', 'گرم ۱۸': '23,364,421',
-        'سکه امامی': '233,500,000', 'سکه نیم': '119,500,000', 'سکه ربع': '64,500,000',
-        'نقره(اونس)': '66/91', 'شمش گرمی': '34,933,391', 'بیت کوین': '81,174/1',
-        'ارزش سکه': '228,026,130', 'نفت': '95/70', 'تتر': '221,599',
-        'سکه پارسیان': '25,116,752', 'سکه قدیم': '230,500,000', 'گرم خرید': '23,052,895',
-        'لیر ترکیه': '4,640', 'ریال عمان': '579,000', 'اتریوم': '2506/23'
+        '⚜️ Gold 18K': '23,364,421', '🪙 Sekke Emami': '233,500,000', '💵 USD / Tether': '221,599',
+        '⚜️ Mesghal 17': '101,210,000', '🪙 Sekke Nim': '119,500,000', '🪙 Sekke Rob': '64,500,000',
+        '🌐 Ounce Gold': '4,477/60', '🥈 Ounce Silver': '66/91', '🪙 Sekke Ghadim': '230,500,000',
+        '🪙 Sekke Parsian': '25,116,752', '🪙 Shmesh Grami': '34,933,391', '📊 Value Sekke': '228,026,130',
+        '₿ Bitcoin': '81,174/1', '💎 Ethereum': '2506/23', '🛢️ Oil': '95/70',
+        '🇹🇷 TRY (Lir)': '4,640', '🇴🇲 OMR (Rial)': '579,000', '⚜️ Gold Buy': '23,052,895'
     }
+    
     try:
         res = requests.get("https://brsapi.ir/FreeTomanExchangeApi/Short.json", headers=HEADERS, timeout=8)
         if res.status_code == 200:
             data = res.json()
             for item in data.get('gold', []):
                 if '18' in item.get('name', ''):
-                    prices['گرم ۱۸'] = f"{int(item.get('price', 0)):,}"
+                    prices['⚜️ Gold 18K'] = f"{int(item.get('price', 0)):,}"
             for item in data.get('currency', []):
                 if 'دلار' in item.get('name', ''):
-                    prices['تتر'] = f"{int(item.get('price', 0)):,}"
+                    prices['💵 USD / Tether'] = f"{int(item.get('price', 0)):,}"
             for item in data.get('coin', []):
                 if 'امامی' in item.get('name', ''):
-                    prices['سکه امامی'] = f"{int(item.get('price', 0)):,}"
+                    prices['🪙 Sekke Emami'] = f"{int(item.get('price', 0)):,}"
     except Exception as e:
         print(f"Error fetching API: {e}")
         
     return prices
 
 def generate_price_image():
+    """تولید تصویر جدول قیمت‌ها با فونت انگلیسی استاندارد"""
     prices = get_all_prices()
     
+    # ابعاد کارت‌ها و تصویر
     cols, rows = 6, 3
     card_w, card_h = 160, 90
     pad_x, pad_y = 10, 10
@@ -60,12 +56,8 @@ def generate_price_image():
     img = Image.new('RGB', (img_w, img_h), color='#FFFFFF')
     draw = ImageDraw.Draw(img)
     
-    font_path = os.path.join(os.path.dirname(__file__), "Vazirmatn.ttf")
-    try:
-        font_title = ImageFont.truetype(font_path, 15)
-        font_value = ImageFont.truetype(font_path, 16)
-    except Exception as e:
-        font_title = font_value = ImageFont.load_default()
+    # استفاده از فونت استاندارد پیش‌فرض برای انگلیسی (بدون نیاز به دانلود فونت)
+    font_title = font_value = ImageFont.load_default()
 
     items = list(prices.items())
     
@@ -76,25 +68,28 @@ def generate_price_image():
         x = c * card_w + (c + 1) * pad_x
         y = r * card_h + (r + 1) * pad_y + 35
         
+        # ۱. رسم کادر بالای کارت (سرمه‌ای)
         draw.rounded_rectangle([x, y, x + card_w, y + 40], radius=6, fill='#135270')
+        # ۲. رسم کادر پایین کارت (کرم)
         draw.rounded_rectangle([x, y + 35, x + card_w, y + card_h], radius=6, fill='#FFFDE7', outline='#135270', width=1)
         
-        t_text = reshape_text(title)
-        bbox_t = draw.textbbox((0, 0), t_text, font=font_title)
+        # محاسبه وسط‌چین بودن عنوان انگلیسی
+        bbox_t = draw.textbbox((0, 0), title, font=font_title)
         tw = bbox_t[2] - bbox_t[0]
-        draw.text((x + (card_w - tw)/2, y + 8), t_text, fill='#FFFFFF', font=font_title)
+        draw.text((x + (card_w - tw)/2, y + 12), title, fill='#FFFFFF', font=font_title)
         
-        v_text = reshape_text(val)
-        bbox_v = draw.textbbox((0, 0), v_text, font=font_value)
+        # محاسبه وسط‌چین بودن مقدار قیمت
+        bbox_v = draw.textbbox((0, 0), val, font=font_value)
         vw = bbox_v[2] - bbox_v[0]
-        draw.text((x + (card_w - vw)/2, y + 50), v_text, fill='#111111', font=font_value)
+        draw.text((x + (card_w - vw)/2, y + 55), val, fill='#111111', font=font_value)
 
-    header_raw = f"تابلو قیمت‌های لحظه‌ای بازار - {get_current_time()}"
-    header_text = reshape_text(header_raw)
+    # عنوان بالای تصویر
+    header_text = f"LIVE MARKET PRICES - {get_current_time()} (Tehran Time)"
     bbox_h = draw.textbbox((0, 0), header_text, font=font_title)
     hw = bbox_h[2] - bbox_h[0]
-    draw.text(((img_w - hw)/2, 8), header_text, fill='#135270', font=font_title)
+    draw.text(((img_w - hw)/2, 10), header_text, fill='#135270', font=font_title)
 
+    # خروجی تصویر به RAM
     bio = io.BytesIO()
     bio.name = 'prices.png'
     img.save(bio, 'PNG')
