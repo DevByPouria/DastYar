@@ -1,8 +1,10 @@
 python-telegram-bot==20.6
 Pillow
-jdatetime
-matplotlib
+arabic-reshaper
+python-bidi
+pytz
 requests
 beautifulsoup4
 lxml
-pytz
+jdatetime
+matplotlib
