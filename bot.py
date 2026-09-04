@@ -308,9 +308,14 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     # ۳. جستجوی عمومی محصولات (با داده واقعی و لینک Markdown)
     elif state == 'waiting_search':
-        await update.message.reply_text("⏳ در حال دریافت اطلاعات واقعی از دیجیکالا...")
+        # ارسال پیام اولیه و ذخیره آن در متغیر status_msg
+        status_msg = await update.message.reply_text("⏳ در حال جستجو در صدها فروشگاه...")
+        
+        # دریافت نتایج از موتور جستجو
         products = search.search_all_shops(text)
-        await update.message.reply_text(
+        
+        # ویرایش همان پیام قبلی (به جای ارسال پیام جدید)
+        await status_msg.edit_text(
             search.format_product_message(products),
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("🔄 دوباره", callback_data='search_product')],
