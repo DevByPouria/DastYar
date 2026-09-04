@@ -1,70 +1,81 @@
 import requests
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-}
-
 def search_products(query):
     products = []
     
-    # ۱. جستجو در دیجی‌کالا (مناسب برای سرورهای خارج از کشور)
+    # ---------------------------------------------------------
+    # ۱. جستجو در ترب (Torob)
+    # ---------------------------------------------------------
     try:
-        url_dk = f"https://api.digikala.com/v1/search/?q={query}"
-        res = requests.get(url_dk, headers=HEADERS, timeout=7)
-        if res.status_code == 200:
-            data = res.json()
-            items = data.get('data', {}).get('products', [])
-            for item in items[:5]:
-                title = item.get('title_fa')
-                price_data = item.get('price', {})
-                price_toman = int(price_data.get('selling_price', 0) / 10) if price_data.get('selling_price') else 0
-                uri = item.get('url', {}).get('uri', '')
-                product_url = f"https://www.digikala.com{uri}" if uri else "https://www.digikala.com"
-                
-                if title:
-                    products.append({
-                        'title': title,
-                        'price': price_toman,
-                        'link': product_url,
-                        'source': 'دیجی‌کالا'
-                    })
-            if products:
-                return products
-    except Exception as e:
-        print(f"Digikala Search Error: {e}")
-
-    # ۲. فال‌بک به ترب
-    try:
-        url_torob = f"https://api.torob.com/v4/base-product/search/?page=0&size=5&query={query}"
-        res = requests.get(url_torob, headers=HEADERS, timeout=7)
-        if res.status_code == 200:
-            data = res.json()
+        torob_url = f"https://api.torob.com/v4/base-product/search/?page=0&size=5&query={query}"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        response = requests.get(torob_url, headers=headers, timeout=7)
+        if response.status_code == 200:
+            data = response.json()
             for item in data.get('results', []):
-                title = item.get('name1') or item.get('name2')
+                title = item.get('name1', 'بدون عنوان')
+                price_text = item.get('price_text', 'نامشخص')
+                # اگر قیمت به صورت عدد باشد
                 price = item.get('price', 0)
-                web_url = item.get('web_client_absolute_url', '')
-                product_url = f"https://torob.com{web_url}" if web_url else "https://torob.com"
+                price_str = f"{price:,} تومان" if price else price_text
                 
-                if title:
-                    products.append({
-                        'title': title,
-                        'price': price,
-                        'link': product_url,
-                        'source': 'ترب'
-                    })
+                # ساخت لینک محصول در ترب
+                random_key = item.get('random_key', '')
+                product_url = f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com"
+                
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'ترب'
+                })
     except Exception as e:
         print(f"Torob Search Error: {e}")
+
+    # ---------------------------------------------------------
+    # ۲. جستجو در دیجی‌کالا (Digikala)
+    # ---------------------------------------------------------
+    try:
+        digi_url = f"https://api.digikala.com/v1/search/?q={query}&page=1"
+        response = requests.get(digi_url, timeout=7)
+        if response.status_code == 200:
+            data = response.json()
+            items = data.get('data', {}).get('products', [])[:5]
+            
+            for item in items:
+                title = item.get('title_fa', '')
+                price_rrp = item.get('price', {}).get('selling_price', 0) // 10
+                price_str = f"{price_rrp:,} تومان" if price_rrp > 0 else "ناموجود"
+                
+                product_id = item.get('id', '')
+                product_url = f"https://www.digikala.com/product/dk-{product_id}/"
+                
+                products.append({
+                    'title': title,
+                    'price': price_str,
+                    'link': product_url,
+                    'source': 'دیجی‌کالا'
+                })
+    except Exception as e:
+        print(f"Digikala Search Error: {e}")
 
     return products
 
 
 def format_product_message(products):
     if not products:
-        return "❌ محصولی یافت نشد یا درگاه ارتباطی فروشگاه‌ها پاسخ نداد."
-        
-    msg = f"🛍️ **نتایج یافت‌شده (منبع: {products[0]['source']}):**\n\n"
-    for idx, item in enumerate(products, 1):
-        price_str = f"{item['price']:,} تومان" if item['price'] > 0 else "نامشخص / استعلام قیمت"
-        msg += f"{idx}. [{item['title']}]({item['link']})\n💰 **قیمت:** `{price_str}`\n───────────────\n"
+        return "❌ متأسفانه محصولی با این عنوان در ترب و دیجی‌کالا پیدا نشد."
+    
+    msg = "🛒 **نتایج جستجوی کالا (ترب و دیجی‌کالا):**\n"
+    msg += "───────────────────\n\n"
+    
+    for idx, p in enumerate(products, 1):
+        source_badge = "🔴 [دیجی‌کالا]" if p['source'] == 'دیجی‌کالا' else "🟦 [ترب]"
+        msg += f"{idx}. {source_badge} **{p['title']}**\n"
+        msg += f"💰 **قیمت:** {p['price']}\n"
+        msg += f"🔗 [مشاهده و خرید محصول]({p['link']})\n"
+        msg += "───────────────────\n"
         
     return msg
