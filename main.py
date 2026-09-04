@@ -19,15 +19,11 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("telegram.ext").setLevel(logging.WARNING)
 
 # ---------------------------------------------------------
-# ۲. تنظیمات شخص خاص (این بخش را ویرایش کنید)
+# ۲. تنظیمات شخص خاص
 # ---------------------------------------------------------
-# یوزرنیم شخص خاص (بدون @). مثال: "zahra_123"
-SPECIAL_USERNAME = "Ayydddda_2007"  
+SPECIAL_USERNAME = "Ayydddda_2007" 
+SPECIAL_USER_ID = 6876769630 
 
-# آیدی عددی شخص خاص (در صورت عدم داشتن یوزرنیم، صفر بگذارید). مثال: 123456789
-SPECIAL_USER_ID = 6876769630  
-
-# لیست جملات عاشقانه اختصاصی که به صورت تصادفی انتخاب می‌شوند
 SPECIAL_WELCOME_MESSAGES = [
     "به ربات خیلی خوش اومدی زندگی پوریا ❤️\n\n(از طرف پوریا)",
     "پوریا خیلی خوش‌شانسه که تو رو توی زندگیش داره ✨\n\n(از طرف پوریا)",
@@ -77,7 +73,6 @@ REFRESH_BUTTON = InlineKeyboardMarkup([
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     
-    # بررسی هویت کاربر
     is_special = False
     if user.username and SPECIAL_USERNAME and user.username.lower() == SPECIAL_USERNAME.lower():
         is_special = True
@@ -108,7 +103,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("🔹 لطفاً نام کالای مورد نظر خود را بفرستید (مثال: گوشی سامسونگ A54):")
         return
 
-    wait_msg = await update.message.reply_text("🔍 در حال جستجوی کالا...")
+    wait_msg = await update.message.reply_text("🔍 در حال جستجوی کالا در ترب، دیجی‌کالا و باسلام...")
     products = search_products(text)
     response_text = format_product_message(products)
     
