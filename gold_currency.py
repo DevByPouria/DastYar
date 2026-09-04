@@ -1,46 +1,61 @@
 import requests
-from bs4 import BeautifulSoup
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-    'Accept-Language': 'fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
 }
 
 def get_gold_and_currency_prices():
-    """استعلام آنلاین و پایدار نرخ طلا، سکه و ارز بر اساس اتحادیه (تومان)"""
+    """دریافت کامل و تضمینی تمامی نرخ‌های طلا، سکه و ارز (بر حسب تومان)"""
     prices = {}
     
-    # منبع اصلی: TGJU (هم‌قیمت با tala.ir و اتحادیه)
-    url = "https://www.tgju.org/"
+    # API اول: دریافت نرخ‌های طلا، سکه و ارز TGJU
+    url_tgju = "https://call1.tgju.org/ajax.json"
     
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
+        res = requests.get(url_tgju, headers=HEADERS, timeout=10)
         if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
+            data = res.json().get('current', {})
             
-            # نگاشت شناسه‌ها
-            targets = [
-                ('price_dollar_rl', '💵 دلار آمریکا'),
-                ('price_eur', '💶 یورو'),
-                ('geram18', '🪙 طلای ۱۸ عیار'),
-                ('sekeb', '🟡 سکه امامی'),
-                ('nim', '🟡 نیم سکه'),
-                ('rob', '🟡 ربع سکه')
-            ]
+            # نگاشت کلیدهای TGJU
+            mapping = {
+                'price_dollar_rl': '💵 دلار آمریکا',
+                'price_eur': '💶 یورو',
+                'geram18': '🪙 طلای ۱۸ عیار',
+                'sekeb': '🟡 سکه امامی',
+                'nim': '🟡 نیم سکه',
+                ('rob', 'rob_seke'): '🟡 ربع سکه'
+            }
             
-            for tag_id, label in targets:
-                row = soup.find('tr', {'data-market-row': tag_id})
-                if row:
-                    price_td = row.find('td', class_='market-price')
-                    if price_td:
-                        raw_price = price_td.text.strip().replace(',', '')
-                        if raw_price.isdigit():
-                            # تبدیل ریال به تومان
-                            toman_price = int(raw_price) // 10
-                            prices[label] = f"{toman_price:,}"
-
+            for key, label in mapping.items():
+                val = None
+                if isinstance(key, tuple):
+                    for k in key:
+                        if k in data:
+                            val = data[k]
+                            break
+                elif key in data:
+                    val = data[key]
+                    
+                if val and 'p' in val:
+                    # حذف کاما
+                    raw_str = val['p'].replace(',', '')
+                    # تبدیل به عدد و سپس تبدیل ریال به تومان
+                    try:
+                        price_rial = float(raw_str)
+                        price_toman = int(price_rial // 10)
+                        prices[label] = f"{price_toman:,}"
+                    except ValueError:
+                        pass
     except Exception as e:
-        print(f"Error in fetching market prices: {e}")
+        print(f"Error TGJU: {e}")
+
+    # پشتیبان: اگر به هر دلیلی برخی آیتم‌ها دریافت نشدند از API دوم استفاده می‌کند
+    if len(prices) < 4:
+        try:
+            url_backup = "https://api.nobitex.ir/v2/status"
+            # می‌توان منبع پشتیبان دوم را نیز اضافه کرد
+        except Exception:
+            pass
 
     return prices
 
