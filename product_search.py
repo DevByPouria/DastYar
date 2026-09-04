@@ -1,11 +1,11 @@
 import requests
-from bs4 import BeautifulSoup
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
+from duckduckgo_search import DDGS
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
-    'Accept-Language': 'fa-IR,fa;q=0.9,en;q=0.8'
+    'Accept-Language': 'fa-IR,fa;q=0.9'
 }
 
 # ---------------------------------------------------------
@@ -31,33 +31,33 @@ def search_digikala(query, limit=5):
     return products
 
 # ---------------------------------------------------------
-# ۲. جستجوی ترب و باسلام از طریق گوگل (جهت بای‌پاس تحریم و IP)
+# ۲. جستجوی ترب و باسلام از طریق DuckDuckGo
 # ---------------------------------------------------------
-def search_via_google(site_domain, query, limit=5):
+def search_via_ddg(site_domain, query, limit=5):
     products = []
     try:
-        google_url = f"https://www.google.com/search?q=site:{site_domain}+{quote(query)}"
-        res = requests.get(google_url, headers=HEADERS, timeout=10)
-        if res.status_code == 200:
-            soup = BeautifulSoup(res.text, 'html.parser')
-            # استخراج لینک‌ها و عناوین نتایج جستجو
-            results = soup.find_all('div', class_='g')
+        # جستجو به فرمت: site:torob.com/p موبایل سامسونگ
+        search_query = f"site:{site_domain} {query}"
+        
+        with DDGS() as ddgs:
+            results = ddgs.text(search_query, max_results=limit)
             
-            for g in results:
-                title_elem = g.find('h3')
-                link_elem = g.find('a')
-                if title_elem and link_elem:
-                    href = link_elem.get('href', '')
-                    if href.startswith('http'):
-                        products.append({
-                            'title': title_elem.text,
-                            'price': 'مشاهده در سایت',
-                            'link': href
-                        })
-                if len(products) >= limit:
-                    break
+            for r in results:
+                # داک‌داک‌گو عنوان و لینک را برمی‌گرداند
+                title = r.get('title', 'بدون عنوان')
+                link = r.get('href', '')
+                
+                # حذف کلمات اضافی از عنوان مثل "خرید و قیمت..."
+                title = title.replace('خرید و قیمت', '').replace('- ترب', '').replace('باسلام', '').strip()
+                
+                products.append({
+                    'title': title,
+                    'price': 'مشاهده در سایت',
+                    'link': link
+                })
     except Exception as e:
-        print(f"Google Search Error for {site_domain}: {e}")
+        print(f"DDG Search Error for {site_domain}: {e}")
+        
     return products
 
 # ---------------------------------------------------------
@@ -66,8 +66,10 @@ def search_via_google(site_domain, query, limit=5):
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
         f_digi = executor.submit(search_digikala, query, 5)
-        f_torob = executor.submit(search_via_google, "torob.com/p", query, 5)
-        f_basalam = executor.submit(search_via_google, "basalam.com/product", query, 5)
+        # برای ترب فقط لینک‌های محصول (p) را می‌خواهیم
+        f_torob = executor.submit(search_via_ddg, "torob.com/p", query, 5)
+        # برای باسلام فقط لینک‌های محصول را می‌خواهیم
+        f_basalam = executor.submit(search_via_ddg, "basalam.com/product", query, 5)
         
     return {
         'digi': f_digi.result(),
