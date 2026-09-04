@@ -1,6 +1,7 @@
 import requests
 from urllib.parse import quote
 from concurrent.futures import ThreadPoolExecutor
+from curl_cffi import requests as curl_requests
 
 # ---------------------------------------------------------
 # ۱. جستجو در دیجی‌کالا
@@ -9,8 +10,7 @@ def search_digikala(query, limit=5):
     products = []
     try:
         url = f"https://api.digikala.com/v1/search/?q={quote(query)}&page=1"
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
-        response = requests.get(url, headers=headers, timeout=8)
+        response = curl_requests.get(url, impersonate="chrome110", timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -33,22 +33,15 @@ def search_digikala(query, limit=5):
     return products
 
 # ---------------------------------------------------------
-# ۲. جستجو در ترب (روش شبیه‌سازی اپلیکیشن جهت عبور از مسدودی IP)
+# ۲. جستجو در ترب (با شبیه‌سازی مرورگر واقعی Chrome)
 # ---------------------------------------------------------
 def search_torob(query, limit=5):
     products = []
     try:
-        # استفاده از API ساختار موبایل ترب
         url = f"https://api.torob.com/v4/base-product/search/?sort=buy_box_price&page=0&size={limit}&q={quote(query)}"
         
-        # هدرهای کاملاً شبیه‌سازی شده اندروید
-        headers = {
-            'User-Agent': 'Dalvik/2.1.0 (Linux; U; Android 12; SM-G998B Build/SP1A.210812.016)',
-            'Accept-Encoding': 'gzip',
-            'Connection': 'Keep-Alive'
-        }
-        
-        response = requests.get(url, headers=headers, timeout=8)
+        # impersonate="chrome110" اثرانگشت مرورگر کروم واقعی را ایجاد می‌کند
+        response = curl_requests.get(url, impersonate="chrome110", timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -56,33 +49,38 @@ def search_torob(query, limit=5):
             
             for item in results:
                 title = item.get('name1') or item.get('name2') or 'بدون عنوان'
-                price_text = item.get('price_text') or f"{item.get('price', 0):,} تومان"
+                price = item.get('price', 0)
+                price_text = item.get('price_text', '')
+                
+                if price and isinstance(price, int) and price > 0:
+                    price_str = f"{price:,} تومان"
+                elif price_text:
+                    price_str = price_text
+                else:
+                    price_str = "نامشخص"
+                
                 random_key = item.get('random_key', '')
                 
                 products.append({
                     'title': title,
-                    'price': price_text if price_text != '0 تومان' else 'نامشخص',
+                    'price': price_str,
                     'link': f"https://torob.com/p/{random_key}/" if random_key else "https://torob.com",
                     'source': 'ترب'
                 })
+        else:
+            print(f"Torob HTTP Status: {response.status_code}")
     except Exception as e:
         print(f"Torob Error: {e}")
     return products
 
 # ---------------------------------------------------------
-# ۳. جستجو در باسلام (سرویس موتور جستجوی باسلام)
+# ۳. جستجو در باسلام (با شبیه‌سازی مرورگر واقعی Chrome)
 # ---------------------------------------------------------
 def search_basalam(query, limit=5):
     products = []
     try:
-        url = "https://search.basalam.com/ai-engine/v1/search"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15',
-            'Accept': 'application/json'
-        }
-        params = {'q': query, 'from': 0, 'size': limit}
-        
-        response = requests.get(url, headers=headers, params=params, timeout=8)
+        url = f"https://search.basalam.com/ai-engine/v1/search?q={quote(query)}&from=0&size={limit}"
+        response = curl_requests.get(url, impersonate="chrome110", timeout=10)
         
         if response.status_code == 200:
             data = response.json()
@@ -103,12 +101,14 @@ def search_basalam(query, limit=5):
                     'link': link,
                     'source': 'باسلام'
                 })
+        else:
+            print(f"Basalam HTTP Status: {response.status_code}")
     except Exception as e:
         print(f"Basalam Error: {e}")
     return products
 
 # ---------------------------------------------------------
-# ۴. مدیریت دریافت هم‌زمان
+# ۴. فراخوانی هم‌زمان
 # ---------------------------------------------------------
 def search_products(query):
     with ThreadPoolExecutor(max_workers=3) as executor:
@@ -127,7 +127,7 @@ def search_products(query):
     }
 
 # ---------------------------------------------------------
-# ۵. قالب‌بندی پیام‌های خروجی
+# ۵. ساخت پیام‌های خروجی
 # ---------------------------------------------------------
 def format_product_messages(results_dict):
     messages = []
