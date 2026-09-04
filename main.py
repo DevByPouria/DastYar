@@ -5,7 +5,7 @@ from threading import Thread
 from flask import Flask
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
-from product_search import search_products, format_product_message
+from product_search import search_products, format_product_messages
 from gold_currency import get_gold_and_currency_prices, format_gold_currency_message
 
 # ---------------------------------------------------------
@@ -104,10 +104,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     wait_msg = await update.message.reply_text("🔍 در حال جستجوی کالا در ترب، دیجی‌کالا و باسلام...")
-    products = search_products(text)
-    response_text = format_product_message(products)
     
-    await wait_msg.edit_text(response_text, parse_mode='Markdown', disable_web_page_preview=True)
+    # دریافت نتایج سه فروشگاه و تبدیل به لیست پیام‌ها
+    results_dict = search_products(text)
+    messages = format_product_messages(results_dict)
+    
+    # ۱. ویرایش پیام انتظار و تبدیل آن به اولین پیام (نتایج دیجی‌کالا)
+    await wait_msg.edit_text(messages[0], parse_mode='Markdown', disable_web_page_preview=True)
+    
+    # ۲. ارسال پیام‌های بعدی به صورت مجزا (ترب و باسلام)
+    for msg in messages[1:]:
+        await update.message.reply_text(msg, parse_mode='Markdown', disable_web_page_preview=True)
 
 async def handle_refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -120,7 +127,6 @@ async def handle_refresh_callback(update: Update, context: ContextTypes.DEFAULT_
         await query.edit_message_text(msg, parse_mode='Markdown', reply_markup=REFRESH_BUTTON)
     except Exception:
         pass
-
 # ---------------------------------------------------------
 # ۶. اجرای اصلی برنامه
 # ---------------------------------------------------------
