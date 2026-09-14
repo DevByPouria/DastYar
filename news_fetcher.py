@@ -1,8 +1,9 @@
+import asyncio
+from playwright.async_api import async_playwright
 from datetime import datetime, timedelta
 import re
 
 # ==================== تنظیمات ====================
-# همه ارزهای اصلی بازار فارکس
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
@@ -199,7 +200,7 @@ def _parse_date(date_str):
     
     date_str = str(date_str).strip()
     
-    # فرمت ISO: 2026-09-16 یا 2026-09-16T10:30:00
+    # فرمت ISO
     if re.match(r'\d{4}-\d{2}-\d{2}', date_str):
         try:
             return datetime.fromisoformat(date_str.replace('Z', '')).date()
@@ -209,7 +210,7 @@ def _parse_date(date_str):
             except:
                 pass
     
-    # فرمت متنی: Tue Sep 16 یا September 16
+    # فرمت متنی
     clean = date_str.lower().replace(',', '')
     parts = clean.split()
     
@@ -240,124 +241,128 @@ def _parse_date(date_str):
         return None
 
 
-def fetch_events(days_ahead=7):
-    """
-    دریافت رویدادهای اقتصادی از biquote (بدون محدودیت)
-    biquote از MT5 داده می‌گیره و رایگانه
-    """
+async def _fetch_events_async():
+    """استخراج داده‌ها با Playwright"""
     events = []
-    
-    try:
-        from biquote import Biquote
-        bq = Biquote()
+    async with async_playwright() as p:
+        # اجرای مرورگر در حالت headless
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
         
-        print(f"[DEBUG] Fetching from Biquote...")
-        
-        # دریافت همه اخبار (High + Medium + Low)
-        # biquote خودش فیلتر می‌کنه بر اساس importance
         try:
-            calendar_data = bq.calendar(importance="high")
-        except TypeError:
-            # اگه پارامتر importance قبول نکرد، بدون پارامتر صدا بزن
-            calendar_data = bq.calendar()
-        except Exception as e1:
-            print(f"[DEBUG] First attempt failed: {e1}")
-            try:
-                calendar_data = bq.calendar()
-            except Exception as e2:
-                print(f"[DEBUG] Second attempt failed: {e2}")
-                return []
-        
-        print(f"[DEBUG] Biquote returned: {len(calendar_data) if calendar_data else 0} items")
-        
-        if not calendar_data:
-            return []
-        
-        # چاپ اولین آیتم برای دیباگ
-        if len(calendar_data) > 0:
-            print(f"[DEBUG] Sample item: {calendar_data[0]}")
-        
-        today = datetime.now().date()
-        
-        for item in calendar_data:
-            try:
-                # استخراج فیلدها (biquote ممکنه اسم‌های متفاوتی داشته باشه)
-                title = (
-                    item.get('event') or 
-                    item.get('name') or 
-                    item.get('title') or 
-                    ''
-                )
-                currency = (
-                    item.get('currency') or 
-                    item.get('country') or 
-                    item.get('symbol') or 
-                    ''
-                )
-                date_str = item.get('date') or item.get('datetime') or item.get('time') or ''
-                time_str = item.get('time_only') or item.get('hour') or ''
-                impact = item.get('importance') or item.get('impact') or 'High'
-                forecast = str(item.get('forecast') or item.get('forecast_value') or '')
-                previous = str(item.get('previous') or item.get('previous_value') or '')
-                
-                if not title or not currency:
+            # رفتن به صفحه تقویم اقتصادی فارکس فکتوری
+            await page.goto("https://www.forexfactory.com/calendar", wait_until="networkidle", timeout=60000)
+            
+            # منتظر بارگذاری جدول تقویم می‌مانیم
+            await page.wait_for_selector("table.calendar__table", timeout=30000)
+            
+            # استخراج تمام سطرهای تقویم
+            rows = await page.query_selector_all("tr.calendar__row")
+            
+            print(f"[DEBUG] Found {len(rows)} calendar rows")
+            
+            today = datetime.now().date()
+            current_date = today
+            
+            for row in rows:
+                try:
+                    # --- استخراج تاریخ ---
+                    date_cell = await row.query_selector("td.calendar__date")
+                    if date_cell:
+                        date_text = await date_cell.inner_text()
+                        if date_text.strip():
+                            parsed = _parse_date(date_text.strip())
+                            if parsed:
+                                current_date = parsed
+                    
+                    # --- استخراج اطلاعات رویداد ---
+                    currency_cell = await row.query_selector("td.calendar__currency")
+                    event_cell = await row.query_selector("td.calendar__event")
+                    
+                    if not currency_cell or not event_cell:
+                        continue
+                    
+                    currency = (await currency_cell.inner_text()).strip()
+                    title = (await event_cell.inner_text()).strip()
+                    
+                    if not currency or not title:
+                        continue
+                    
+                    # --- استخراج میزان اهمیت ---
+                    impact_cell = await row.query_selector("td.calendar__impact")
+                    impact = "Low"
+                    if impact_cell:
+                        impact_span = await impact_cell.query_selector("span")
+                        if impact_span:
+                            classes = await impact_span.get_attribute("class") or ""
+                            if "high" in classes.lower():
+                                impact = "High"
+                            elif "medium" in classes.lower():
+                                impact = "Medium"
+                            elif "low" in classes.lower():
+                                impact = "Low"
+                    
+                    # --- استخراج زمان ---
+                    time_cell = await row.query_selector("td.calendar__time")
+                    time_str = (await time_cell.inner_text()).strip() if time_cell else ""
+                    
+                    # --- استخراج پیش‌بینی و مقدار قبلی ---
+                    forecast_cell = await row.query_selector("td.calendar__forecast")
+                    previous_cell = await row.query_selector("td.calendar__previous")
+                    
+                    forecast = (await forecast_cell.inner_text()).strip() if forecast_cell else ""
+                    previous = (await previous_cell.inner_text()).strip() if previous_cell else ""
+                    
+                    events.append({
+                        'title': title,
+                        'currency': currency,
+                        'date': current_date.strftime('%b %d'),
+                        'parsed_date': current_date,
+                        'time': time_str,
+                        'impact': impact,
+                        'forecast': forecast,
+                        'previous': previous,
+                    })
+                except Exception as e:
+                    print(f"[DEBUG] Error parsing row: {e}")
                     continue
-                
-                # نرمال‌سازی impact
-                impact_str = str(impact).capitalize()
-                if impact_str not in ['High', 'Medium', 'Low']:
-                    impact_str = 'High'
-                
-                # پارس تاریخ
-                parsed_date = _parse_date(str(date_str)) if date_str else today
-                
-                events.append({
-                    'title': title,
-                    'currency': currency,
-                    'date': str(date_str),
-                    'parsed_date': parsed_date or today,
-                    'time': str(time_str),
-                    'impact': impact_str,
-                    'forecast': forecast,
-                    'previous': previous,
-                })
-            except Exception as e:
-                print(f"[DEBUG] Error parsing item: {e}")
-                continue
         
-        print(f"[DEBUG] Total events parsed: {len(events)}")
-        
-        # حذف تکراری‌ها
-        seen = set()
-        unique_events = []
-        for ev in events:
-            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-            if key not in seen:
-                seen.add(key)
-                unique_events.append(ev)
-        
-        print(f"[DEBUG] Unique events: {len(unique_events)}")
-        return unique_events
-        
-    except ImportError as e:
-        print(f"[DEBUG] Biquote not installed: {e}")
-        print(f"[DEBUG] Run: pip install biquote")
-        return []
+        except Exception as e:
+            print(f"[DEBUG] Playwright error: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            await browser.close()
+    
+    # حذف تکراری‌ها
+    seen = set()
+    unique_events = []
+    for ev in events:
+        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+        if key not in seen:
+            seen.add(key)
+            unique_events.append(ev)
+    
+    print(f"[DEBUG] Total unique events: {len(unique_events)}")
+    return unique_events
+
+
+def fetch_events(days_ahead=7):
+    """دریافت رویدادها (همگام‌سازی شده برای استفاده در main.py)"""
+    try:
+        # اجرای تابع async در یک loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        events = loop.run_until_complete(_fetch_events_async())
+        loop.close()
+        return events
     except Exception as e:
-        print(f"[DEBUG] Biquote error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"[DEBUG] Error in fetch_events: {e}")
         return []
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
-    """
-    فیلتر اخبار
-    
-    Args:
-        days_ahead: 0 = امروز | 7 = این هفته
-        min_impact: 'High' | 'Medium' | 'Low' | 'All'
-    """
+    """فیلتر اخبار"""
     if not events:
         return []
     
@@ -388,7 +393,6 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
         
         filtered.append(ev)
     
-    # مرتب‌سازی
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
