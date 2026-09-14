@@ -203,7 +203,7 @@ def fetch_events():
         return []
 
 
-def filter_today_events(events, days_ahead=0):
+def filter_today_events(events, days_ahead=0, hours_back=0):
     """
     فیلتر اخبار مهم بر اساس بازه زمانی
     
@@ -229,7 +229,7 @@ def filter_today_events(events, days_ahead=0):
         if not any(k.lower() in ev['title'].lower() for k in HIGH_IMPACT_KEYWORDS):
             continue
         
-        # ⚠️ فیلتر تاریخ (مهم‌ترین بخش)
+        # فیلتر تاریخ
         event_date = _parse_event_date(ev['date'])
         if event_date is None:
             continue
@@ -237,7 +237,6 @@ def filter_today_events(events, days_ahead=0):
         if not (today <= event_date <= max_date):
             continue
         
-        # اضافه کردن تاریخ parsed شده
         ev['parsed_date'] = event_date
         filtered.append(ev)
     
