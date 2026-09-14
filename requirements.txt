@@ -10,3 +10,4 @@ matplotlib
 lxml
 jdatetime
 biquote
+playwright
