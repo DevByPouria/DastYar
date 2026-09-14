@@ -1,19 +1,18 @@
 import requests
-from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
-import zoneinfo
-import re
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+import re
 
 # ==================== URLها ====================
 FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
 FF_XML_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.xml"
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
 }
 
-RELEVANT_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
+# همه ارزها (نه فقط ارزهای اصلی)
+ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
 NEWS_EXPLANATIONS = {
@@ -101,11 +100,23 @@ NEWS_EXPLANATIONS = {
         'gold': '🔴 نزولی (با افزایش)',
         'dollar': '🟢 صعودی (با افزایش)'
     },
+    'Employment Change': {
+        'desc': 'تغییر اشتغال.',
+        'effect': 'اشتغال قوی → ارز قوی، طلا ضعیف.',
+        'gold': '🔴 نزولی',
+        'dollar': '🟢 صعودی'
+    },
     'Trade Balance': {
         'desc': 'تراز تجاری (صادرات منهای واردات).',
         'effect': 'تراز مثبت → ارز قوی‌تر.',
         'gold': '⚠️ بستگی به ارز دارد',
         'dollar': '⚠️ بستگی به ارز دارد'
+    },
+    'Current Account': {
+        'desc': 'حساب جاری. نشان‌دهنده جریان تجارت و سرمایه.',
+        'effect': 'حساب جاری مثبت → ارز قوی‌تر.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
     },
     'ZEW': {
         'desc': 'شاخص احساسات اقتصادی ZEW آلمان.',
@@ -113,17 +124,41 @@ NEWS_EXPLANATIONS = {
         'gold': '⚠️ غیرمستقیم',
         'dollar': '⚠️ غیرمستقیم'
     },
-    'Employment Change': {
-        'desc': 'تغییر اشتغال.',
-        'effect': 'اشتغال قوی → ارز قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با اشتغال قوی)',
-        'dollar': '🟢 صعودی (با اشتغال قوی)'
+    'Consumer Confidence': {
+        'desc': 'اعتماد مصرف‌کننده.',
+        'effect': 'اعتماد بالا → اقتصاد قوی → ارز قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
     },
-    'Retail Sales m/m': {
-        'desc': 'فروش خرده‌فروشی ماهانه.',
-        'effect': 'قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی',
-        'dollar': '🟢 صعودی'
+    'Business Climate': {
+        'desc': 'فضای کسب و کار.',
+        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Manufacturing': {
+        'desc': 'شاخص تولید صنعتی.',
+        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Services': {
+        'desc': 'شاخص بخش خدمات.',
+        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Housing': {
+        'desc': 'شاخص بازار مسکن.',
+        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Bond Auction': {
+        'desc': 'حراج اوراق قرضه دولتی.',
+        'effect': 'تقاضای بالا → ارز قوی‌تر.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
     },
 }
 
@@ -201,19 +236,20 @@ def _parse_date(date_str):
         return None
 
 
-# ==================== روش ۱: XML فید (روش اصلی) ====================
-def fetch_events_xml():
+def fetch_events(days_ahead=7):
     """دریافت رویدادها از XML فید ForexFactory"""
     events = []
     
     for url in [FF_XML_THIS_WEEK, FF_XML_NEXT_WEEK]:
         try:
             res = requests.get(url, headers=HEADERS, timeout=20)
-            res.raise_for_status()
+            print(f"[DEBUG] XML {url.split('/')[-1]}: status={res.status_code}, size={len(res.content)}")
             
-            print(f"[DEBUG] XML fetch from {url.split('/')[-1]}: {res.status_code}, size: {len(res.content)}")
+            if res.status_code != 200:
+                continue
             
             root = ET.fromstring(res.content)
+            week_events = 0
             
             for ev in root.findall('.//event'):
                 title = (ev.findtext('title') or '').strip()
@@ -239,119 +275,39 @@ def fetch_events_xml():
                     'forecast': forecast,
                     'previous': previous,
                 })
+                week_events += 1
+            
+            print(f"[DEBUG] {url.split('/')[-1]}: {week_events} events")
+            
         except Exception as e:
-            print(f"[DEBUG] XML fetch error for {url}: {e}")
+            print(f"[DEBUG] Error for {url}: {e}")
             continue
     
-    print(f"[DEBUG] Total XML events: {len(events)}")
-    return events
-
-
-# ==================== روش ۲: HTML Scraping (روش پشتیبان) ====================
-def fetch_events_html():
-    """دریافت رویدادها با curl_cffi (دور زدن Cloudflare)"""
-    events = []
-    
-    try:
-        from curl_cffi import requests as cf_requests
-        
-        url = "https://www.forexfactory.com/calendar"
-        res = cf_requests.get(url, impersonate="chrome124", timeout=30, headers=HEADERS)
-        
-        print(f"[DEBUG] HTML fetch status: {res.status_code}, size: {len(res.text)}")
-        
-        if res.status_code != 200:
-            return []
-        
-        soup = BeautifulSoup(res.text, 'lxml')
-        rows = soup.find_all('tr', class_=re.compile('calendar__row'))
-        
-        print(f"[DEBUG] Found {len(rows)} calendar rows")
-        
-        today = datetime.now().date()
-        current_date = today
-        
-        for row in rows:
-            try:
-                date_cell = row.find('td', class_=re.compile('calendar__date'))
-                if date_cell and date_cell.get_text(strip=True):
-                    parsed = _parse_date(date_cell.get_text(strip=True))
-                    if parsed:
-                        current_date = parsed
-                
-                currency_cell = row.find('td', class_=re.compile('calendar__currency'))
-                event_cell = row.find('td', class_=re.compile('calendar__event'))
-                impact_cell = row.find('td', class_=re.compile('calendar__impact'))
-                time_cell = row.find('td', class_=re.compile('calendar__time'))
-                forecast_cell = row.find('td', class_=re.compile('calendar__forecast'))
-                previous_cell = row.find('td', class_=re.compile('calendar__previous'))
-                
-                if not currency_cell or not event_cell:
-                    continue
-                
-                currency = currency_cell.get_text(strip=True)
-                title = event_cell.get_text(strip=True)
-                
-                if not currency or not title:
-                    continue
-                
-                impact = 'Low'
-                if impact_cell:
-                    impact_span = impact_cell.find('span')
-                    if impact_span:
-                        classes = ' '.join(impact_span.get('class', []))
-                        if 'high' in classes.lower():
-                            impact = 'High'
-                        elif 'medium' in classes.lower():
-                            impact = 'Medium'
-                
-                events.append({
-                    'title': title,
-                    'currency': currency,
-                    'date': current_date.strftime('%b %d'),
-                    'parsed_date': current_date,
-                    'time': time_cell.get_text(strip=True) if time_cell else '',
-                    'impact': impact,
-                    'forecast': forecast_cell.get_text(strip=True) if forecast_cell else '',
-                    'previous': previous_cell.get_text(strip=True) if previous_cell else '',
-                })
-            except:
-                continue
-        
-        print(f"[DEBUG] Total HTML events: {len(events)}")
-        return events
-        
-    except Exception as e:
-        print(f"[DEBUG] HTML error: {e}")
-        return []
-
-
-# ==================== تابع اصلی ====================
-def fetch_events(days_ahead=7):
-    """دریافت رویدادها با ترکیب XML و HTML"""
-    xml_events = fetch_events_xml()
-    html_events = fetch_events_html()
-    
-    # ترکیب و حذف تکراری‌ها
-    all_events = {}
-    for ev in xml_events + html_events:
+    # حذف تکراری‌ها
+    seen = set()
+    unique_events = []
+    for ev in events:
         key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-        if key not in all_events:
-            all_events[key] = ev
-        else:
-            # اگه یکی impact بالاتری داشت، اون رو نگه دار
-            existing = all_events[key]
-            impact_order = {'High': 3, 'Medium': 2, 'Low': 1}
-            if impact_order.get(ev['impact'], 0) > impact_order.get(existing['impact'], 0):
-                all_events[key] = ev
+        if key not in seen:
+            seen.add(key)
+            unique_events.append(ev)
     
-    result = list(all_events.values())
-    print(f"[DEBUG] Total unique events: {len(result)}")
-    return result
+    print(f"[DEBUG] Total unique events: {len(unique_events)}")
+    return unique_events
 
 
-def filter_today_events(events, days_ahead=0, min_impact='Medium'):
-    """فیلتر اخبار"""
+def filter_today_events(events, days_ahead=7, min_impact='All'):
+    """
+    فیلتر اخبار
+    
+    Args:
+        days_ahead: 0 = امروز | 7 = این هفته
+        min_impact: 'High' | 'Medium' | 'Low' | 'All'
+            - High: فقط High
+            - Medium: High + Medium
+            - Low: High + Medium + Low
+            - All: همه اخبار (حتی بدون impact)
+    """
     if not events:
         return []
     
@@ -362,14 +318,15 @@ def filter_today_events(events, days_ahead=0, min_impact='Medium'):
         'High': ['High'],
         'Medium': ['High', 'Medium'],
         'Low': ['High', 'Medium', 'Low'],
+        'All': ['High', 'Medium', 'Low', ''],
     }
-    allowed = allowed_impacts.get(min_impact, ['High', 'Medium'])
+    allowed = allowed_impacts.get(min_impact, ['High', 'Medium', 'Low', ''])
     
     filtered = []
     for ev in events:
         if ev['impact'] not in allowed:
             continue
-        if ev['currency'] not in RELEVANT_CURRENCIES:
+        if ev['currency'] not in ALL_CURRENCIES:
             continue
         
         ev_date = ev.get('parsed_date')
@@ -381,12 +338,14 @@ def filter_today_events(events, days_ahead=0, min_impact='Medium'):
         
         filtered.append(ev)
     
-    impact_order = {'High': 0, 'Medium': 1, 'Low': 2}
+    # مرتب‌سازی: اول High، بعد Medium، بعد Low (داخل هر گروه بر اساس تاریخ)
+    impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
         impact_order.get(x['impact'], 3)
     ))
     
+    print(f"[DEBUG] Filtered: {len(filtered)} events (min_impact={min_impact}, days_ahead={days_ahead})")
     return filtered
 
 
@@ -460,10 +419,17 @@ def _format_summary(events, bias, bull, bear):
         return msg
     
     today = datetime.now().date()
-    msg += f"📊 **{len(events)} خبر مهم پیش رو:**\n\n"
+    msg += f"📊 **{len(events)} خبر در این بازه:**\n\n"
     
-    for ev in events[:10]:
-        impact_emoji = {'High': '🔴', 'Medium': '🟡', 'Low': '🟢'}.get(ev['impact'], '⚪')
+    # نمایش 20 خبر اول (چون حالا ممکنه خیلی زیاد باشن)
+    for ev in events[:20]:
+        impact_emoji = {
+            'High': '🔴',
+            'Medium': '🟡',
+            'Low': '🟢',
+            '': '⚪'
+        }.get(ev['impact'], '⚪')
+        
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
         
         date_label = ''
@@ -498,7 +464,10 @@ def _format_summary(events, bias, bull, bear):
         
         msg += "   ───────────────────\n"
     
-    msg += f"\n📈 امتیاز صعودی: `{bull}`\n"
+    if len(events) > 20:
+        msg += f"\n... و {len(events) - 20} خبر دیگر"
+    
+    msg += f"\n\n📈 امتیاز صعودی: `{bull}`\n"
     msg += f"📉 امتیاز نزولی: `{bear}`\n"
     msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
     
