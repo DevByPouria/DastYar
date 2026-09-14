@@ -134,7 +134,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=SIGNAL_MENU,
             parse_mode='Markdown'
         )
-        return
+        return 
 
      # ============ اخبار بازار ============
     if text == "📰 اخبار بازار":
