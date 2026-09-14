@@ -136,7 +136,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    # ============ اخبار بازار ============
+     # ============ اخبار بازار ============
     if text == "📰 اخبار بازار":
         wait = await update.message.reply_text("⏳ در حال دریافت اخبار...")
         events = fetch_events()
