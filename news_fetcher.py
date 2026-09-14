@@ -215,13 +215,14 @@ def fetch_events():
         return []
 
 
-def filter_today_events(events, days_ahead=0, hours_back=0):
+def filter_today_events(events, days_ahead=0, min_impact='Medium'):
     """
-    فیلتر اخبار مهم بر اساس بازه زمانی
+    فیلتر اخبار بر اساس بازه زمانی و اهمیت
     
     Args:
         events: لیست رویدادها
         days_ahead: 0 = فقط امروز | 1 = امروز و فردا | 7 = این هفته
+        min_impact: 'High' | 'Medium' | 'Low' | 'All'
     """
     if not events:
         return []
@@ -230,20 +231,30 @@ def filter_today_events(events, days_ahead=0, hours_back=0):
     max_date = today + timedelta(days=days_ahead)
     filtered = []
     
+    # تعیین سطح اهمیت مجاز
+    allowed_impacts = {
+        'High': ['High'],
+        'Medium': ['High', 'Medium'],
+        'Low': ['High', 'Medium', 'Low'],
+        'All': ['High', 'Medium', 'Low', ''],
+    }
+    allowed = allowed_impacts.get(min_impact, ['High'])
+    
     for ev in events:
-        # فقط اخبار مهم
-        if ev['impact'] != 'High':
+        # فیلتر اهمیت (شل‌تر)
+        if ev['impact'] not in allowed:
             continue
-        # فقط ارزهای مرتبط
+        
+        # فیلتر ارز (فقط ارزهای اصلی)
         if ev['currency'] not in RELEVANT_CURRENCIES:
-            continue
-        # فقط اخبار با کلمات کلیدی
-        if not any(k.lower() in ev['title'].lower() for k in HIGH_IMPACT_KEYWORDS):
             continue
         
         # فیلتر تاریخ
         event_date = _parse_event_date(ev['date'])
         if event_date is None:
+            # اگه تاریخ پارس نشد، بازم قبولش کن (برای اطمینان)
+            ev['parsed_date'] = today
+            filtered.append(ev)
             continue
         
         if not (today <= event_date <= max_date):
@@ -252,8 +263,12 @@ def filter_today_events(events, days_ahead=0, hours_back=0):
         ev['parsed_date'] = event_date
         filtered.append(ev)
     
-    # مرتب‌سازی بر اساس تاریخ
-    filtered.sort(key=lambda x: x['parsed_date'])
+    # مرتب‌سازی: اول بر اساس اهمیت، بعد بر اساس تاریخ
+    impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
+    filtered.sort(key=lambda x: (
+        x.get('parsed_date') or today,
+        impact_order.get(x['impact'], 3)
+    ))
     
     return filtered
 
