@@ -179,22 +179,21 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data
     asset_map = {
-        'sig_gold': ('🪙 گرم ۱۸', 'طلا'),
-        'sig_dollar': ('💵 تتر', 'دلار'),  # موقتاً از تتر استفاده می‌کنیم
-        'sig_coin': ('🟡 سکه امامی', 'سکه'),
+        'sig_gold': ('gold_gram18', 'طلا (اونس جهانی)'),
+        'sig_dollar': ('dollar', 'دلار'),
+        'sig_coin': ('gold_gram18', 'سکه'),
     }
-    asset_key, asset_name = asset_map.get(data, ('🪙 گرم ۱۸', 'طلا'))
+    asset_key, asset_name = asset_map.get(data, ('gold_gram18', 'طلا'))
 
-    # ===== دریافت تاریخچه =====
+    # ===== دریافت تاریخچه از Yahoo Finance =====
     rows = hist.get_history(asset_key, limit=200)
-    
-    if len(rows) < 10:
+
+    if len(rows) < 20:
         await query.edit_message_text(
             f"⚠️ **داده کافی برای تحلیل {asset_name} موجود نیست.**\n\n"
             f"📊 تعداد رکورد فعلی: `{len(rows)}`\n"
-            f"🔹 هر بار که از ربات استفاده می‌کنی، یک قیمت ذخیره می‌شود.\n"
-            f"🔹 بعد از جمع شدن حداقل ۱۰ تا ۲۰ رکورد، تحلیل دقیق‌تر خواهد بود.\n\n"
-            f"_پیشنهاد: هر چند ساعت یک بار قیمت‌ها را بروزرسانی کن._",
+            f"🔹 لطفاً بعداً دوباره تلاش کن.\n\n"
+            f"_داده‌ها از Yahoo Finance دریافت می‌شوند._",
             parse_mode='Markdown'
         )
         return
