@@ -1,17 +1,8 @@
-import requests
-import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import re
 
-# ==================== URLها ====================
-FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
-FF_XML_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.xml"
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-}
-
-# همه ارزها (نه فقط ارزهای اصلی)
+# ==================== تنظیمات ====================
+# همه ارزهای اصلی بازار فارکس
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
@@ -180,7 +171,7 @@ CURRENCY_NAMES = {
 def _parse_value(v):
     if not v:
         return None
-    v = v.strip().replace(',', '').replace('%', '')
+    v = str(v).strip().replace(',', '').replace('%', '')
     try:
         if v.endswith('K'):
             return float(v[:-1]) * 1000
@@ -194,7 +185,7 @@ def _parse_value(v):
 
 
 def _parse_date(date_str):
-    """پارس تاریخ"""
+    """پارس تاریخ از فرمت‌های مختلف"""
     if not date_str:
         return None
     
@@ -206,7 +197,20 @@ def _parse_date(date_str):
         'october': 10, 'november': 11, 'december': 12,
     }
     
-    clean = date_str.strip().lower().replace(',', '')
+    date_str = str(date_str).strip()
+    
+    # فرمت ISO: 2026-09-16 یا 2026-09-16T10:30:00
+    if re.match(r'\d{4}-\d{2}-\d{2}', date_str):
+        try:
+            return datetime.fromisoformat(date_str.replace('Z', '')).date()
+        except:
+            try:
+                return datetime.strptime(date_str[:10], '%Y-%m-%d').date()
+            except:
+                pass
+    
+    # فرمت متنی: Tue Sep 16 یا September 16
+    clean = date_str.lower().replace(',', '')
     parts = clean.split()
     
     month = None
@@ -237,63 +241,113 @@ def _parse_date(date_str):
 
 
 def fetch_events(days_ahead=7):
-    """دریافت رویدادها از XML فید ForexFactory"""
+    """
+    دریافت رویدادهای اقتصادی از biquote (بدون محدودیت)
+    biquote از MT5 داده می‌گیره و رایگانه
+    """
     events = []
     
-    for url in [FF_XML_THIS_WEEK, FF_XML_NEXT_WEEK]:
+    try:
+        from biquote import Biquote
+        bq = Biquote()
+        
+        print(f"[DEBUG] Fetching from Biquote...")
+        
+        # دریافت همه اخبار (High + Medium + Low)
+        # biquote خودش فیلتر می‌کنه بر اساس importance
         try:
-            res = requests.get(url, headers=HEADERS, timeout=20)
-            print(f"[DEBUG] XML {url.split('/')[-1]}: status={res.status_code}, size={len(res.content)}")
-            
-            if res.status_code != 200:
-                continue
-            
-            root = ET.fromstring(res.content)
-            week_events = 0
-            
-            for ev in root.findall('.//event'):
-                title = (ev.findtext('title') or '').strip()
-                currency = (ev.findtext('country') or '').strip()
-                date_str = (ev.findtext('date') or '').strip()
-                time_str = (ev.findtext('time') or '').strip()
-                impact = (ev.findtext('impact') or 'Low').strip()
-                forecast = (ev.findtext('forecast') or '').strip()
-                previous = (ev.findtext('previous') or '').strip()
+            calendar_data = bq.calendar(importance="high")
+        except TypeError:
+            # اگه پارامتر importance قبول نکرد، بدون پارامتر صدا بزن
+            calendar_data = bq.calendar()
+        except Exception as e1:
+            print(f"[DEBUG] First attempt failed: {e1}")
+            try:
+                calendar_data = bq.calendar()
+            except Exception as e2:
+                print(f"[DEBUG] Second attempt failed: {e2}")
+                return []
+        
+        print(f"[DEBUG] Biquote returned: {len(calendar_data) if calendar_data else 0} items")
+        
+        if not calendar_data:
+            return []
+        
+        # چاپ اولین آیتم برای دیباگ
+        if len(calendar_data) > 0:
+            print(f"[DEBUG] Sample item: {calendar_data[0]}")
+        
+        today = datetime.now().date()
+        
+        for item in calendar_data:
+            try:
+                # استخراج فیلدها (biquote ممکنه اسم‌های متفاوتی داشته باشه)
+                title = (
+                    item.get('event') or 
+                    item.get('name') or 
+                    item.get('title') or 
+                    ''
+                )
+                currency = (
+                    item.get('currency') or 
+                    item.get('country') or 
+                    item.get('symbol') or 
+                    ''
+                )
+                date_str = item.get('date') or item.get('datetime') or item.get('time') or ''
+                time_str = item.get('time_only') or item.get('hour') or ''
+                impact = item.get('importance') or item.get('impact') or 'High'
+                forecast = str(item.get('forecast') or item.get('forecast_value') or '')
+                previous = str(item.get('previous') or item.get('previous_value') or '')
                 
-                parsed_date = _parse_date(date_str)
-                
-                if not title or not currency or not parsed_date:
+                if not title or not currency:
                     continue
+                
+                # نرمال‌سازی impact
+                impact_str = str(impact).capitalize()
+                if impact_str not in ['High', 'Medium', 'Low']:
+                    impact_str = 'High'
+                
+                # پارس تاریخ
+                parsed_date = _parse_date(str(date_str)) if date_str else today
                 
                 events.append({
                     'title': title,
                     'currency': currency,
-                    'date': date_str,
-                    'parsed_date': parsed_date,
-                    'time': time_str,
-                    'impact': impact,
+                    'date': str(date_str),
+                    'parsed_date': parsed_date or today,
+                    'time': str(time_str),
+                    'impact': impact_str,
                     'forecast': forecast,
                     'previous': previous,
                 })
-                week_events += 1
-            
-            print(f"[DEBUG] {url.split('/')[-1]}: {week_events} events")
-            
-        except Exception as e:
-            print(f"[DEBUG] Error for {url}: {e}")
-            continue
-    
-    # حذف تکراری‌ها
-    seen = set()
-    unique_events = []
-    for ev in events:
-        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-        if key not in seen:
-            seen.add(key)
-            unique_events.append(ev)
-    
-    print(f"[DEBUG] Total unique events: {len(unique_events)}")
-    return unique_events
+            except Exception as e:
+                print(f"[DEBUG] Error parsing item: {e}")
+                continue
+        
+        print(f"[DEBUG] Total events parsed: {len(events)}")
+        
+        # حذف تکراری‌ها
+        seen = set()
+        unique_events = []
+        for ev in events:
+            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+            if key not in seen:
+                seen.add(key)
+                unique_events.append(ev)
+        
+        print(f"[DEBUG] Unique events: {len(unique_events)}")
+        return unique_events
+        
+    except ImportError as e:
+        print(f"[DEBUG] Biquote not installed: {e}")
+        print(f"[DEBUG] Run: pip install biquote")
+        return []
+    except Exception as e:
+        print(f"[DEBUG] Biquote error: {e}")
+        import traceback
+        traceback.print_exc()
+        return []
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
@@ -303,10 +357,6 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
     Args:
         days_ahead: 0 = امروز | 7 = این هفته
         min_impact: 'High' | 'Medium' | 'Low' | 'All'
-            - High: فقط High
-            - Medium: High + Medium
-            - Low: High + Medium + Low
-            - All: همه اخبار (حتی بدون impact)
     """
     if not events:
         return []
@@ -338,7 +388,7 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
         
         filtered.append(ev)
     
-    # مرتب‌سازی: اول High، بعد Medium، بعد Low (داخل هر گروه بر اساس تاریخ)
+    # مرتب‌سازی
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
@@ -421,7 +471,6 @@ def _format_summary(events, bias, bull, bear):
     today = datetime.now().date()
     msg += f"📊 **{len(events)} خبر در این بازه:**\n\n"
     
-    # نمایش 20 خبر اول (چون حالا ممکنه خیلی زیاد باشن)
     for ev in events[:20]:
         impact_emoji = {
             'High': '🔴',
