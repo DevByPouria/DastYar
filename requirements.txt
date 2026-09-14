@@ -9,3 +9,4 @@ pandas-ta-classic
 matplotlib
 lxml
 jdatetime
+biquote
