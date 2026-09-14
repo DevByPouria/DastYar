@@ -195,26 +195,32 @@ def _parse_date(date_str):
 
 def fetch_events(days_ahead=7):
     """
-    دریافت رویدادها از ForexFactory با اسکرپ HTML
+    دریافت رویدادها از ForexFactory با curl_cffi (دور زدن Cloudflare)
     """
     events = []
-    today = datetime.now().date()
-    end_date = today + timedelta(days=days_ahead)
     
     try:
-        # پارامترهای URL برای فیلتر تاریخ
-        params = {
-            'day': today.strftime('%b%d.%Y').lower(),
-            'range': f'{days_ahead}day',
-        }
+        # استفاده از curl_cffi برای شبیه‌سازی مرورگر واقعی
+        from curl_cffi import requests as cf_requests
         
-        res = requests.get(
-            FF_URL,
-            headers=HEADERS,
-            params=params,
-            timeout=20
+        url = "https://www.forexfactory.com/calendar"
+        
+        res = cf_requests.get(
+            url,
+            impersonate="chrome124",
+            timeout=30,
+            headers={
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            }
         )
-        res.raise_for_status()
+        
+        print(f"[DEBUG] Status Code: {res.status_code}")
+        print(f"[DEBUG] Content Length: {len(res.text)}")
+        
+        if res.status_code != 200:
+            print(f"[DEBUG] Bad status: {res.status_code}")
+            return []
         
         soup = BeautifulSoup(res.text, 'lxml')
         
@@ -222,11 +228,27 @@ def fetch_events(days_ahead=7):
         calendar_table = soup.find('table', class_=re.compile('calendar__table'))
         if not calendar_table:
             print("[DEBUG] Calendar table not found!")
+            # شاید کلاس متفاوت باشه
+            all_tables = soup.find_all('table')
+            print(f"[DEBUG] Found {len(all_tables)} tables total")
+            for t in all_tables:
+                cls = ' '.join(t.get('class', []))
+                print(f"[DEBUG] Table class: {cls}")
             return []
+        
+        print("[DEBUG] Calendar table found!")
         
         # پیدا کردن همه سطرهای تقویم
         rows = calendar_table.find_all('tr', class_=re.compile('calendar__row'))
+        print(f"[DEBUG] Found {len(rows)} rows")
         
+        if not rows:
+            # شاید ساختار متفاوته
+            rows = calendar_table.find_all('tr')
+            print(f"[DEBUG] Fallback: {len(rows)} total rows")
+        
+        from datetime import datetime as _dt
+        today = _dt.now().date()
         current_date = today
         
         for row in rows:
@@ -244,7 +266,6 @@ def fetch_events(days_ahead=7):
                 event_cell = row.find('td', class_=re.compile('calendar__event'))
                 impact_cell = row.find('td', class_=re.compile('calendar__impact'))
                 time_cell = row.find('td', class_=re.compile('calendar__time'))
-                actual_cell = row.find('td', class_=re.compile('calendar__actual'))
                 forecast_cell = row.find('td', class_=re.compile('calendar__forecast'))
                 previous_cell = row.find('td', class_=re.compile('calendar__previous'))
                 
@@ -279,7 +300,6 @@ def fetch_events(days_ahead=7):
                     'impact': impact,
                     'forecast': forecast_cell.get_text(strip=True) if forecast_cell else '',
                     'previous': previous_cell.get_text(strip=True) if previous_cell else '',
-                    'actual': actual_cell.get_text(strip=True) if actual_cell else '',
                 })
             except Exception as e:
                 continue
@@ -289,6 +309,8 @@ def fetch_events(days_ahead=7):
         
     except Exception as e:
         print(f"Scrape error: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
