@@ -1,6 +1,11 @@
 python-telegram-bot==20.7
-requests==2.31.0
-beautifulsoup4==4.12.3
+requests
+beautifulsoup4
 Flask
 curl_cffi
 duckduckgo-search
+pandas
+pandas-ta
+matplotlib
+lxml
+jdatetime
