@@ -278,9 +278,10 @@ def _format_summary(events, bias, bull, bear):
         impact_emoji = '🔴' if ev['impact'] == 'High' else '🟡'
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
         
-        msg += f"{impact_emoji} **{currency_name}** — {ev['title']}\n"
+        # ⚠️ اسم خبر به انگلیسی می‌مونه
+        msg += f"{impact_emoji} **{currency_name}** — `{ev['title']}`\n"
         
-        # اضافه کردن توضیح فارسی
+        # توضیح فارسی زیرش
         explanation = get_news_explanation(ev['title'])
         if explanation:
             msg += f"   📖 **توضیح:** {explanation['desc']}\n"
