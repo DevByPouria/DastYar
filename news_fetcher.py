@@ -22,9 +22,7 @@ HIGH_IMPACT_KEYWORDS = [
 ]
 
 # ==================== دیکشنری توضیحات فارسی ====================
-# برای هر خبر، توضیح ساده + تأثیر روی طلا و دلار
 NEWS_EXPLANATIONS = {
-    # ===== نرخ بهره فدرال رزرو =====
     'Federal Funds Rate': {
         'desc': 'نرخ بهره کلیدی آمریکا که توسط فدرال رزرو (بانک مرکزی آمریکا) تعیین می‌شود.',
         'effect': 'افزایش نرخ بهره → دلار قوی‌تر می‌شود، طلا ضعیف‌تر (چون طلا سود نمی‌دهد و سرمایه‌ها به سمت اوراق قرضه می‌روند). کاهش نرخ بهره → برعکس.',
@@ -49,8 +47,6 @@ NEWS_EXPLANATIONS = {
         'gold': '⚠️ بستگی به صحبت‌ها دارد',
         'dollar': '⚠️ بستگی به صحبت‌ها دارد'
     },
-
-    # ===== تورم =====
     'CPI': {
         'desc': 'شاخص قیمت مصرف‌کننده. مهم‌ترین معیار تورم در آمریکا.',
         'effect': 'CPI بالاتر از انتظار → تورم بیشتر → احتمال افزایش نرخ بهره → دلار قوی، طلا ضعیف (در کوتاه‌مدت). CPI پایین‌تر از انتظار → برعکس.',
@@ -69,8 +65,6 @@ NEWS_EXPLANATIONS = {
         'gold': '🔴 نزولی (با PPI بالا)',
         'dollar': '🟢 صعودی (با PPI بالا)'
     },
-
-    # ===== اشتغال =====
     'Non-Farm Employment Change': {
         'desc': 'تغییر تعداد شاغلان غیرکشاورزی آمریکا (NFP). مهم‌ترین گزارش اشتغال.',
         'effect': 'NFP قوی‌تر از انتظار → اقتصاد قوی → احتمال افزایش نرخ بهره → دلار قوی، طلا ضعیف. NFP ضعیف‌تر → برعکس.',
@@ -89,32 +83,24 @@ NEWS_EXPLANATIONS = {
         'gold': '🔴 نزولی (با بیکاری کم)',
         'dollar': '🟢 صعودی (با بیکاری کم)'
     },
-
-    # ===== رشد اقتصادی =====
     'GDP': {
         'desc': 'تولید ناخالص داخلی. معیار اصلی رشد اقتصاد آمریکا.',
         'effect': 'GDP قوی → اقتصاد قوی → دلار قوی، طلا ضعیف. GDP ضعیف → برعکس (طلا به عنوان پناهگاه امن).',
         'gold': '🔴 نزولی (با GDP قوی)',
         'dollar': '🟢 صعودی (با GDP قوی)'
     },
-
-    # ===== خرده‌فروشی =====
     'Retail Sales': {
         'desc': 'فروش خرده‌فروشی. نشان‌دهنده قدرت مصرف‌کننده.',
         'effect': 'خرده‌فروشی قوی → اقتصاد قوی → دلار قوی، طلا ضعیف.',
         'gold': '🔴 نزولی (با خرده‌فروشی قوی)',
         'dollar': '🟢 صعودی (با خرده‌فروشی قوی)'
     },
-
-    # ===== PMI =====
     'PMI': {
         'desc': 'شاخص مدیران خرید. بالای ۵۰ = رشد، زیر ۵۰ = رکود.',
         'effect': 'PMI قوی (بالای ۵۰) → اقتصاد قوی → دلار قوی، طلا ضعیف. PMI ضعیف (زیر ۵۰) → برعکس.',
         'gold': '🔴 نزولی (با PMI قوی)',
         'dollar': '🟢 صعودی (با PMI قوی)'
     },
-
-    # ===== سایر =====
     'Interest Rate Decision': {
         'desc': 'تصمیم نرخ بهره بانک مرکزی (فدرال رزرو یا سایر بانک‌ها).',
         'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف. کاهش نرخ → برعکس.',
@@ -123,13 +109,18 @@ NEWS_EXPLANATIONS = {
     },
 }
 
-# ==================== توضیحات برای ارزهای غیر دلاری ====================
+# ==================== توضیحات برای ارزها ====================
 CURRENCY_NAMES = {
     'USD': '🇺🇸 دلار آمریکا',
     'EUR': '🇪🇺 یورو',
     'GBP': '🇬🇧 پوند انگلستان',
     'JPY': '🇯🇵 ین ژاپن',
     'XAU': '🥇 طلا',
+    'CAD': '🇨🇦 دلار کانادا',
+    'AUD': '🇦🇺 دلار استرالیا',
+    'NZD': '🇳🇿 دلار نیوزیلند',
+    'CHF': '🇨🇭 فرانک سوئیس',
+    'CNY': '🇨🇳 یوان چین',
 }
 # ================================================================
 
@@ -148,6 +139,45 @@ def _parse_value(v):
         return float(v)
     except:
         return None
+
+
+def _parse_event_date(date_str):
+    """
+    تبدیل تاریخ ForexFactory به شیء date پایتون
+    فرمت‌ها: 'Tue Sep 15' یا 'Sunday September 15' یا 'Sep 15'
+    """
+    if not date_str:
+        return None
+    
+    months = {
+        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
+        'january': 1, 'february': 2, 'march': 3, 'april': 4, 'june': 6,
+        'july': 7, 'august': 8, 'september': 9, 'october': 10,
+        'november': 11, 'december': 12
+    }
+    
+    parts = date_str.strip().lower().split()
+    month = None
+    day = None
+    
+    for part in parts:
+        # حذف نقطه و کاراکتر اضافی
+        clean = part.strip('.,')
+        if clean in months:
+            month = months[clean]
+        elif clean.isdigit():
+            day = int(clean)
+    
+    if month is None or day is None:
+        return None
+    
+    today = datetime.now()
+    try:
+        return datetime(today.year, month, day).date()
+    except:
+        return None
+
 
 def fetch_events():
     """دریافت رویدادها از ForexFactory"""
@@ -172,31 +202,59 @@ def fetch_events():
         print(f"News fetch error: {e}")
         return []
 
-def filter_today_events(events):
-    """فیلتر اخبار مهم"""
+
+def filter_today_events(events, days_ahead=0):
+    """
+    فیلتر اخبار مهم بر اساس بازه زمانی
+    
+    Args:
+        events: لیست رویدادها
+        days_ahead: 0 = فقط امروز | 1 = امروز و فردا | 7 = این هفته
+    """
     if not events:
         return []
+    
+    today = datetime.now().date()
+    max_date = today + timedelta(days=days_ahead)
     filtered = []
+    
     for ev in events:
+        # فقط اخبار مهم
         if ev['impact'] != 'High':
             continue
+        # فقط ارزهای مرتبط
         if ev['currency'] not in RELEVANT_CURRENCIES:
             continue
+        # فقط اخبار با کلمات کلیدی
         if not any(k.lower() in ev['title'].lower() for k in HIGH_IMPACT_KEYWORDS):
             continue
+        
+        # ⚠️ فیلتر تاریخ (مهم‌ترین بخش)
+        event_date = _parse_event_date(ev['date'])
+        if event_date is None:
+            continue
+        
+        if not (today <= event_date <= max_date):
+            continue
+        
+        # اضافه کردن تاریخ parsed شده
+        ev['parsed_date'] = event_date
         filtered.append(ev)
+    
+    # مرتب‌سازی بر اساس تاریخ
+    filtered.sort(key=lambda x: x['parsed_date'])
+    
     return filtered
 
+
 def get_news_explanation(title):
-    """
-    دریافت توضیح فارسی برای یک خبر
-    برمی‌گرداند دیکشنری با توضیح، تأثیر، اثر روی طلا و دلار
-    """
+    """دریافت توضیح فارسی برای یک خبر"""
     title_lower = title.lower()
     for key, explanation in NEWS_EXPLANATIONS.items():
         if key.lower() in title_lower:
             return explanation
     return None
+
 
 def analyze_sentiment(events):
     """تحلیل احساسات اخبار"""
@@ -204,7 +262,10 @@ def analyze_sentiment(events):
         return {
             'bias': 'neutral',
             'score': 0,
-            'summary': "📰 امروز خبر مهم اقتصادی مؤثری در تقویم نیست."
+            'bullish': 0,
+            'bearish': 0,
+            'events': [],
+            'summary': _format_summary([], 'neutral', 0, 0)
         }
     
     bull = 0
@@ -223,7 +284,7 @@ def analyze_sentiment(events):
                 else:
                     bear += 2
         
-        # CPI بالا → صعودی برای طلا (در بلندمدت)
+        # CPI بالا → صعودی برای طلا
         elif 'cpi' in t:
             if forecast is not None and previous is not None:
                 if forecast > previous:
@@ -261,6 +322,7 @@ def analyze_sentiment(events):
         'summary': _format_summary(events, bias, bull, bear)
     }
 
+
 def _format_summary(events, bias, bull, bear):
     """ساخت خلاصه فارسی برای اخبار"""
     bias_map = {
@@ -272,23 +334,49 @@ def _format_summary(events, bias, bull, bear):
     msg = "📰 **تحلیل فاندامنتال (فارسی)**\n"
     msg += "━━━━━━━━━━━━━━━━━━━━\n"
     msg += f"**بایاس کلی:** {bias_map.get(bias, '⚪ خنثی')}\n\n"
-    msg += "📊 **اخبار مهم امروز:**\n\n"
     
-    for ev in events[:6]:
+    if not events:
+        msg += "📊 **امروز و فردا هیچ خبر مهمی در تقویم نیست.**\n\n"
+        msg += "✅ بازار احتمالاً آرومه."
+        msg += "\n\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
+        return msg
+    
+    msg += "📊 **اخبار مهم پیش رو:**\n\n"
+    
+    today = datetime.now().date()
+    
+    for ev in events[:8]:
         impact_emoji = '🔴' if ev['impact'] == 'High' else '🟡'
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
         
-        # ⚠️ اسم خبر به انگلیسی می‌مونه
+        # برچسب تاریخ
+        date_label = ''
+        if 'parsed_date' in ev:
+            ev_date = ev['parsed_date']
+            if ev_date == today:
+                date_label = '📅 امروز'
+            elif ev_date == today + timedelta(days=1):
+                date_label = '📅 فردا'
+            else:
+                date_label = f"📅 {ev_date.strftime('%Y/%m/%d')}"
+        
+        # اسم خبر به انگلیسی
         msg += f"{impact_emoji} **{currency_name}** — `{ev['title']}`\n"
         
-        # توضیح فارسی زیرش
+        if date_label:
+            msg += f"   {date_label}"
+            if ev.get('time'):
+                msg += f" | ⏰ `{ev['time']}`"
+            msg += "\n"
+        
+        # توضیح فارسی
         explanation = get_news_explanation(ev['title'])
         if explanation:
             msg += f"   📖 **توضیح:** {explanation['desc']}\n"
             msg += f"   💡 **تأثیر:** {explanation['effect']}\n"
             msg += f"   🥇 **طلا:** {explanation['gold']}  |  💵 **دلار:** {explanation['dollar']}\n"
         
-        # نمایش پیش‌بینی و مقدار قبلی
+        # پیش‌بینی و قبلی
         if ev['forecast']:
             msg += f"   📊 پیش‌بینی: `{ev['forecast']}`"
             if ev['previous']:
