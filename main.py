@@ -138,16 +138,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
      # ============ اخبار بازار ============
     if text == "📰 اخبار بازار":
-        wait = await update.message.reply_text("⏳ در حال دریافت اخبار...")
-        events = fetch_events()
-        filtered = filter_today_events(events)
-        analysis = analyze_sentiment(filtered)
-        await wait.edit_text(
-            analysis['summary'],
-            parse_mode='Markdown',
-            disable_web_page_preview=True
-        )
-        return
+    wait = await update.message.reply_text("⏳ در حال دریافت اخبار...")
+    events = fetch_events()
+    filtered = filter_today_events(events, days_ahead=1)  # ⬅️ تغییر
+    analysis = analyze_sentiment(filtered)
+    await wait.edit_text(
+        analysis['summary'],
+        parse_mode='Markdown',
+        disable_web_page_preview=True
+    )
+    return
 
     # ============ جستجوی پیش‌فرض محصول ============
     wait = await update.message.reply_text("🔍 در حال جستجوی کالا...")
@@ -231,7 +231,7 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer("⏳ ...")
     events = fetch_events()
-    filtered = filter_today_events(events)
+    filtered = filter_today_events(events, days_ahead=1)  # ⬅️ تغییر
     analysis = analyze_sentiment(filtered)
     await query.edit_message_text(
         analysis['summary'],
