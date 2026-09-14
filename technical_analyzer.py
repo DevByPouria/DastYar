@@ -1,5 +1,5 @@
 import pandas as pd
-import pandas_ta as ta
+import pandas_ta_classic as ta
 
 class TechnicalAnalyzer:
     def __init__(self, prices_df):
