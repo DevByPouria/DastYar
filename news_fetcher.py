@@ -144,37 +144,49 @@ def _parse_value(v):
 def _parse_event_date(date_str):
     """
     تبدیل تاریخ ForexFactory به شیء date پایتون
-    فرمت‌ها: 'Tue Sep 15' یا 'Sunday September 15' یا 'Sep 15'
+    فرمت‌های ممکن: 'Tue Sep 15' | 'Tuesday September 15' | 'Sep 15' | '09-15-2026'
     """
     if not date_str:
         return None
     
-    months = {
+    months_short = {
         'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
         'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-        'january': 1, 'february': 2, 'march': 3, 'april': 4, 'june': 6,
+    }
+    months_long = {
+        'january': 1, 'february': 2, 'march': 3, 'april': 4, 'may': 5, 'june': 6,
         'july': 7, 'august': 8, 'september': 9, 'october': 10,
-        'november': 11, 'december': 12
+        'november': 11, 'december': 12,
     }
     
-    parts = date_str.strip().lower().split()
+    clean = date_str.strip().lower()
+    parts = clean.replace(',', ' ').replace('.', ' ').split()
+    
     month = None
     day = None
+    year = None
     
     for part in parts:
-        # حذف نقطه و کاراکتر اضافی
-        clean = part.strip('.,')
-        if clean in months:
-            month = months[clean]
-        elif clean.isdigit():
-            day = int(clean)
+        part = part.strip()
+        if part in months_short:
+            month = months_short[part]
+        elif part in months_long:
+            month = months_long[part]
+        elif part.isdigit():
+            num = int(part)
+            if num > 31:  # این ساله
+                year = num
+            elif num <= 31 and day is None:
+                day = num
     
     if month is None or day is None:
         return None
     
-    today = datetime.now()
+    if year is None:
+        year = datetime.now().year
+    
     try:
-        return datetime(today.year, month, day).date()
+        return datetime(year, month, day).date()
     except:
         return None
 
