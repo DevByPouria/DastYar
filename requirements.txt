@@ -5,7 +5,7 @@ Flask
 curl_cffi
 duckduckgo-search
 pandas
-pandas-ta
+pandas-ta-classic
 matplotlib
 lxml
 jdatetime
