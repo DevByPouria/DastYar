@@ -19,8 +19,7 @@ import historical_data as hist
 import pandas as pd
 from technical_analyzer import TechnicalAnalyzer
 from news_fetcher import (
-    fetch_events, filter_today_events, analyze_sentiment,
-    _parse_event_date
+    fetch_events, filter_today_events, analyze_sentiment
 )
 from signal_engine import SignalEngine
 
