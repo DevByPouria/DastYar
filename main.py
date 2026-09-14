@@ -18,7 +18,10 @@ from gold_currency import get_gold_and_currency_prices, format_gold_currency_mes
 import historical_data as hist
 import pandas as pd
 from technical_analyzer import TechnicalAnalyzer
-from news_fetcher import fetch_events, filter_today_events, analyze_sentiment
+from news_fetcher import (
+    fetch_events, filter_today_events, analyze_sentiment,
+    _parse_event_date
+)
 from signal_engine import SignalEngine
 
 # ================== تنظیمات ==================
@@ -74,6 +77,16 @@ SIGNAL_MENU = InlineKeyboardMarkup([
     [InlineKeyboardButton("🪙 سکه", callback_data="sig_coin")],
 ])
 
+# ================== منوی اخبار ==================
+def get_news_menu():
+    """منوی اخبار با 3 گزینه"""
+    keyboard = [
+        [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today")],
+        [InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
+        [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
 # ================== راه‌اندازی دیتابیس ==================
 hist.init_db()
 
@@ -109,7 +122,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if text == "🪙 قیمت طلا و ارز":
         wait = await update.message.reply_text("⏳ در حال استعلام آخرین نرخ‌ها...")
         prices = get_gold_and_currency_prices()
-        # ذخیره اسنپ‌شات‌ها
         for label, price in prices.items():
             try:
                 hist.save_snapshot(label, int(price.replace(',', '')))
@@ -134,20 +146,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=SIGNAL_MENU,
             parse_mode='Markdown'
         )
-        return 
+        return
 
-     # ============ اخبار بازار ============
+    # ============ اخبار بازار ============
     if text == "📰 اخبار بازار":
-    wait = await update.message.reply_text("⏳ در حال دریافت اخبار...")
-    events = fetch_events()
-    filtered = filter_today_events(events, days_ahead=1)  # ⬅️ تغییر
-    analysis = analyze_sentiment(filtered)
-    await wait.edit_text(
-        analysis['summary'],
-        parse_mode='Markdown',
-        disable_web_page_preview=True
-    )
-    return
+        await update.message.reply_text(
+            "📰 **اخبار بازار**\n\n"
+            "🔹 کدوم بازه زمانی رو می‌خوای ببینی؟",
+            reply_markup=get_news_menu(),
+            parse_mode='Markdown'
+        )
+        return
 
     # ============ جستجوی پیش‌فرض محصول ============
     wait = await update.message.reply_text("🔍 در حال جستجوی کالا...")
@@ -156,6 +165,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await wait.edit_text(messages[0], parse_mode='Markdown', disable_web_page_preview=True)
     for m in messages[1:]:
         await update.message.reply_text(m, parse_mode='Markdown', disable_web_page_preview=True)
+
 
 async def refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -171,6 +181,7 @@ async def refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(msg, parse_mode='Markdown', reply_markup=REFRESH_BUTTON)
     except:
         pass
+
 
 async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """هندلر دکمه‌های سیگنال"""
@@ -210,7 +221,7 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ===== تحلیل فاندامنتال =====
     events = fetch_events()
-    filtered = filter_today_events(events)
+    filtered = filter_today_events(events, days_ahead=7)
     fund_result = analyze_sentiment(filtered)
 
     # ===== سیگنال نهایی =====
@@ -223,21 +234,96 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         disable_web_page_preview=True,
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🔄 تحلیل مجدد", callback_data=data)],
-            [InlineKeyboardButton("📰 اخبار بازار", callback_data="show_news")],
+            [InlineKeyboardButton("📰 اخبار بازار", callback_data="news_today")],
         ])
     )
 
+
 async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """هندلر دکمه‌های اخبار - 3 گزینه"""
     query = update.callback_query
-    await query.answer("⏳ ...")
+    await query.answer("⏳ در حال دریافت اخبار...")
+
+    data = query.data
     events = fetch_events()
-    filtered = filter_today_events(events, days_ahead=1)  # ⬅️ تغییر
-    analysis = analyze_sentiment(filtered)
+
+    # ===== اخبار امروز =====
+    if data == "news_today":
+        filtered = filter_today_events(events, days_ahead=0)
+        analysis = analyze_sentiment(filtered)
+        if not filtered:
+            analysis['summary'] = (
+                "📰 **اخبار امروز**\n"
+                "━━━━━━━━━━━━━━━━━━━━\n\n"
+                "✅ **امروز هیچ خبر مهم اقتصادی در تقویم نیست.**\n\n"
+                "_بازار احتمالاً آرومه._\n\n"
+                "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
+            )
+
+    # ===== اخبار این هفته =====
+    elif data == "news_week":
+        filtered = filter_today_events(events, days_ahead=7)
+        analysis = analyze_sentiment(filtered)
+        if not filtered:
+            analysis['summary'] = (
+                "📰 **اخبار این هفته**\n"
+                "━━━━━━━━━━━━━━━━━━━━\n\n"
+                "✅ **این هفته هیچ خبر مهم اقتصادی در تقویم نیست.**\n\n"
+                "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
+            )
+
+    # ===== اخبار مهم هفته =====
+    elif data == "news_important":
+        from datetime import datetime, timedelta
+        from news_fetcher import RELEVANT_CURRENCIES
+        critical_keywords = ['FOMC', 'Federal Funds', 'Non-Farm', 'CPI']
+        today = datetime.now().date()
+        max_date = today + timedelta(days=7)
+
+        filtered = []
+        for ev in events:
+            if ev['impact'] != 'High':
+                continue
+            if ev['currency'] not in RELEVANT_CURRENCIES:
+                continue
+            if not any(k.lower() in ev['title'].lower() for k in critical_keywords):
+                continue
+            event_date = _parse_event_date(ev['date'])
+            if event_date is None:
+                continue
+            if not (today <= event_date <= max_date):
+                continue
+            ev['parsed_date'] = event_date
+            filtered.append(ev)
+
+        filtered.sort(key=lambda x: x['parsed_date'])
+        analysis = analyze_sentiment(filtered)
+
+        if not filtered:
+            analysis['summary'] = (
+                "🔥 **اخبار مهم هفته**\n"
+                "━━━━━━━━━━━━━━━━━━━━\n\n"
+                "✅ **این هفته خبر خیلی مهمی در راه نیست.**\n\n"
+                "🔹 فقط اخبار عادی در تقویم وجود داره.\n\n"
+                "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
+            )
+    else:
+        return
+
+    # ===== ساخت دکمه‌های بازگشت =====
+    back_keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today"),
+         InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
+        [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
+    ])
+
     await query.edit_message_text(
         analysis['summary'],
         parse_mode='Markdown',
-        disable_web_page_preview=True
+        disable_web_page_preview=True,
+        reply_markup=back_keyboard
     )
+
 
 # ================== اجرا ==================
 def main():
@@ -251,10 +337,11 @@ def main():
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     app.add_handler(CallbackQueryHandler(refresh_callback, pattern="^refresh_prices$"))
     app.add_handler(CallbackQueryHandler(signal_callback, pattern="^sig_"))
-    app.add_handler(CallbackQueryHandler(news_callback, pattern="^show_news$"))
+    app.add_handler(CallbackQueryHandler(news_callback, pattern="^news_"))
 
     print("🚀 Bot is running...")
     app.run_polling()
+
 
 if __name__ == '__main__':
     main()
