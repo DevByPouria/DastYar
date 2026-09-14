@@ -244,26 +244,25 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer("⏳ در حال دریافت اخبار...")
 
     data = query.data
-    events = fetch_events()
 
-    # ===== اخبار امروز =====
+    # ===== اخبار امروز (همه سطوح) =====
     if data == "news_today":
-        # امروز: همه اخبار مهم و متوسط
-        filtered = filter_today_events(events, days_ahead=0, min_impact='Medium')
+        events = fetch_events(days_ahead=1)
+        filtered = filter_today_events(events, days_ahead=0, min_impact='All')
         analysis = analyze_sentiment(filtered)
         if not filtered:
             analysis['summary'] = (
                 "📰 **اخبار امروز**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
-                "✅ **امروز هیچ خبر اقتصادی مهمی در تقویم نیست.**\n\n"
-                "_بازار احتمالاً آرومه._\n\n"
+                "⚠️ **امروز هیچ خبری در تقویم نیست.**\n\n"
+                "_این یه روز آروم برای بازاره._\n\n"
                 "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
             )
 
-    # ===== اخبار این هفته =====
+    # ===== اخبار این هفته (همه سطوح) =====
     elif data == "news_week":
-        # هفته: همه اخبار (حتی Low)
-        filtered = filter_today_events(events, days_ahead=7, min_impact='Medium')
+        events = fetch_events(days_ahead=7)
+        filtered = filter_today_events(events, days_ahead=7, min_impact='All')
         analysis = analyze_sentiment(filtered)
         if not filtered:
             analysis['summary'] = (
@@ -273,9 +272,9 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "🔹 لطفاً بعداً دوباره تلاش کن."
             )
 
-    # ===== اخبار مهم هفته =====
+    # ===== اخبار مهم هفته (فقط High) =====
     elif data == "news_important":
-        # فقط اخبار High impact
+        events = fetch_events(days_ahead=7)
         filtered = filter_today_events(events, days_ahead=7, min_impact='High')
         analysis = analyze_sentiment(filtered)
         if not filtered:
@@ -283,7 +282,6 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "🔥 **اخبار مهم هفته**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "✅ **این هفته خبر خیلی مهمی در راه نیست.**\n\n"
-                "🔹 فقط اخبار متوسط وجود داره.\n\n"
                 "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
             )
     else:
