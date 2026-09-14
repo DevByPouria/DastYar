@@ -249,68 +249,48 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # ===== اخبار امروز =====
     if data == "news_today":
-        filtered = filter_today_events(events, days_ahead=0)
+        # امروز: همه اخبار مهم و متوسط
+        filtered = filter_today_events(events, days_ahead=0, min_impact='Medium')
         analysis = analyze_sentiment(filtered)
         if not filtered:
             analysis['summary'] = (
                 "📰 **اخبار امروز**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
-                "✅ **امروز هیچ خبر مهم اقتصادی در تقویم نیست.**\n\n"
+                "✅ **امروز هیچ خبر اقتصادی مهمی در تقویم نیست.**\n\n"
                 "_بازار احتمالاً آرومه._\n\n"
                 "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
             )
 
     # ===== اخبار این هفته =====
     elif data == "news_week":
-        filtered = filter_today_events(events, days_ahead=7)
+        # هفته: همه اخبار (حتی Low)
+        filtered = filter_today_events(events, days_ahead=7, min_impact='Medium')
         analysis = analyze_sentiment(filtered)
         if not filtered:
             analysis['summary'] = (
                 "📰 **اخبار این هفته**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
-                "✅ **این هفته هیچ خبر مهم اقتصادی در تقویم نیست.**\n\n"
-                "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
+                "⚠️ هیچ خبری در این هفته پیدا نشد.\n"
+                "🔹 لطفاً بعداً دوباره تلاش کن."
             )
 
     # ===== اخبار مهم هفته =====
     elif data == "news_important":
-        from datetime import datetime, timedelta
-        from news_fetcher import RELEVANT_CURRENCIES
-        critical_keywords = ['FOMC', 'Federal Funds', 'Non-Farm', 'CPI']
-        today = datetime.now().date()
-        max_date = today + timedelta(days=7)
-
-        filtered = []
-        for ev in events:
-            if ev['impact'] != 'High':
-                continue
-            if ev['currency'] not in RELEVANT_CURRENCIES:
-                continue
-            if not any(k.lower() in ev['title'].lower() for k in critical_keywords):
-                continue
-            event_date = _parse_event_date(ev['date'])
-            if event_date is None:
-                continue
-            if not (today <= event_date <= max_date):
-                continue
-            ev['parsed_date'] = event_date
-            filtered.append(ev)
-
-        filtered.sort(key=lambda x: x['parsed_date'])
+        # فقط اخبار High impact
+        filtered = filter_today_events(events, days_ahead=7, min_impact='High')
         analysis = analyze_sentiment(filtered)
-
         if not filtered:
             analysis['summary'] = (
                 "🔥 **اخبار مهم هفته**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "✅ **این هفته خبر خیلی مهمی در راه نیست.**\n\n"
-                "🔹 فقط اخبار عادی در تقویم وجود داره.\n\n"
+                "🔹 فقط اخبار متوسط وجود داره.\n\n"
                 "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
             )
     else:
         return
 
-    # ===== ساخت دکمه‌های بازگشت =====
+    # ===== دکمه‌های بازگشت =====
     back_keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today"),
          InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
