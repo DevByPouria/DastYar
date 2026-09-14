@@ -3,14 +3,14 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import zoneinfo
 import re
+import xml.etree.ElementTree as ET
 
-# ==================== تنظیمات ====================
-FF_URL = "https://www.forexfactory.com/calendar"
+# ==================== URLها ====================
+FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
+FF_XML_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.xml"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
 }
 
 RELEVANT_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
@@ -113,6 +113,18 @@ NEWS_EXPLANATIONS = {
         'gold': '⚠️ غیرمستقیم',
         'dollar': '⚠️ غیرمستقیم'
     },
+    'Employment Change': {
+        'desc': 'تغییر اشتغال.',
+        'effect': 'اشتغال قوی → ارز قوی، طلا ضعیف.',
+        'gold': '🔴 نزولی (با اشتغال قوی)',
+        'dollar': '🟢 صعودی (با اشتغال قوی)'
+    },
+    'Retail Sales m/m': {
+        'desc': 'فروش خرده‌فروشی ماهانه.',
+        'effect': 'قوی → دلار قوی، طلا ضعیف.',
+        'gold': '🔴 نزولی',
+        'dollar': '🟢 صعودی'
+    },
 }
 
 CURRENCY_NAMES = {
@@ -131,7 +143,6 @@ CURRENCY_NAMES = {
 
 
 def _parse_value(v):
-    """تبدیل مقدار مثل 120K یا 2.1% به عدد"""
     if not v:
         return None
     v = v.strip().replace(',', '').replace('%', '')
@@ -148,10 +159,7 @@ def _parse_value(v):
 
 
 def _parse_date(date_str):
-    """
-    پارس تاریخ از فرمت‌های مختلف
-    'Tue Sep 15' | 'Sep 15' | 'Tue Sep 15, 2026'
-    """
+    """پارس تاریخ"""
     if not date_str:
         return None
     
@@ -193,75 +201,84 @@ def _parse_date(date_str):
         return None
 
 
-def fetch_events(days_ahead=7):
-    """
-    دریافت رویدادها از ForexFactory با curl_cffi (دور زدن Cloudflare)
-    """
+# ==================== روش ۱: XML فید (روش اصلی) ====================
+def fetch_events_xml():
+    """دریافت رویدادها از XML فید ForexFactory"""
+    events = []
+    
+    for url in [FF_XML_THIS_WEEK, FF_XML_NEXT_WEEK]:
+        try:
+            res = requests.get(url, headers=HEADERS, timeout=20)
+            res.raise_for_status()
+            
+            print(f"[DEBUG] XML fetch from {url.split('/')[-1]}: {res.status_code}, size: {len(res.content)}")
+            
+            root = ET.fromstring(res.content)
+            
+            for ev in root.findall('.//event'):
+                title = (ev.findtext('title') or '').strip()
+                currency = (ev.findtext('country') or '').strip()
+                date_str = (ev.findtext('date') or '').strip()
+                time_str = (ev.findtext('time') or '').strip()
+                impact = (ev.findtext('impact') or 'Low').strip()
+                forecast = (ev.findtext('forecast') or '').strip()
+                previous = (ev.findtext('previous') or '').strip()
+                
+                parsed_date = _parse_date(date_str)
+                
+                if not title or not currency or not parsed_date:
+                    continue
+                
+                events.append({
+                    'title': title,
+                    'currency': currency,
+                    'date': date_str,
+                    'parsed_date': parsed_date,
+                    'time': time_str,
+                    'impact': impact,
+                    'forecast': forecast,
+                    'previous': previous,
+                })
+        except Exception as e:
+            print(f"[DEBUG] XML fetch error for {url}: {e}")
+            continue
+    
+    print(f"[DEBUG] Total XML events: {len(events)}")
+    return events
+
+
+# ==================== روش ۲: HTML Scraping (روش پشتیبان) ====================
+def fetch_events_html():
+    """دریافت رویدادها با curl_cffi (دور زدن Cloudflare)"""
     events = []
     
     try:
-        # استفاده از curl_cffi برای شبیه‌سازی مرورگر واقعی
         from curl_cffi import requests as cf_requests
         
         url = "https://www.forexfactory.com/calendar"
+        res = cf_requests.get(url, impersonate="chrome124", timeout=30, headers=HEADERS)
         
-        res = cf_requests.get(
-            url,
-            impersonate="chrome124",
-            timeout=30,
-            headers={
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            }
-        )
-        
-        print(f"[DEBUG] Status Code: {res.status_code}")
-        print(f"[DEBUG] Content Length: {len(res.text)}")
+        print(f"[DEBUG] HTML fetch status: {res.status_code}, size: {len(res.text)}")
         
         if res.status_code != 200:
-            print(f"[DEBUG] Bad status: {res.status_code}")
             return []
         
         soup = BeautifulSoup(res.text, 'lxml')
+        rows = soup.find_all('tr', class_=re.compile('calendar__row'))
         
-        # پیدا کردن جدول تقویم
-        calendar_table = soup.find('table', class_=re.compile('calendar__table'))
-        if not calendar_table:
-            print("[DEBUG] Calendar table not found!")
-            # شاید کلاس متفاوت باشه
-            all_tables = soup.find_all('table')
-            print(f"[DEBUG] Found {len(all_tables)} tables total")
-            for t in all_tables:
-                cls = ' '.join(t.get('class', []))
-                print(f"[DEBUG] Table class: {cls}")
-            return []
+        print(f"[DEBUG] Found {len(rows)} calendar rows")
         
-        print("[DEBUG] Calendar table found!")
-        
-        # پیدا کردن همه سطرهای تقویم
-        rows = calendar_table.find_all('tr', class_=re.compile('calendar__row'))
-        print(f"[DEBUG] Found {len(rows)} rows")
-        
-        if not rows:
-            # شاید ساختار متفاوته
-            rows = calendar_table.find_all('tr')
-            print(f"[DEBUG] Fallback: {len(rows)} total rows")
-        
-        from datetime import datetime as _dt
-        today = _dt.now().date()
+        today = datetime.now().date()
         current_date = today
         
         for row in rows:
             try:
-                # آیا این سطر تاریخ داره؟
                 date_cell = row.find('td', class_=re.compile('calendar__date'))
                 if date_cell and date_cell.get_text(strip=True):
-                    date_text = date_cell.get_text(strip=True)
-                    parsed = _parse_date(date_text)
+                    parsed = _parse_date(date_cell.get_text(strip=True))
                     if parsed:
                         current_date = parsed
                 
-                # استخراج اطلاعات خبر
                 currency_cell = row.find('td', class_=re.compile('calendar__currency'))
                 event_cell = row.find('td', class_=re.compile('calendar__event'))
                 impact_cell = row.find('td', class_=re.compile('calendar__impact'))
@@ -278,7 +295,6 @@ def fetch_events(days_ahead=7):
                 if not currency or not title:
                     continue
                 
-                # تشخیص سطح اهمیت
                 impact = 'Low'
                 if impact_cell:
                     impact_span = impact_cell.find('span')
@@ -288,8 +304,6 @@ def fetch_events(days_ahead=7):
                             impact = 'High'
                         elif 'medium' in classes.lower():
                             impact = 'Medium'
-                        elif 'low' in classes.lower():
-                            impact = 'Low'
                 
                 events.append({
                     'title': title,
@@ -301,29 +315,48 @@ def fetch_events(days_ahead=7):
                     'forecast': forecast_cell.get_text(strip=True) if forecast_cell else '',
                     'previous': previous_cell.get_text(strip=True) if previous_cell else '',
                 })
-            except Exception as e:
+            except:
                 continue
         
-        print(f"[DEBUG] Fetched {len(events)} events")
+        print(f"[DEBUG] Total HTML events: {len(events)}")
         return events
         
     except Exception as e:
-        print(f"Scrape error: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"[DEBUG] HTML error: {e}")
         return []
 
 
+# ==================== تابع اصلی ====================
+def fetch_events(days_ahead=7):
+    """دریافت رویدادها با ترکیب XML و HTML"""
+    xml_events = fetch_events_xml()
+    html_events = fetch_events_html()
+    
+    # ترکیب و حذف تکراری‌ها
+    all_events = {}
+    for ev in xml_events + html_events:
+        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+        if key not in all_events:
+            all_events[key] = ev
+        else:
+            # اگه یکی impact بالاتری داشت، اون رو نگه دار
+            existing = all_events[key]
+            impact_order = {'High': 3, 'Medium': 2, 'Low': 1}
+            if impact_order.get(ev['impact'], 0) > impact_order.get(existing['impact'], 0):
+                all_events[key] = ev
+    
+    result = list(all_events.values())
+    print(f"[DEBUG] Total unique events: {len(result)}")
+    return result
+
+
 def filter_today_events(events, days_ahead=0, min_impact='Medium'):
-    """
-    فیلتر اخبار بر اساس بازه زمانی و اهمیت
-    """
+    """فیلتر اخبار"""
     if not events:
         return []
     
     today = datetime.now().date()
     max_date = today + timedelta(days=days_ahead)
-    filtered = []
     
     allowed_impacts = {
         'High': ['High'],
@@ -332,16 +365,13 @@ def filter_today_events(events, days_ahead=0, min_impact='Medium'):
     }
     allowed = allowed_impacts.get(min_impact, ['High', 'Medium'])
     
+    filtered = []
     for ev in events:
-        # فیلتر اهمیت
         if ev['impact'] not in allowed:
             continue
-        
-        # فیلتر ارز
         if ev['currency'] not in RELEVANT_CURRENCIES:
             continue
         
-        # فیلتر تاریخ
         ev_date = ev.get('parsed_date')
         if ev_date is None:
             continue
@@ -351,7 +381,6 @@ def filter_today_events(events, days_ahead=0, min_impact='Medium'):
         
         filtered.append(ev)
     
-    # مرتب‌سازی
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
@@ -362,7 +391,6 @@ def filter_today_events(events, days_ahead=0, min_impact='Medium'):
 
 
 def get_news_explanation(title):
-    """دریافت توضیح فارسی برای یک خبر"""
     title_lower = title.lower()
     for key, explanation in NEWS_EXPLANATIONS.items():
         if key.lower() in title_lower:
@@ -371,20 +399,14 @@ def get_news_explanation(title):
 
 
 def analyze_sentiment(events):
-    """تحلیل احساسات اخبار"""
     if not events:
         return {
-            'bias': 'neutral',
-            'score': 0,
-            'bullish': 0,
-            'bearish': 0,
-            'events': [],
-            'summary': _format_summary([], 'neutral', 0, 0)
+            'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
+            'events': [], 'summary': _format_summary([], 'neutral', 0, 0)
         }
     
     bull = 0
     bear = 0
-    
     for ev in events:
         t = ev['title'].lower()
         forecast = _parse_value(ev['forecast'])
@@ -396,21 +418,18 @@ def analyze_sentiment(events):
                     bull += 3
                 else:
                     bear += 2
-        
         elif 'cpi' in t:
             if forecast is not None and previous is not None:
                 if forecast > previous:
                     bull += 2
                 else:
                     bear += 2
-        
         elif 'gdp' in t:
             if forecast is not None and previous is not None:
                 if forecast < previous:
                     bull += 2
                 else:
                     bear += 1
-        
         elif 'interest rate' in t or 'fomc' in t or 'federal funds' in t:
             bear += 1
     
@@ -423,22 +442,13 @@ def analyze_sentiment(events):
         bias = 'neutral'
     
     return {
-        'bias': bias,
-        'score': net,
-        'bullish': bull,
-        'bearish': bear,
-        'events': events,
-        'summary': _format_summary(events, bias, bull, bear)
+        'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
+        'events': events, 'summary': _format_summary(events, bias, bull, bear)
     }
 
 
 def _format_summary(events, bias, bull, bear):
-    """ساخت خلاصه فارسی"""
-    bias_map = {
-        'bullish': '🟢 صعودی',
-        'bearish': '🔴 نزولی',
-        'neutral': '⚪ خنثی'
-    }
+    bias_map = {'bullish': '🟢 صعودی', 'bearish': '🔴 نزولی', 'neutral': '⚪ خنثی'}
     
     msg = "📰 **تحلیل فاندامنتال**\n"
     msg += "━━━━━━━━━━━━━━━━━━━━\n"
@@ -456,7 +466,6 @@ def _format_summary(events, bias, bull, bear):
         impact_emoji = {'High': '🔴', 'Medium': '🟡', 'Low': '🟢'}.get(ev['impact'], '⚪')
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
         
-        # برچسب تاریخ
         date_label = ''
         if ev.get('parsed_date'):
             ev_date = ev['parsed_date']
@@ -475,7 +484,6 @@ def _format_summary(events, bias, bull, bear):
                 msg += f" | ⏰ `{ev['time']}`"
             msg += "\n"
         
-        # توضیح فارسی
         explanation = get_news_explanation(ev['title'])
         if explanation:
             msg += f"   📖 {explanation['desc']}\n"
