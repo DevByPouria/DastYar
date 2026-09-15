@@ -7,6 +7,6 @@ duckduckgo-search
 pandas
 pandas-ta-classic
 matplotlib
-lxml
+lxml 
 jdatetime
 biquote
