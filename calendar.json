@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-15T13:18:42.346850",
-  "count": 88,
+  "scraped_at": "2026-09-15T18:03:00.742878",
+  "count": 89,
   "events": [
     {
       "date": "2026-09-15",
@@ -124,7 +124,17 @@
     },
     {
       "date": "2026-09-15",
-      "time": "2:50pm",
+      "time": "2:00pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "Treasury Sec Bessent Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-09-15",
+      "time": "3:39pm",
       "currency": "NZD",
       "impact": "low",
       "title": "GDT Price Index",
