@@ -24,8 +24,18 @@ class SignalEngine:
         elif analyzed >= 2:
             total_conf = min(100, tech_conf + 8)
 
+        # ===== تشخیص حالت مختلط =====
+        tech_sign = 1 if tech_score > 0 else (-1 if tech_score < 0 else 0)
+        fund_sign = 1 if fund_score > 0 else (-1 if fund_score < 0 else 0)
+        is_mixed = (tech_sign * fund_sign == -1 and 
+                    abs(tech_score) >= 2 and 
+                    abs(fund_score) >= 2)
+
         # ===== تعیین سیگنال =====
-        if final >= 5:
+        if is_mixed:
+            signal_text = "⚖️ **مختلط (سیگنال‌های متناقض)**"
+            signal_emoji = "MIXED"
+        elif final >= 5:
             signal_text = "🟢🟢 **خرید قوی**"
             signal_emoji = "STRONG_BUY"
         elif final >= 2:
@@ -56,18 +66,26 @@ class SignalEngine:
         else:
             msg += "  ➖ سیگنال تکنیکال قوی‌ای یافت نشد.\n"
 
-        # ===== خلاصه‌ی فاندامنتال =====
+        # ===== خلاصه‌ی فاندامنتال با امتیاز عددی =====
         bias = fund_result.get('bias', 'neutral')
         bias_map = {'bullish': '🟢 صعودی', 'bearish': '🔴 نزولی', 'neutral': '⚪ خنثی'}
-        msg += f"\n📰 **فاندامنتال:** {bias_map.get(bias, '⚪ خنثی')}"
-        msg += f" (تحلیل {analyzed} خبر)\n"
+        fund_emoji = '🟢' if fund_score > 0 else ('🔴' if fund_score < 0 else '⚪')
+        msg += f"\n📰 **فاندامنتال:** {bias_map.get(bias, '⚪ خنثی')} ({fund_emoji} `{fund_score:+d}`)"
+        msg += f" — تحلیل {analyzed} خبر\n"
+
+        # ===== امتیاز تکنیکال =====
+        tech_emoji = '🟢' if tech_score > 0 else ('🔴' if tech_score < 0 else '⚪')
+        msg += f"🔧 **تکنیکال:** {tech_emoji} `{tech_score:+d}`\n"
 
         # ===== مدیریت ریسک =====
         sl = tech_result.get('stop_loss')
         tp = tech_result.get('take_profit')
         rr = tech_result.get('risk_reward')
 
-        if sl and tp and signal_emoji in ['STRONG_BUY', 'BUY', 'STRONG_SELL', 'SELL']:
+        if is_mixed:
+            msg += f"\n⚖️ **سیگنال‌ها متناقضن — ورود نکن**\n"
+            msg += f"   🔧 تکنیکال: `{tech_score:+d}`  |  📰 فاندامنتال: `{fund_score:+d}`\n"
+        elif sl and tp and signal_emoji in ['STRONG_BUY', 'BUY', 'STRONG_SELL', 'SELL']:
             msg += f"\n🎯 **مدیریت ریسک:**\n"
             msg += f"  🛑 حد ضرر: `${sl:,}`\n"
             msg += f"  ✅ حد سود: `${tp:,}`\n"
