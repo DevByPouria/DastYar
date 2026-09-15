@@ -95,22 +95,19 @@ def fetch_events(days_ahead=7):
                 if not title or not currency or not date_str:
                     continue
                 
-                # نرمال‌سازی impact
                 impact_str = str(impact).capitalize()
                 if impact_str not in ['High', 'Medium', 'Low']:
                     impact_str = 'Low'
                 
-                # پارس تاریخ
                 try:
                     parsed_date = datetime.strptime(date_str[:10], '%Y-%m-%d').date()
                 except:
                     continue
                 
-                # استخراج ساعت از time (مثلاً "9:30am")
+                # تبدیل "8:15am" به "08:15"
                 time_only = time_str
                 if time_str:
                     try:
-                        # تبدیل "9:30am" به "09:30"
                         import re
                         m = re.match(r'(\d{1,2}):(\d{2})(am|pm)?', time_str.lower())
                         if m:
