@@ -63,16 +63,35 @@ MIN_RECORDS_FOR_SMA200 = 220    # حداقل رکورد برای SMA 200
 def init_db():
     """ساخت جدول دیتابیس"""
     conn = sqlite3.connect(DB_PATH)
-    conn.execute('''
-        CREATE TABLE IF NOT EXISTS price_snapshots (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            asset_key TEXT,
-            price REAL,
-            timestamp TEXT,
-            date_shamsi TEXT,
-            source TEXT DEFAULT 'live'
-        )
-    ''')
+    
+    # چک کن جدول قدیمی هست یا نه
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='price_snapshots'"
+    )
+    table_exists = cursor.fetchone() is not None
+    
+    if table_exists:
+        # چک ساختار
+        cursor = conn.execute("PRAGMA table_info(price_snapshots)")
+        columns = [row[1] for row in cursor.fetchall()]
+        
+        if 'source' not in columns:
+            print("[DEBUG] Old table detected — recreating", flush=True)
+            conn.execute("DROP TABLE price_snapshots")
+            table_exists = False
+    
+    if not table_exists:
+        conn.execute('''
+            CREATE TABLE price_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                asset_key TEXT,
+                price REAL,
+                timestamp TEXT,
+                date_shamsi TEXT,
+                source TEXT DEFAULT 'live'
+            )
+        ''')
+    
     conn.execute('''
         CREATE INDEX IF NOT EXISTS idx_asset_time
         ON price_snapshots(asset_key, timestamp)
