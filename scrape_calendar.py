@@ -1,6 +1,6 @@
 """
 اسکرپر تقویم اقتصادی ForexFactory
-روی GitHub Actions اجرا میشه (نه روی Render)
+روی GitHub Actions اجرا میشه
 """
 import asyncio
 import json
@@ -11,9 +11,8 @@ from pathlib import Path
 from playwright.async_api import async_playwright
 
 
-# ==================== تنظیمات ====================
 OUTPUT_FILE = "calendar.json"
-DAYS_AHEAD = 10  # اخبار ۱۰ روز آینده
+DAYS_AHEAD = 10
 
 MONTHS = {
     'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
@@ -24,8 +23,7 @@ MONTHS = {
 }
 
 
-def parse_date(date_str: str):
-    """پارس تاریخ از فرمت‌های مختلف ForexFactory"""
+def parse_date(date_str):
     if not date_str:
         return None
     clean = date_str.strip().lower().replace(',', '')
@@ -58,50 +56,88 @@ def parse_date(date_str: str):
 
 
 async def scrape_forexfactory():
-    """اسکرپ تقویم ForexFactory"""
     events = []
     
     async with async_playwright() as p:
         print("[INFO] Launching browser...")
         browser = await p.chromium.launch(
             headless=True,
-            args=['--no-sandbox', '--disable-dev-shm-usage']
+            args=[
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-blink-features=AutomationControlled',
+            ]
         )
         
         context = await browser.new_context(
             user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                        'AppleWebKit/537.36 (KHTML, like Gecko) '
-                       'Chrome/128.0.0.0 Safari/537.36',
+                       'Chrome/131.0.0.0 Safari/537.36',
             locale='en-US',
             timezone_id='America/New_York',
+            viewport={'width': 1920, 'height': 1080},
         )
+        
+        await context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        """)
         
         page = await context.new_page()
         
         print("[INFO] Loading ForexFactory calendar...")
-        await page.goto(
-            "https://www.forexfactory.com/calendar?week=this",
-            wait_until="domcontentloaded",
-            timeout=60000
-        )
-        
         try:
-            await page.wait_for_selector("table.calendar__table", timeout=30000)
-            print("[INFO] Calendar table loaded")
+            await page.goto(
+                "https://www.forexfactory.com/calendar?week=this",
+                wait_until="networkidle",
+                timeout=90000
+            )
         except Exception as e:
-            print(f"[ERROR] Table not found: {e}")
-            html = await page.content()
-            print(f"[DEBUG] HTML length: {len(html)}")
-            Path("debug_calendar.html").write_text(html, encoding='utf-8')
-            await browser.close()
-            return []
+            print(f"[WARN] goto timeout: {e}")
         
         html_content = await page.content()
         Path("debug_calendar.html").write_text(html_content, encoding='utf-8')
-        print(f"[INFO] Saved debug HTML ({len(html_content)} chars)")
+        print(f"[DEBUG] HTML length: {len(html_content)}")
+        print(f"[DEBUG] HTML PREVIEW (first 3000 chars):")
+        print("=" * 60)
+        print(html_content[:3000])
+        print("=" * 60)
         
-        rows = await page.query_selector_all("tr.calendar__row")
-        print(f"[INFO] Found {len(rows)} rows")
+        if "cloudflare" in html_content.lower() or "just a moment" in html_content.lower():
+            print("[ERROR] Cloudflare challenge detected!")
+            await browser.close()
+            return []
+        
+        selectors_to_try = [
+            "table.calendar__table",
+            "table.calendar-table",
+            "table[class*='calendar']",
+            "table",
+        ]
+        
+        rows = []
+        for sel in selectors_to_try:
+            try:
+                print(f"[INFO] Trying selector: {sel}")
+                await page.wait_for_selector(sel, timeout=10000)
+                rows = await page.query_selector_all(f"{sel} tr.calendar__row")
+                if not rows:
+                    rows = await page.query_selector_all(f"{sel} tr")
+                print(f"[INFO] Found {len(rows)} rows with '{sel}'")
+                if rows:
+                    break
+            except Exception as e:
+                print(f"[WARN] Selector '{sel}' failed: {e}")
+                continue
+        
+        if not rows:
+            print("[ERROR] No rows found!")
+            tables = await page.query_selector_all("table")
+            print(f"[DEBUG] Total <table> elements: {len(tables)}")
+            for i, t in enumerate(tables[:5]):
+                cls = await t.get_attribute("class")
+                print(f"[DEBUG]   Table {i}: class='{cls}'")
+            await browser.close()
+            return []
         
         today = datetime.now().date()
         max_date = today + timedelta(days=DAYS_AHEAD)
