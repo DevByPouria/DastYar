@@ -7,14 +7,13 @@ import os
 
 # ==================== تنظیمات ====================
 FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
-FF_XML_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.xml"
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
 }
 
 CACHE_FILE = '/tmp/news_cache.json'
-CACHE_DURATION_HOURS = 6  # هر 6 ساعت یه بار از فارکس فکتوری درخواست کن
+CACHE_DURATION_HOURS = 6
 
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
@@ -81,16 +80,61 @@ def _parse_value(v):
 
 
 def _parse_date(date_str):
+    """
+    پارسر مقاوم تاریخ - همه فرمت‌های ممکن رو می‌شناسه
+    """
     if not date_str:
         return None
-    months = {'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12,
-              'january':1,'february':2,'march':3,'april':4,'june':6,'july':7,'august':8,
-              'september':9,'october':10,'november':11,'december':12}
-    clean = str(date_str).strip().lower().replace(',', '')
+    
+    original = str(date_str).strip()
+    print(f"[DEBUG] _parse_date input: '{original}'", flush=True)
+    
+    # ماه‌ها
+    months = {
+        'jan': 1, 'january': 1, 'feb': 2, 'february': 2,
+        'mar': 3, 'march': 3, 'apr': 4, 'april': 4,
+        'may': 5, 'jun': 6, 'june': 6, 'jul': 7, 'july': 7,
+        'aug': 8, 'august': 8, 'sep': 9, 'sept': 9, 'september': 9,
+        'oct': 10, 'october': 10, 'nov': 11, 'november': 11,
+        'dec': 12, 'december': 12,
+    }
+    
+    today = datetime.now().date()
+    
+    # فرمت 1: ISO (2026-09-16 یا 2026-09-16T10:30:00)
+    if re.match(r'^\d{4}-\d{2}-\d{2}', original):
+        try:
+            return datetime.fromisoformat(original.replace('Z', '').split('T')[0]).date()
+        except:
+            pass
+    
+    # فرمت 2: MM/DD/YYYY یا DD/MM/YYYY یا MM-DD-YYYY
+    m = re.match(r'^(\d{1,2})[/\-\.](\d{1,2})(?:[/\-\.](\d{2,4}))?$', original)
+    if m:
+        a, b, y = int(m.group(1)), int(m.group(2)), m.group(3)
+        year = int(y) if y else today.year
+        if year < 100:
+            year += 2000
+        # اگه a > 12، پس روزه
+        if a > 12:
+            return datetime(year, b, a).date()
+        # اگه b > 12، پس a ماهه
+        elif b > 12:
+            return datetime(year, a, b).date()
+        else:
+            # پیش‌فرض: MM/DD (آمریکایی)
+            return datetime(year, a, b).date()
+    
+    # فرمت 3: متنی (Sep 16, 16 Sep, Tue Sep 16)
+    clean = original.lower().replace(',', '').replace('.', ' ')
     parts = clean.split()
-    month = None; day = None; year = None
+    
+    month = None
+    day = None
+    year = None
+    
     for part in parts:
-        part = part.strip('.')
+        part = part.strip()
         if part in months:
             month = months[part]
         elif part.isdigit():
@@ -99,28 +143,30 @@ def _parse_date(date_str):
                 year = n
             elif day is None:
                 day = n
-    if month is None or day is None:
-        return None
-    if year is None:
-        year = datetime.now().year
-    try:
-        return datetime(year, month, day).date()
-    except:
-        return None
+    
+    if month and day:
+        if year is None:
+            year = today.year
+        try:
+            result = datetime(year, month, day).date()
+            print(f"[DEBUG] Parsed: {result}", flush=True)
+            return result
+        except Exception as e:
+            print(f"[DEBUG] Date construct error: {e}", flush=True)
+    
+    print(f"[DEBUG] Could not parse date: '{original}'", flush=True)
+    return None
 
 
 def _load_cache():
-    """خوندن cache از فایل"""
     if not os.path.exists(CACHE_FILE):
         return None
     try:
         with open(CACHE_FILE, 'r', encoding='utf-8') as f:
             data = json.load(f)
-        # بررسی اینکه cache منقضی نشده
         cached_at = datetime.fromisoformat(data.get('cached_at', '2000-01-01'))
         if datetime.now() - cached_at < timedelta(hours=CACHE_DURATION_HOURS):
             print(f"[DEBUG] Using CACHE ({len(data.get('events', []))} events)", flush=True)
-            # تبدیل parsed_date از string به date
             events = []
             for ev in data.get('events', []):
                 if ev.get('parsed_date'):
@@ -136,7 +182,6 @@ def _load_cache():
 
 
 def _save_cache(events):
-    """ذخیره cache در فایل"""
     try:
         serializable = []
         for ev in events:
@@ -144,10 +189,7 @@ def _save_cache(events):
             if ev_copy.get('parsed_date'):
                 ev_copy['parsed_date'] = ev_copy['parsed_date'].isoformat()
             serializable.append(ev_copy)
-        data = {
-            'cached_at': datetime.now().isoformat(),
-            'events': serializable
-        }
+        data = {'cached_at': datetime.now().isoformat(), 'events': serializable}
         with open(CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False)
         print(f"[DEBUG] Cache SAVED ({len(events)} events)", flush=True)
@@ -156,71 +198,104 @@ def _save_cache(events):
 
 
 def _fetch_from_xml():
-    """دریافت داده از XML فید فارکس فکتوری"""
     events = []
     
-    # فقط XML این هفته (چون nextweek احتمالاً 404 می‌ده)
-    for url in [FF_XML_THIS_WEEK]:
-        try:
-            res = requests.get(url, headers=HEADERS, timeout=20)
-            print(f"[DEBUG] XML status={res.status_code}, size={len(res.content)}", flush=True)
+    try:
+        res = requests.get(FF_XML_THIS_WEEK, headers=HEADERS, timeout=20)
+        print(f"[DEBUG] XML status={res.status_code}, size={len(res.content)}", flush=True)
+        
+        if res.status_code == 429:
+            print("[DEBUG] Rate limited!", flush=True)
+            return []
+        
+        if res.status_code != 200:
+            return []
+        
+        # ⬇️ چاپ 1500 کاراکتر اول XML برای دیباگ
+        print("=" * 60, flush=True)
+        print("[DEBUG] XML PREVIEW (first 1500 chars):", flush=True)
+        print(res.text[:1500], flush=True)
+        print("=" * 60, flush=True)
+        
+        root = ET.fromstring(res.content)
+        print(f"[DEBUG] Root tag: {root.tag}", flush=True)
+        
+        # پیدا کردن همه eventها
+        all_events = root.findall('.//event')
+        print(f"[DEBUG] Found {len(all_events)} <event> elements", flush=True)
+        
+        # اگه هیچی پیدا نشد، ساختار رو چاپ کن
+        if not all_events:
+            print("[DEBUG] No <event> tags found. Structure:", flush=True)
+            for child in root:
+                print(f"[DEBUG]   <{child.tag}> with {len(list(child))} children", flush=True)
+            return []
+        
+        # چاپ 3 نمونه اول
+        for i, ev in enumerate(all_events[:3]):
+            print(f"[DEBUG] Event {i} children: {[c.tag for c in ev]}", flush=True)
+            print(f"[DEBUG] Event {i} title='{ev.findtext('title')}' date='{ev.findtext('date')}' country='{ev.findtext('country')}'", flush=True)
+        
+        count = 0
+        skip_no_title = 0
+        skip_no_date = 0
+        skip_date_parse = 0
+        
+        for ev in all_events:
+            title = (ev.findtext('title') or '').strip()
+            currency = (ev.findtext('country') or '').strip()
+            date_str = (ev.findtext('date') or '').strip()
+            time_str = (ev.findtext('time') or '').strip()
+            impact = (ev.findtext('impact') or 'Low').strip()
+            forecast = (ev.findtext('forecast') or '').strip()
+            previous = (ev.findtext('previous') or '').strip()
             
-            if res.status_code == 429:
-                print("[DEBUG] Rate limited! Using cache if available.", flush=True)
-                return []
-            
-            if res.status_code != 200:
+            if not title:
+                skip_no_title += 1
+                continue
+            if not date_str:
+                skip_no_date += 1
                 continue
             
-            root = ET.fromstring(res.content)
-            count = 0
-            for ev in root.findall('.//event'):
-                title = (ev.findtext('title') or '').strip()
-                currency = (ev.findtext('country') or '').strip()
-                date_str = (ev.findtext('date') or '').strip()
-                time_str = (ev.findtext('time') or '').strip()
-                impact = (ev.findtext('impact') or 'Low').strip()
-                forecast = (ev.findtext('forecast') or '').strip()
-                previous = (ev.findtext('previous') or '').strip()
-                
-                parsed_date = _parse_date(date_str)
-                if not title or not currency or not parsed_date:
-                    continue
-                
-                events.append({
-                    'title': title,
-                    'currency': currency,
-                    'date': date_str,
-                    'parsed_date': parsed_date,
-                    'time': time_str,
-                    'impact': impact,
-                    'forecast': forecast,
-                    'previous': previous,
-                })
-                count += 1
+            parsed_date = _parse_date(date_str)
+            if not parsed_date:
+                skip_date_parse += 1
+                continue
+            if not currency:
+                continue
             
-            print(f"[DEBUG] XML parsed: {count} events", flush=True)
-            
-        except Exception as e:
-            print(f"[DEBUG] XML error: {e}", flush=True)
-            continue
+            events.append({
+                'title': title,
+                'currency': currency,
+                'date': date_str,
+                'parsed_date': parsed_date,
+                'time': time_str,
+                'impact': impact,
+                'forecast': forecast,
+                'previous': previous,
+            })
+            count += 1
+        
+        print(f"[DEBUG] Parsed OK: {count}", flush=True)
+        print(f"[DEBUG] Skipped - no title: {skip_no_title}, no date: {skip_no_date}, date parse fail: {skip_date_parse}", flush=True)
+        
+    except Exception as e:
+        print(f"[DEBUG] XML error: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
     
     return events
 
 
 def fetch_events(days_ahead=7):
-    """دریافت رویدادها با cache"""
     print("[DEBUG] fetch_events STARTED", flush=True)
     
-    # اول cache رو چک کن
     cached = _load_cache()
-    if cached:
+    if cached and len(cached) > 0:
         return cached
     
-    # اگه cache نبود، از XML بگیر
     events = _fetch_from_xml()
     
-    # اگه داده گرفتیم، cache کن
     if events:
         _save_cache(events)
     
@@ -258,21 +333,15 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
             continue
         if ev['currency'] not in ALL_CURRENCIES:
             continue
-        
         ev_date = ev.get('parsed_date')
         if ev_date is None:
             continue
-        
         if not (today <= ev_date <= max_date):
             continue
-        
         filtered.append(ev)
     
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
-    filtered.sort(key=lambda x: (
-        x.get('parsed_date') or today,
-        impact_order.get(x['impact'], 3)
-    ))
+    filtered.sort(key=lambda x: (x.get('parsed_date') or today, impact_order.get(x['impact'], 3)))
     
     print(f"[DEBUG] Filtered: {len(filtered)} events", flush=True)
     return filtered
