@@ -1,25 +1,18 @@
+import os
 import requests
-import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import re
-import json
-import os
 
 # ==================== تنظیمات ====================
-FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
-
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-}
-
-CACHE_FILE = '/tmp/news_cache.json'
-CACHE_DURATION_HOURS = 6
+FMP_API_KEY = os.getenv('FMP_API_KEY')
+FMP_BASE_URL = "https://financialmodelingprep.com/api/v3/economic_calendar"
 
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
 NEWS_EXPLANATIONS = {
     'Federal Funds Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Fed Interest Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'FOMC Statement': {'desc': 'بیانیه فدرال رزرو.', 'effect': 'لحن انقباضی → دلار قوی.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
     'FOMC Economic Projections': {'desc': 'پیش‌بینی‌های فدرال رزرو.', 'effect': 'تورم بالاتر → دلار قوی.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
     'FOMC Press Conference': {'desc': 'کنفرانس رئیس فدرال رزرو.', 'effect': 'هر کلمه بازار رو تکان می‌ده.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
@@ -79,244 +72,122 @@ def _parse_value(v):
         return None
 
 
-def _parse_date(date_str):
-    """
-    پارسر مقاوم تاریخ - همه فرمت‌های ممکن رو می‌شناسه
-    """
-    if not date_str:
-        return None
-    
-    original = str(date_str).strip()
-    print(f"[DEBUG] _parse_date input: '{original}'", flush=True)
-    
-    # ماه‌ها
-    months = {
-        'jan': 1, 'january': 1, 'feb': 2, 'february': 2,
-        'mar': 3, 'march': 3, 'apr': 4, 'april': 4,
-        'may': 5, 'jun': 6, 'june': 6, 'jul': 7, 'july': 7,
-        'aug': 8, 'august': 8, 'sep': 9, 'sept': 9, 'september': 9,
-        'oct': 10, 'october': 10, 'nov': 11, 'november': 11,
-        'dec': 12, 'december': 12,
-    }
-    
-    today = datetime.now().date()
-    
-    # فرمت 1: ISO (2026-09-16 یا 2026-09-16T10:30:00)
-    if re.match(r'^\d{4}-\d{2}-\d{2}', original):
-        try:
-            return datetime.fromisoformat(original.replace('Z', '').split('T')[0]).date()
-        except:
-            pass
-    
-    # فرمت 2: MM/DD/YYYY یا DD/MM/YYYY یا MM-DD-YYYY
-    m = re.match(r'^(\d{1,2})[/\-\.](\d{1,2})(?:[/\-\.](\d{2,4}))?$', original)
-    if m:
-        a, b, y = int(m.group(1)), int(m.group(2)), m.group(3)
-        year = int(y) if y else today.year
-        if year < 100:
-            year += 2000
-        # اگه a > 12، پس روزه
-        if a > 12:
-            return datetime(year, b, a).date()
-        # اگه b > 12، پس a ماهه
-        elif b > 12:
-            return datetime(year, a, b).date()
-        else:
-            # پیش‌فرض: MM/DD (آمریکایی)
-            return datetime(year, a, b).date()
-    
-    # فرمت 3: متنی (Sep 16, 16 Sep, Tue Sep 16)
-    clean = original.lower().replace(',', '').replace('.', ' ')
-    parts = clean.split()
-    
-    month = None
-    day = None
-    year = None
-    
-    for part in parts:
-        part = part.strip()
-        if part in months:
-            month = months[part]
-        elif part.isdigit():
-            n = int(part)
-            if n > 31:
-                year = n
-            elif day is None:
-                day = n
-    
-    if month and day:
-        if year is None:
-            year = today.year
-        try:
-            result = datetime(year, month, day).date()
-            print(f"[DEBUG] Parsed: {result}", flush=True)
-            return result
-        except Exception as e:
-            print(f"[DEBUG] Date construct error: {e}", flush=True)
-    
-    print(f"[DEBUG] Could not parse date: '{original}'", flush=True)
-    return None
-
-
-def _load_cache():
-    if not os.path.exists(CACHE_FILE):
-        return None
-    try:
-        with open(CACHE_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-        cached_at = datetime.fromisoformat(data.get('cached_at', '2000-01-01'))
-        if datetime.now() - cached_at < timedelta(hours=CACHE_DURATION_HOURS):
-            print(f"[DEBUG] Using CACHE ({len(data.get('events', []))} events)", flush=True)
-            events = []
-            for ev in data.get('events', []):
-                if ev.get('parsed_date'):
-                    ev['parsed_date'] = datetime.fromisoformat(ev['parsed_date']).date()
-                events.append(ev)
-            return events
-        else:
-            print("[DEBUG] Cache expired", flush=True)
-            return None
-    except Exception as e:
-        print(f"[DEBUG] Cache load error: {e}", flush=True)
-        return None
-
-
-def _save_cache(events):
-    try:
-        serializable = []
-        for ev in events:
-            ev_copy = ev.copy()
-            if ev_copy.get('parsed_date'):
-                ev_copy['parsed_date'] = ev_copy['parsed_date'].isoformat()
-            serializable.append(ev_copy)
-        data = {'cached_at': datetime.now().isoformat(), 'events': serializable}
-        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False)
-        print(f"[DEBUG] Cache SAVED ({len(events)} events)", flush=True)
-    except Exception as e:
-        print(f"[DEBUG] Cache save error: {e}", flush=True)
-
-
-def _fetch_from_xml():
-    """دریافت داده از XML فید با استفاده از Proxy رایگان"""
-    events = []
-    
-    # لیست proxy های رایگان (اگه اولی کار نکرد، دومی رو امتحان می‌کنه)
-    proxies = [
-        "https://api.allorigins.win/raw?url=",
-        "https://corsproxy.io/?",
-        "https://api.codetabs.com/v1/proxy?quest=",
-    ]
-    
-    xml_text = None
-    for proxy in proxies:
-        try:
-            url = proxy + FF_XML_THIS_WEEK
-            print(f"[DEBUG] Trying proxy: {proxy[:30]}...", flush=True)
-            
-            res = requests.get(url, headers=HEADERS, timeout=25)
-            print(f"[DEBUG] Proxy status={res.status_code}, size={len(res.content)}", flush=True)
-            
-            if res.status_code == 200 and len(res.content) > 1000:
-                xml_text = res.text
-                print(f"[DEBUG] Proxy SUCCESS! Got {len(xml_text)} chars", flush=True)
-                break
-        except Exception as e:
-            print(f"[DEBUG] Proxy error: {e}", flush=True)
-            continue
-    
-    if not xml_text:
-        print("[DEBUG] All proxies failed!", flush=True)
-        return []
-    
-    # پارس XML
-    try:
-        # چاپ 800 کاراکتر اول برای دیباگ
-        print("=" * 60, flush=True)
-        print("[DEBUG] XML PREVIEW:", flush=True)
-        print(xml_text[:800], flush=True)
-        print("=" * 60, flush=True)
-        
-        root = ET.fromstring(xml_text)
-        print(f"[DEBUG] Root tag: {root.tag}", flush=True)
-        
-        all_events = root.findall('.//event')
-        print(f"[DEBUG] Found {len(all_events)} event elements", flush=True)
-        
-        if not all_events:
-            print("[DEBUG] No <event> tags found. Structure:", flush=True)
-            for child in root:
-                print(f"[DEBUG]   <{child.tag}>", flush=True)
-            return []
-        
-        # چاپ نمونه
-        if all_events:
-            ev0 = all_events[0]
-            print(f"[DEBUG] Sample event 0: children={[c.tag for c in ev0]}", flush=True)
-            print(f"[DEBUG] Sample data: title='{ev0.findtext('title')}' date='{ev0.findtext('date')}' country='{ev0.findtext('country')}'", flush=True)
-        
-        count = 0
-        for ev in all_events:
-            title = (ev.findtext('title') or '').strip()
-            currency = (ev.findtext('country') or '').strip()
-            date_str = (ev.findtext('date') or '').strip()
-            time_str = (ev.findtext('time') or '').strip()
-            impact = (ev.findtext('impact') or 'Low').strip()
-            forecast = (ev.findtext('forecast') or '').strip()
-            previous = (ev.findtext('previous') or '').strip()
-            
-            if not title or not currency or not date_str:
-                continue
-            
-            parsed_date = _parse_date(date_str)
-            if not parsed_date:
-                continue
-            
-            events.append({
-                'title': title,
-                'currency': currency,
-                'date': date_str,
-                'parsed_date': parsed_date,
-                'time': time_str,
-                'impact': impact,
-                'forecast': forecast,
-                'previous': previous,
-            })
-            count += 1
-        
-        print(f"[DEBUG] XML parsed OK: {count} events", flush=True)
-        
-    except Exception as e:
-        print(f"[DEBUG] XML parse error: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
-    
-    return events
+def _impact_from_string(impact_str):
+    """تبدیل impact FMP به High/Medium/Low"""
+    if not impact_str:
+        return 'Low'
+    s = str(impact_str).lower()
+    if 'high' in s:
+        return 'High'
+    if 'medium' in s:
+        return 'Medium'
+    return 'Low'
 
 
 def fetch_events(days_ahead=7):
-    print("[DEBUG] fetch_events STARTED", flush=True)
+    """دریافت رویدادهای اقتصادی از FMP"""
+    if not FMP_API_KEY:
+        print("[DEBUG] FMP_API_KEY not set!", flush=True)
+        return []
     
-    cached = _load_cache()
-    if cached and len(cached) > 0:
-        return cached
-    
-    events = _fetch_from_xml()
-    
-    if events:
-        _save_cache(events)
-    
-    # حذف تکراری‌ها
-    seen = set()
-    unique_events = []
-    for ev in events:
-        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-        if key not in seen:
-            seen.add(key)
-            unique_events.append(ev)
-    
-    print(f"[DEBUG] Total unique events: {len(unique_events)}", flush=True)
-    return unique_events
+    try:
+        today = datetime.now().date()
+        end_date = today + timedelta(days=days_ahead)
+        
+        params = {
+            'from': today.strftime('%Y-%m-%d'),
+            'to': end_date.strftime('%Y-%m-%d'),
+            'apikey': FMP_API_KEY,
+        }
+        
+        print(f"[DEBUG] Fetching FMP: {today} to {end_date}", flush=True)
+        
+        res = requests.get(FMP_BASE_URL, params=params, timeout=20)
+        print(f"[DEBUG] FMP status: {res.status_code}", flush=True)
+        
+        if res.status_code != 200:
+            print(f"[DEBUG] FMP error: {res.text[:300]}", flush=True)
+            return []
+        
+        data = res.json()
+        print(f"[DEBUG] FMP returned: {len(data) if isinstance(data, list) else 'not a list'}", flush=True)
+        
+        if not isinstance(data, list) or not data:
+            return []
+        
+        # چاپ نمونه
+        print(f"[DEBUG] Sample keys: {list(data[0].keys())}", flush=True)
+        print(f"[DEBUG] Sample: {data[0]}", flush=True)
+        
+        events = []
+        for item in data:
+            try:
+                # استخراج فیلدها
+                title = item.get('event') or item.get('name') or ''
+                currency = item.get('currency') or ''
+                date_str = item.get('date') or ''
+                impact = item.get('impact') or ''
+                forecast = item.get('forecast') or ''
+                previous = item.get('previous') or ''
+                actual = item.get('actual') or ''
+                
+                if not title or not currency:
+                    continue
+                
+                currency = str(currency).strip().upper()
+                impact_str = _impact_from_string(impact)
+                
+                # پارس تاریخ (فرمت FMP: YYYY-MM-DD یا YYYY-MM-DD HH:MM:SS)
+                parsed_date = None
+                time_str = ''
+                if date_str:
+                    try:
+                        if ' ' in str(date_str):
+                            parts = str(date_str).split(' ')
+                            parsed_date = datetime.strptime(parts[0], '%Y-%m-%d').date()
+                            time_str = parts[1][:5]  # HH:MM
+                        else:
+                            parsed_date = datetime.strptime(str(date_str)[:10], '%Y-%m-%d').date()
+                    except Exception as e:
+                        print(f"[DEBUG] Date parse error: {e} for {date_str}", flush=True)
+                        continue
+                
+                if not parsed_date:
+                    continue
+                
+                events.append({
+                    'title': str(title).strip(),
+                    'currency': currency,
+                    'date': str(date_str),
+                    'parsed_date': parsed_date,
+                    'time': time_str,
+                    'impact': impact_str,
+                    'forecast': str(forecast),
+                    'previous': str(previous),
+                    'actual': str(actual),
+                })
+            except Exception as e:
+                continue
+        
+        print(f"[DEBUG] Total events parsed: {len(events)}", flush=True)
+        
+        # حذف تکراری‌ها
+        seen = set()
+        unique_events = []
+        for ev in events:
+            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+            if key not in seen:
+                seen.add(key)
+                unique_events.append(ev)
+        
+        print(f"[DEBUG] Unique events: {len(unique_events)}", flush=True)
+        return unique_events
+        
+    except Exception as e:
+        print(f"[DEBUG] FMP error: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        return []
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
@@ -340,11 +211,14 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
             continue
         if ev['currency'] not in ALL_CURRENCIES:
             continue
+        
         ev_date = ev.get('parsed_date')
         if ev_date is None:
             continue
+        
         if not (today <= ev_date <= max_date):
             continue
+        
         filtered.append(ev)
     
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
