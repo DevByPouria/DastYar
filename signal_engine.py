@@ -8,8 +8,7 @@ class SignalEngine:
         tech_score = tech_result.get('net_score', 0)
         fund_score = fund_result.get('score', 0)
 
-        # نرمال‌سازی ساده
-        # حداکثر امتیاز تکنیکال معمولاً ~ 10
+        # نرمال‌سازی
         norm_tech = max(-10, min(10, tech_score))
         norm_fund = max(-10, min(10, fund_score))
 
@@ -32,6 +31,7 @@ class SignalEngine:
         msg += f"**سیگنال:** {signal_text}\n"
         msg += f"**امتیاز نهایی:** `{final:+.2f}` / 10\n\n"
 
+        # دلایل تکنیکال
         msg += "🔹 **دلایل تکنیکال:**\n"
         if tech_result.get('signals'):
             for s in tech_result['signals'][:5]:
@@ -39,13 +39,20 @@ class SignalEngine:
         else:
             msg += "  ➖ سیگنال تکنیکال قوی‌ای یافت نشد.\n"
 
-        msg += f"\n{fund_result.get('summary', '')}\n"
+        # خلاصه‌ی فاندامنتال (کوتاه!)
+        bias = fund_result.get('bias', 'neutral')
+        bias_map = {'bullish': '🟢 صعودی', 'bearish': '🔴 نزولی', 'neutral': '⚪ خنثی'}
+        events_count = len(fund_result.get('events', []))
+        msg += f"\n📰 **فاندامنتال:** {bias_map.get(bias, '⚪ خنثی')}"
+        msg += f" (بر اساس {events_count} خبر)\n"
 
         # سطوح ریسک
-        sl, tp = tech_result.get('stop_loss'), tech_result.get('take_profit')
+        sl = tech_result.get('stop_loss')
+        tp = tech_result.get('take_profit')
         if sl and tp:
             msg += f"\n🎯 **مدیریت ریسک:**\n"
-           msg += f"  🛑 حد ضرر: `${sl:,}`\n"
-           msg += f"  ✅ حد سود: `${tp:,}`\n"
+            msg += f"  🛑 حد ضرر: `${sl:,}`\n"
+            msg += f"  ✅ حد سود: `${tp:,}`\n"
+
         msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
         return msg
