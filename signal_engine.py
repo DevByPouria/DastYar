@@ -45,8 +45,7 @@ class SignalEngine:
         sl, tp = tech_result.get('stop_loss'), tech_result.get('take_profit')
         if sl and tp:
             msg += f"\n🎯 **مدیریت ریسک:**\n"
-            msg += f"  🛑 حد ضرر: `{sl:,}` تومان\n"
-            msg += f"  ✅ حد سود: `{tp:,}` تومان\n"
-
+           msg += f"  🛑 حد ضرر: `${sl:,}`\n"
+           msg += f"  ✅ حد سود: `${tp:,}`\n"
         msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
         return msg
