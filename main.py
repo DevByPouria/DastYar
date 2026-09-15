@@ -197,15 +197,13 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
     asset_key, asset_name = asset_map.get(data, ('gold_gram18', 'طلا'))
 
-    # ===== دریافت تاریخچه از Yahoo Finance =====
+    # ===== دریافت تاریخچه =====
     rows = hist.get_history(asset_key, limit=200)
 
     if len(rows) < 20:
         await query.edit_message_text(
             f"⚠️ **داده کافی برای تحلیل {asset_name} موجود نیست.**\n\n"
-            f"📊 تعداد رکورد فعلی: `{len(rows)}`\n"
-            f"🔹 لطفاً بعداً دوباره تلاش کن.\n\n"
-            f"_داده‌ها از Yahoo Finance دریافت می‌شوند._",
+            f"📊 تعداد رکورد: `{len(rows)}`",
             parse_mode='Markdown'
         )
         return
@@ -216,13 +214,24 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     analyzer = TechnicalAnalyzer(df)
     tech_result = analyzer.run_all()
-    sl, tp = analyzer.get_risk_levels()
+
+    # تعیین جهت سیگنال بر اساس امتیاز
+    tech_net = tech_result.get('net_score', 0)
+    if tech_net >= 2:
+        direction = 'BUY'
+    elif tech_net <= -2:
+        direction = 'SELL'
+    else:
+        direction = 'BUY'  # خنثی: پیش‌فرض
+
+    sl, tp, rr = analyzer.get_risk_levels(direction=direction)
     tech_result['stop_loss'] = sl
     tech_result['take_profit'] = tp
+    tech_result['risk_reward'] = rr
 
     # ===== تحلیل فاندامنتال =====
-    events = fetch_events()
-    filtered = filter_today_events(events, days_ahead=7)
+    events = fetch_events(days_ahead=7)
+    filtered = filter_today_events(events, days_ahead=7, min_impact='High')
     fund_result = analyze_sentiment(filtered)
 
     # ===== سیگنال نهایی =====
@@ -236,6 +245,7 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🔄 تحلیل مجدد", callback_data=data)],
             [InlineKeyboardButton("📰 اخبار بازار", callback_data="news_today")],
+            [InlineKeyboardButton("🔙 بازگشت", callback_data="back_to_main")],
         ])
     )
 
