@@ -1,11 +1,15 @@
 import json
 from datetime import datetime, timedelta
 import requests
+import re
 
 # ==================== تنظیمات ====================
 GITHUB_RAW_URL = "https://raw.githubusercontent.com/DevByPouria/DastYar/main/calendar.json"
 
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
+
+# ارزهایی که بیشترین تأثیر رو روی طلا دارن
+PRIMARY_CURRENCIES = ['USD', 'EUR']
 
 NEWS_EXPLANATIONS = {
     'Federal Funds Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
@@ -21,6 +25,7 @@ NEWS_EXPLANATIONS = {
     'ADP': {'desc': 'اشتغال بخش خصوصی.', 'effect': 'ADP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Unemployment': {'desc': 'نرخ بیکاری.', 'effect': 'بیکاری کم → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Jobless Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Unemployment Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'GDP': {'desc': 'تولید ناخالص داخلی.', 'effect': 'GDP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Retail Sales': {'desc': 'فروش خرده‌فروشی.', 'effect': 'قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'PMI': {'desc': 'شاخص مدیران خرید.', 'effect': 'بالای ۵۰ → ارز قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
@@ -104,11 +109,9 @@ def fetch_events(days_ahead=7):
                 except:
                     continue
                 
-                # تبدیل "8:15am" به "08:15"
                 time_only = time_str
                 if time_str:
                     try:
-                        import re
                         m = re.match(r'(\d{1,2}):(\d{2})(am|pm)?', time_str.lower())
                         if m:
                             hour = int(m.group(1))
@@ -133,7 +136,7 @@ def fetch_events(days_ahead=7):
                     'previous': previous,
                     'actual': actual,
                 })
-            except Exception as e:
+            except Exception:
                 continue
         
         print(f"[DEBUG] Parsed {len(events)} events", flush=True)
@@ -141,8 +144,6 @@ def fetch_events(days_ahead=7):
         
     except Exception as e:
         print(f"[DEBUG] Fetch error: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
         return []
 
 
@@ -189,109 +190,215 @@ def get_news_explanation(title):
     return None
 
 
+def _get_currency_weight(currency):
+    """
+    وزن ارز: USD بیشترین تأثیر رو روی طلا داره
+    """
+    if currency == 'USD':
+        return 2.0
+    elif currency == 'EUR':
+        return 1.2
+    elif currency in ['GBP', 'JPY', 'CNY']:
+        return 1.0
+    else:
+        return 0.6
+
+
 def analyze_sentiment(events):
     """
-    تحلیل احساسات با در نظر گرفتن همه‌ی اخبار مهم
-    فقط اخبار High و Medium و فقط با forecast/previous معتبر
+    تحلیل هوشمند Sentiment با تشخیص Hawkish/Dovish
+    
+    منطق:
+        - اگه actual داریم → استفاده کن (دقیق‌ترین)
+        - وگرنه از forecast استفاده کن
+        - هر خبر بر اساس وزن ارز و اهمیت امتیاز می‌گیره
+        - Hawkish/Dovish بر اساس جهت تغییر
     """
     if not events:
-        return {'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
-                'analyzed_count': 0,
-                'events': [], 'summary': _format_summary([], 'neutral', 0, 0)}
+        return {
+            'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
+            'analyzed_count': 0, 'hawkish_count': 0, 'dovish_count': 0,
+            'market_mood': 'neutral',
+            'events': [], 'summary': _format_summary([], 'neutral', 0, 0, 'neutral', 0, 0, 0)
+        }
     
     bull = 0
     bear = 0
     analyzed_count = 0
+    hawkish_count = 0
+    dovish_count = 0
     
     for ev in events:
-        t = ev['title'].lower()
+        title_lower = ev['title'].lower()
         impact = ev.get('impact', 'low')
-        forecast = _parse_value(ev['forecast'])
-        previous = _parse_value(ev['previous'])
+        currency = ev.get('currency', '')
         
-        # فقط اخبار High و Medium
+        # فقط High و Medium
         if impact == 'low':
             continue
         
-        # اگه عدد نداریم، رد کن
-        if forecast is None or previous is None:
+        forecast = _parse_value(ev.get('forecast', ''))
+        previous = _parse_value(ev.get('previous', ''))
+        actual = _parse_value(ev.get('actual', ''))
+        
+        # انتخاب مقدار مقایسه: actual در اولویت
+        compare_value = actual if actual is not None else forecast
+        
+        if compare_value is None or previous is None:
             continue
         
-        # ===== NFP / ADP =====
-        if 'non-farm' in t or 'adp' in t:
-            analyzed_count += 1
-            if forecast < previous:
-                bull += 3  # اشتغال ضعیف → طلا صعودی
-            else:
-                bear += 3  # اشتغال قوی → طلا نزولی
+        # وزن ارز
+        weight = _get_currency_weight(currency)
         
-        # ===== CPI / Inflation =====
-        elif 'cpi' in t or 'inflation' in t:
-            analyzed_count += 1
-            if forecast > previous:
-                bull += 2  # تورم بالا → طلا صعودی
-            else:
-                bear += 2  # تورم کم → طلا نزولی
+        # جهت تغییر
+        diff = compare_value - previous
         
-        # ===== GDP =====
-        elif 'gdp' in t:
-            analyzed_count += 1
-            if forecast < previous:
-                bull += 2  # GDP ضعیف → طلا صعودی
-            else:
-                bear += 2  # GDP قوی → طلا نزولی
+        # آستانه‌ی ناچیز
+        if previous != 0 and abs(diff / previous) < 0.001:
+            continue  # تغییر ناچیز
         
-        # ===== Retail Sales =====
-        elif 'retail sales' in t:
-            analyzed_count += 1
-            if forecast > previous:
-                bear += 1  # خرده‌فروشی قوی → طلا نزولی
-            else:
-                bull += 1  # خرده‌فروشی ضعیف → طلا صعودی
+        # ========== دسته‌بندی اخبار ==========
         
-        # ===== Unemployment =====
-        elif 'unemployment' in t:
+        # ۱. اشتغال (NFP/ADP)
+        if any(k in title_lower for k in ['non-farm', 'adp', 'employment change']):
             analyzed_count += 1
-            if forecast < previous:
-                bear += 1  # بیکاری کم → طلا نزولی
+            if diff > 0:
+                bear += int(3 * weight)  # اشتغال قوی → Hawkish
+                hawkish_count += 1
             else:
-                bull += 1  # بیکاری زیاد → طلا صعودی
+                bull += int(3 * weight)  # اشتغال ضعیف → Dovish
+                dovish_count += 1
         
-        # ===== Interest Rate / FOMC / Bank Rate =====
-        elif ('interest rate' in t or 'fomc' in t or 
-              'federal funds' in t or 'bank rate' in t):
+        # ۲. تورم (CPI/PPI)
+        elif any(k in title_lower for k in ['cpi', 'ppi', 'inflation']):
             analyzed_count += 1
-            if forecast > previous:
-                bear += 2  # افزایش نرخ → طلا نزولی
-            elif forecast < previous:
-                bull += 2  # کاهش نرخ → طلا صعودی
-            # اگه برابر بود، خنثی
+            if diff > 0:
+                bear += int(2 * weight)  # تورم بالا → Hawkish
+                hawkish_count += 1
+            else:
+                bull += int(2 * weight)  # تورم کم → Dovish
+                dovish_count += 1
+        
+        # ۳. نرخ بهره (Interest Rate/FOMC)
+        elif any(k in title_lower for k in ['interest rate', 'fomc', 'federal funds', 'bank rate', 'policy rate']):
+            analyzed_count += 1
+            if diff > 0:
+                bear += int(3 * weight)  # افزایش نرخ → Hawkish
+                hawkish_count += 1
+            elif diff < 0:
+                bull += int(3 * weight)  # کاهش نرخ → Dovish
+                dovish_count += 1
+        
+        # ۴. رشد اقتصادی (GDP)
+        elif 'gdp' in title_lower:
+            analyzed_count += 1
+            if diff > 0:
+                bear += int(2 * weight)
+                hawkish_count += 1
+            else:
+                bull += int(2 * weight)
+                dovish_count += 1
+        
+        # ۵. بیکاری (Unemployment)
+        elif 'unemployment' in title_lower:
+            analyzed_count += 1
+            if diff < 0:  # بیکاری کمتر
+                bear += int(2 * weight)
+                hawkish_count += 1
+            else:
+                bull += int(2 * weight)
+                dovish_count += 1
+        
+        # ۶. بیمه بیکاری (Jobless Claims)
+        elif 'jobless' in title_lower or 'claims' in title_lower:
+            analyzed_count += 1
+            if diff < 0:  # claims کمتر → اشتغال قوی
+                bear += int(2 * weight)
+                hawkish_count += 1
+            else:
+                bull += int(2 * weight)
+                dovish_count += 1
+        
+        # ۷. خرده‌فروشی (Retail Sales)
+        elif 'retail sales' in title_lower:
+            analyzed_count += 1
+            if diff > 0:
+                bear += int(1 * weight)
+                hawkish_count += 1
+            else:
+                bull += int(1 * weight)
+                dovish_count += 1
+        
+        # ۸. PMI/Manufacturing
+        elif any(k in title_lower for k in ['pmi', 'manufacturing', 'industrial production']):
+            analyzed_count += 1
+            # PMI بالای ۵۰ = رشد
+            if compare_value > 50 and diff > 0:
+                bear += int(1 * weight)
+                hawkish_count += 1
+            elif compare_value < 50 and diff < 0:
+                bull += int(1 * weight)
+                dovish_count += 1
     
+    # ===== محاسبه بایاس =====
     net = bull - bear
-    if net >= 3:
+    
+    if net >= 4:
         bias = 'bullish'
-    elif net <= -3:
+    elif net <= -4:
         bias = 'bearish'
     else:
         bias = 'neutral'
     
-    print(f"[DEBUG] Sentiment: bull={bull}, bear={bear}, net={net}, analyzed={analyzed_count}/{len(events)}", flush=True)
+    # ===== تشخیص Mood بازار =====
+    if hawkish_count > dovish_count + 1:
+        market_mood = 'hawkish'
+    elif dovish_count > hawkish_count + 1:
+        market_mood = 'dovish'
+    else:
+        market_mood = 'neutral'
     
-    result = {
-        'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
+    print(f"[DEBUG] Sentiment: bull={bull}, bear={bear}, net={net}, "
+          f"analyzed={analyzed_count}, hawkish={hawkish_count}, dovish={dovish_count}, "
+          f"mood={market_mood}", flush=True)
+    
+    return {
+        'bias': bias,
+        'score': net,
+        'bullish': bull,
+        'bearish': bear,
         'analyzed_count': analyzed_count,
+        'hawkish_count': hawkish_count,
+        'dovish_count': dovish_count,
+        'market_mood': market_mood,
         'events': events,
-        'summary': _format_summary(events, bias, bull, bear)
+        'summary': _format_summary(
+            events, bias, bull, bear, market_mood,
+            analyzed_count, hawkish_count, dovish_count
+        )
     }
-    return result
 
 
-def _format_summary(events, bias, bull, bear):
+def _format_summary(events, bias, bull, bear, market_mood, analyzed, hawkish, dovish):
     bias_map = {'bullish': '🟢 صعودی', 'bearish': '🔴 نزولی', 'neutral': '⚪ خنثی'}
+    mood_map = {
+        'hawkish': '🦅 Hawkish (انقباضی)',
+        'dovish': '🕊️ Dovish (انبساطی)',
+        'neutral': '⚖️ Neutral (خنثی)'
+    }
     
     msg = "📰 **تحلیل فاندامنتال**\n"
     msg += "━━━━━━━━━━━━━━━━━━━━\n"
-    msg += f"**بایاس کلی:** {bias_map.get(bias, '⚪ خنثی')}\n\n"
+    msg += f"**بایاس کلی:** {bias_map.get(bias, '⚪ خنثی')}\n"
+    msg += f"**حالت بازار:** {mood_map.get(market_mood, '⚖️ Neutral')}\n\n"
+    
+    # خلاصه‌ی تحلیل
+    msg += f"📊 **آمار:**\n"
+    msg += f"  • تعداد اخبار تحلیل‌شده: `{analyzed}`\n"
+    msg += f"  • سیگنال‌های Hawkish: `{hawkish}` 🦅\n"
+    msg += f"  • سیگنال‌های Dovish: `{dovish}` 🕊️\n"
+    msg += f"  • امتیاز صعودی: `{bull}`\n"
+    msg += f"  • امتیاز نزولی: `{bear}`\n\n"
     
     if not events:
         msg += "⚠️ **خبری در این بازه پیدا نشد.**\n\n"
@@ -299,7 +406,7 @@ def _format_summary(events, bias, bull, bear):
         return msg
     
     today = datetime.now().date()
-    msg += f"📊 **{len(events)} خبر در این بازه:**\n\n"
+    msg += f"📋 **{len(events)} خبر در این بازه:**\n\n"
     
     for ev in events[:20]:
         impact_emoji = {'High': '🔴', 'Medium': '🟡', 'Low': '🟢', '': '⚪'}.get(ev['impact'], '⚪')
@@ -330,6 +437,8 @@ def _format_summary(events, bias, bull, bear):
             msg += f"   📊 پیش‌بینی: `{ev['forecast']}`"
             if ev['previous'] and ev['previous'] != 'None':
                 msg += f" | قبلی: `{ev['previous']}`"
+            if ev['actual'] and ev['actual'] != 'None':
+                msg += f" | واقعی: `{ev['actual']}`"
             msg += "\n"
         
         msg += "   ───────────────────\n"
@@ -337,7 +446,5 @@ def _format_summary(events, bias, bull, bear):
     if len(events) > 20:
         msg += f"\n... و {len(events) - 20} خبر دیگر"
     
-    msg += f"\n\n📈 امتیاز صعودی: `{bull}`\n"
-    msg += f"📉 امتیاز نزولی: `{bear}`\n"
     msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
     return msg
