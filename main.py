@@ -294,13 +294,18 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
     ])
 
-    await query.edit_message_text(
-        analysis['summary'],
-        parse_mode='Markdown',
-        disable_web_page_preview=True,
-        reply_markup=back_keyboard
-    )
-
+        try:
+        await query.edit_message_text(
+            analysis['summary'],
+            parse_mode='Markdown',
+            disable_web_page_preview=True,
+            reply_markup=back_keyboard
+        )
+    except Exception as e:
+        if "not modified" in str(e).lower():
+            pass
+        else:
+            print(f"[DEBUG] Edit error: {e}", flush=True)
 
 # ================== اجرا ==================
 def main():
