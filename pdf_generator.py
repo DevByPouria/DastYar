@@ -228,11 +228,18 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
             traceback.print_exc()
             continue
     
-    # ===== پاصفحه =====
+        # ===== پاصفحه =====
     if pdf.get_y() > 240:
         pdf.add_page()
     
     pdf.ln(5)
+    
+    # خط جداکننده بالای پاصفحه
+    pdf.set_draw_color(180, 180, 180)
+    y = pdf.get_y()
+    pdf.line(pdf.l_margin + 20, y, pdf.w - pdf.r_margin - 20, y)
+    pdf.ln(4)
+    
     pdf.set_font("Vazir", size=8)
     pdf.set_text_color(120, 120, 120)
     pdf.multi_cell(
@@ -243,13 +250,40 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
     )
     pdf.multi_cell(
         epw, 5,
-        _fa("منبع: Forex Factory"),
+        _fa("منبع داده: Forex Factory"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    
+    pdf.ln(3)
+    
+    # ⭐ اطلاعات سازنده
+    pdf.set_font("Vazir", size=9)
+    pdf.set_text_color(80, 80, 80)
+    pdf.multi_cell(
+        epw, 6,
+        _fa("دستیار مالی هوشمند DastYar"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    
+    pdf.set_font("Vazir", size=8)
+    pdf.set_text_color(100, 100, 100)
+    pdf.multi_cell(
+        epw, 5,
+        _fa("ساخته شده توسط: پوریا"),
         align='C',
         new_x=XPos.LMARGIN, new_y=YPos.NEXT
     )
     pdf.multi_cell(
         epw, 5,
-        _fa("ربات DastYar"),
+        _fa("@DevByPouria"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.multi_cell(
+        epw, 5,
+        _fa("github.com/DevByPouria"),
         align='C',
         new_x=XPos.LMARGIN, new_y=YPos.NEXT
     )
