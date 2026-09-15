@@ -1,217 +1,65 @@
-import asyncio
+import requests
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 import re
+import json
+import os
 
 # ==================== تنظیمات ====================
+FF_XML_THIS_WEEK = "https://nfs.faireconomy.media/ff_calendar_thisweek.xml"
+FF_XML_NEXT_WEEK = "https://nfs.faireconomy.media/ff_calendar_nextweek.xml"
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+}
+
+CACHE_FILE = '/tmp/news_cache.json'
+CACHE_DURATION_HOURS = 6  # هر 6 ساعت یه بار از فارکس فکتوری درخواست کن
+
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
 NEWS_EXPLANATIONS = {
-    'Federal Funds Rate': {
-        'desc': 'نرخ بهره کلیدی آمریکا که توسط فدرال رزرو تعیین می‌شود.',
-        'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف. کاهش نرخ → برعکس.',
-        'gold': '🔴 نزولی (با افزایش)',
-        'dollar': '🟢 صعودی (با افزایش)'
-    },
-    'FOMC Statement': {
-        'desc': 'بیانیه کمیته فدرال رزرو درباره سیاست پولی.',
-        'effect': 'لحن انقباضی → دلار قوی. لحن انبساطی → طلا قوی.',
-        'gold': '⚠️ بستگی به لحن دارد',
-        'dollar': '⚠️ بستگی به لحن دارد'
-    },
-    'FOMC Economic Projections': {
-        'desc': 'پیش‌بینی‌های اقتصادی اعضای فدرال رزرو.',
-        'effect': 'پیش‌بینی تورم بالاتر → دلار قوی، طلا ضعیف.',
-        'gold': '⚠️ بستگی به داده دارد',
-        'dollar': '⚠️ بستگی به داده دارد'
-    },
-    'FOMC Press Conference': {
-        'desc': 'کنفرانس خبری رئیس فدرال رزرو.',
-        'effect': 'هر کلمه می‌تونه بازار رو تکان بده.',
-        'gold': '⚠️ بستگی به صحبت‌ها دارد',
-        'dollar': '⚠️ بستگی به صحبت‌ها دارد'
-    },
-    'FOMC Member': {
-        'desc': 'سخنرانی یکی از اعضای فدرال رزرو.',
-        'effect': 'می‌تونه انتظارات نرخ بهره رو تغییر بده.',
-        'gold': '⚠️ بستگی به صحبت‌ها دارد',
-        'dollar': '⚠️ بستگی به صحبت‌ها دارد'
-    },
-    'CPI': {
-        'desc': 'شاخص قیمت مصرف‌کننده. مهم‌ترین معیار تورم.',
-        'effect': 'CPI بالا → احتمال افزایش نرخ بهره → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با CPI بالا)',
-        'dollar': '🟢 صعودی (با CPI بالا)'
-    },
-    'Core CPI': {
-        'desc': 'شاخص قیمت مصرف‌کننده بدون غذا و انرژی.',
-        'effect': 'مشابه CPI.',
-        'gold': '🔴 نزولی (با CPI بالا)',
-        'dollar': '🟢 صعودی (با CPI بالا)'
-    },
-    'PPI': {
-        'desc': 'شاخص قیمت تولیدکننده.',
-        'effect': 'PPI بالا → تورم بیشتر → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با PPI بالا)',
-        'dollar': '🟢 صعودی (با PPI بالا)'
-    },
-    'Non-Farm': {
-        'desc': 'تغییر شاغلان غیرکشاورزی (NFP). مهم‌ترین گزارش اشتغال.',
-        'effect': 'NFP قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با NFP قوی)',
-        'dollar': '🟢 صعودی (با NFP قوی)'
-    },
-    'ADP': {
-        'desc': 'گزارش اشتغال بخش خصوصی.',
-        'effect': 'ADP قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با ADP قوی)',
-        'dollar': '🟢 صعودی (با ADP قوی)'
-    },
-    'Unemployment': {
-        'desc': 'نرخ بیکاری.',
-        'effect': 'بیکاری کم → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با بیکاری کم)',
-        'dollar': '🟢 صعودی (با بیکاری کم)'
-    },
-    'Jobless Claims': {
-        'desc': 'تعداد مدعیان بیمه بیکاری.',
-        'effect': 'عدد کمتر → اشتغال قوی → دلار قوی.',
-        'gold': '🔴 نزولی',
-        'dollar': '🟢 صعودی'
-    },
-    'GDP': {
-        'desc': 'تولید ناخالص داخلی.',
-        'effect': 'GDP قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با GDP قوی)',
-        'dollar': '🟢 صعودی (با GDP قوی)'
-    },
-    'Retail Sales': {
-        'desc': 'فروش خرده‌فروشی.',
-        'effect': 'خرده‌فروشی قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با خرده‌فروشی قوی)',
-        'dollar': '🟢 صعودی (با خرده‌فروشی قوی)'
-    },
-    'PMI': {
-        'desc': 'شاخص مدیران خرید. بالای ۵۰ = رشد، زیر ۵۰ = رکود.',
-        'effect': 'PMI قوی → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با PMI قوی)',
-        'dollar': '🟢 صعودی (با PMI قوی)'
-    },
-    'Interest Rate': {
-        'desc': 'تصمیم نرخ بهره بانک مرکزی.',
-        'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی (با افزایش)',
-        'dollar': '🟢 صعودی (با افزایش)'
-    },
-    'BoE Interest Rate': {
-        'desc': 'نرخ بهره بانک مرکزی انگلستان.',
-        'effect': 'افزایش → پوند قوی، طلا ضعیف (به دلار).',
-        'gold': '🔴 نزولی',
-        'dollar': '🟢 صعودی (غیرمستقیم)'
-    },
-    'BoJ Interest Rate': {
-        'desc': 'نرخ بهره بانک مرکزی ژاپن.',
-        'effect': 'افزایش → ین قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Employment Change': {
-        'desc': 'تغییر اشتغال.',
-        'effect': 'اشتغال قوی → ارز قوی، طلا ضعیف.',
-        'gold': '🔴 نزولی',
-        'dollar': '🟢 صعودی'
-    },
-    'Trade Balance': {
-        'desc': 'تراز تجاری (صادرات منهای واردات).',
-        'effect': 'تراز مثبت → ارز قوی‌تر.',
-        'gold': '⚠️ بستگی به ارز دارد',
-        'dollar': '⚠️ بستگی به ارز دارد'
-    },
-    'Current Account': {
-        'desc': 'حساب جاری. نشان‌دهنده جریان تجارت و سرمایه.',
-        'effect': 'حساب جاری مثبت → ارز قوی‌تر.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'ZEW': {
-        'desc': 'شاخص احساسات اقتصادی ZEW آلمان.',
-        'effect': 'ZEW بالا → یورو قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Consumer Confidence': {
-        'desc': 'اعتماد مصرف‌کننده.',
-        'effect': 'اعتماد بالا → اقتصاد قوی → ارز قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Business Climate': {
-        'desc': 'فضای کسب و کار.',
-        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Manufacturing': {
-        'desc': 'شاخص تولید صنعتی.',
-        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Services': {
-        'desc': 'شاخص بخش خدمات.',
-        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Housing': {
-        'desc': 'شاخص بازار مسکن.',
-        'effect': 'بالا → اقتصاد قوی → ارز قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Building Permits': {
-        'desc': 'مجوزهای ساخت و ساز.',
-        'effect': 'بالا → اقتصاد قوی → دلار قوی.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '🟢 صعودی'
-    },
-    'Bond Auction': {
-        'desc': 'حراج اوراق قرضه دولتی.',
-        'effect': 'تقاضای بالا → ارز قوی‌تر.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Lagarde': {
-        'desc': 'سخنرانی رئیس بانک مرکزی اروپا (ECB).',
-        'effect': 'هر کلمه‌ای می‌تونه یورو رو تکان بده.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
-    'Powell': {
-        'desc': 'سخنرانی رئیس فدرال رزرو.',
-        'effect': 'مهم‌ترین سخنران بازار.',
-        'gold': '⚠️ بستگی به صحبت‌ها دارد',
-        'dollar': '⚠️ بستگی به صحبت‌ها دارد'
-    },
-    'ECB': {
-        'desc': 'سخنرانی یا تصمیم بانک مرکزی اروپا.',
-        'effect': 'روی یورو تأثیر مستقیم داره.',
-        'gold': '⚠️ غیرمستقیم',
-        'dollar': '⚠️ غیرمستقیم'
-    },
+    'Federal Funds Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'FOMC Statement': {'desc': 'بیانیه فدرال رزرو.', 'effect': 'لحن انقباضی → دلار قوی.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
+    'FOMC Economic Projections': {'desc': 'پیش‌بینی‌های فدرال رزرو.', 'effect': 'تورم بالاتر → دلار قوی.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
+    'FOMC Press Conference': {'desc': 'کنفرانس رئیس فدرال رزرو.', 'effect': 'هر کلمه بازار رو تکان می‌ده.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
+    'FOMC Member': {'desc': 'سخنرانی عضو فدرال رزرو.', 'effect': 'تغییر انتظارات نرخ بهره.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
+    'CPI': {'desc': 'شاخص قیمت مصرف‌کننده.', 'effect': 'CPI بالا → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Core CPI': {'desc': 'CPI بدون غذا و انرژی.', 'effect': 'مشابه CPI.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'PPI': {'desc': 'شاخص قیمت تولیدکننده.', 'effect': 'PPI بالا → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Non-Farm': {'desc': 'تغییر شاغلان غیرکشاورزی (NFP).', 'effect': 'NFP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'ADP': {'desc': 'اشتغال بخش خصوصی.', 'effect': 'ADP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Unemployment': {'desc': 'نرخ بیکاری.', 'effect': 'بیکاری کم → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Jobless Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Unemployment Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'GDP': {'desc': 'تولید ناخالص داخلی.', 'effect': 'GDP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Retail Sales': {'desc': 'فروش خرده‌فروشی.', 'effect': 'قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'PMI': {'desc': 'شاخص مدیران خرید.', 'effect': 'بالای ۵۰ → ارز قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Interest Rate': {'desc': 'نرخ بهره بانک مرکزی.', 'effect': 'افزایش → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Official Bank Rate': {'desc': 'نرخ بهره بانک انگلستان.', 'effect': 'افزایش → پوند قوی.', 'gold': '🔴 نزولی', 'dollar': '⚠️ غیرمستقیم'},
+    'BOJ Policy Rate': {'desc': 'نرخ بهره بانک ژاپن.', 'effect': 'افزایش → ین قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Employment Change': {'desc': 'تغییر اشتغال.', 'effect': 'قوی → ارز قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
+    'Trade Balance': {'desc': 'تراز تجاری.', 'effect': 'مثبت → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Current Account': {'desc': 'حساب جاری.', 'effect': 'مثبت → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'ZEW': {'desc': 'احساسات اقتصادی ZEW آلمان.', 'effect': 'بالا → یورو قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Consumer Confidence': {'desc': 'اعتماد مصرف‌کننده.', 'effect': 'بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Business Climate': {'desc': 'فضای کسب و کار.', 'effect': 'بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Manufacturing': {'desc': 'شاخص تولید صنعتی.', 'effect': 'بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Services': {'desc': 'شاخص بخش خدمات.', 'effect': 'بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Housing': {'desc': 'شاخص مسکن.', 'effect': 'بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Building Permits': {'desc': 'مجوزهای ساخت.', 'effect': 'بالا → دلار قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '🟢 صعودی'},
+    'Bond Auction': {'desc': 'حراج اوراق قرضه.', 'effect': 'تقاضای بالا → ارز قوی.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Lagarde': {'desc': 'سخنرانی رئیس ECB.', 'effect': 'روی یورو تأثیر داره.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
+    'Powell': {'desc': 'سخنرانی رئیس فدرال رزرو.', 'effect': 'مهم‌ترین سخنران.', 'gold': '⚠️ بستگی دارد', 'dollar': '⚠️ بستگی دارد'},
+    'ECB': {'desc': 'بانک مرکزی اروپا.', 'effect': 'روی یورو تأثیر داره.', 'gold': '⚠️ غیرمستقیم', 'dollar': '⚠️ غیرمستقیم'},
 }
 
 CURRENCY_NAMES = {
-    'USD': '🇺🇸 دلار آمریکا',
-    'EUR': '🇪🇺 یورو',
-    'GBP': '🇬🇧 پوند انگلستان',
-    'JPY': '🇯🇵 ین ژاپن',
-    'XAU': '🥇 طلا',
-    'CAD': '🇨🇦 دلار کانادا',
-    'AUD': '🇦🇺 دلار استرالیا',
-    'NZD': '🇳🇿 دلار نیوزیلند',
-    'CHF': '🇨🇭 فرانک سوئیس',
-    'CNY': '🇨🇳 یوان چین',
+    'USD': '🇺🇸 دلار آمریکا', 'EUR': '🇪🇺 یورو', 'GBP': '🇬🇧 پوند انگلستان',
+    'JPY': '🇯🇵 ین ژاپن', 'XAU': '🥇 طلا', 'CAD': '🇨🇦 دلار کانادا',
+    'AUD': '🇦🇺 دلار استرالیا', 'NZD': '🇳🇿 دلار نیوزیلند',
+    'CHF': '🇨🇭 فرانک سوئیس', 'CNY': '🇨🇳 یوان چین',
 }
 # ================================================================
 
@@ -235,122 +83,158 @@ def _parse_value(v):
 def _parse_date(date_str):
     if not date_str:
         return None
-    date_str = str(date_str).strip()
-    if re.match(r'\d{4}-\d{2}-\d{2}', date_str):
-        try:
-            return datetime.fromisoformat(date_str.replace('Z', '')).date()
-        except:
-            try:
-                return datetime.strptime(date_str[:10], '%Y-%m-%d').date()
-            except:
-                pass
-    return None
-
-
-def fetch_events(days_ahead=7):
-    """
-    دریافت رویدادها از Biquote (بدون محدودیت و کاملاً رایگان)
-    """
-    events = []
+    months = {'jan':1,'feb':2,'mar':3,'apr':4,'may':5,'jun':6,'jul':7,'aug':8,'sep':9,'oct':10,'nov':11,'dec':12,
+              'january':1,'february':2,'march':3,'april':4,'june':6,'july':7,'august':8,
+              'september':9,'october':10,'november':11,'december':12}
+    clean = str(date_str).strip().lower().replace(',', '')
+    parts = clean.split()
+    month = None; day = None; year = None
+    for part in parts:
+        part = part.strip('.')
+        if part in months:
+            month = months[part]
+        elif part.isdigit():
+            n = int(part)
+            if n > 31:
+                year = n
+            elif day is None:
+                day = n
+    if month is None or day is None:
+        return None
+    if year is None:
+        year = datetime.now().year
     try:
-        from biquote import Biquote
-        bq = Biquote()
-        
-        print("[DEBUG] Fetching from Biquote...", flush=True)
-        
-        # دریافت رویدادهای با اهمیت بالا و متوسط
-        # برای دریافت همه اخبار، می‌توانید importance را حذف کنید
-        calendar_data = bq.calendar(importance="high") 
-        
-        print(f"[DEBUG] Biquote returned: {len(calendar_data) if calendar_data else 0} items", flush=True)
-        
-        if not calendar_data:
-            return []
-        
-        # چاپ یک نمونه برای دیباگ
-        if calendar_data:
-            print(f"[DEBUG] Sample item keys: {list(calendar_data[0].keys())}", flush=True)
-            print(f"[DEBUG] Sample item: {calendar_data[0]}", flush=True)
-        
-        today = datetime.now().date()
-        
-        for item in calendar_data:
-            try:
-                # استخراج فیلدها با انعطاف‌پذیری بالا
-                title = (
-                    item.get('event') or item.get('name') or 
-                    item.get('title') or item.get('Event') or ''
-                )
-                currency = (
-                    item.get('currency') or item.get('country') or 
-                    item.get('symbol') or item.get('Currency') or ''
-                )
-                date_str = (
-                    item.get('date') or item.get('datetime') or 
-                    item.get('time') or item.get('Date') or ''
-                )
-                time_str = (
-                    item.get('time_only') or item.get('hour') or 
-                    item.get('Time') or ''
-                )
-                impact = (
-                    item.get('impact') or item.get('importance') or 
-                    item.get('Impact') or 'High'
-                )
-                forecast = str(
-                    item.get('forecast') or item.get('forecast_value') or 
-                    item.get('Forecast') or ''
-                )
-                previous = str(
-                    item.get('previous') or item.get('previous_value') or 
-                    item.get('Previous') or ''
-                )
+        return datetime(year, month, day).date()
+    except:
+        return None
+
+
+def _load_cache():
+    """خوندن cache از فایل"""
+    if not os.path.exists(CACHE_FILE):
+        return None
+    try:
+        with open(CACHE_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        # بررسی اینکه cache منقضی نشده
+        cached_at = datetime.fromisoformat(data.get('cached_at', '2000-01-01'))
+        if datetime.now() - cached_at < timedelta(hours=CACHE_DURATION_HOURS):
+            print(f"[DEBUG] Using CACHE ({len(data.get('events', []))} events)", flush=True)
+            # تبدیل parsed_date از string به date
+            events = []
+            for ev in data.get('events', []):
+                if ev.get('parsed_date'):
+                    ev['parsed_date'] = datetime.fromisoformat(ev['parsed_date']).date()
+                events.append(ev)
+            return events
+        else:
+            print("[DEBUG] Cache expired", flush=True)
+            return None
+    except Exception as e:
+        print(f"[DEBUG] Cache load error: {e}", flush=True)
+        return None
+
+
+def _save_cache(events):
+    """ذخیره cache در فایل"""
+    try:
+        serializable = []
+        for ev in events:
+            ev_copy = ev.copy()
+            if ev_copy.get('parsed_date'):
+                ev_copy['parsed_date'] = ev_copy['parsed_date'].isoformat()
+            serializable.append(ev_copy)
+        data = {
+            'cached_at': datetime.now().isoformat(),
+            'events': serializable
+        }
+        with open(CACHE_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False)
+        print(f"[DEBUG] Cache SAVED ({len(events)} events)", flush=True)
+    except Exception as e:
+        print(f"[DEBUG] Cache save error: {e}", flush=True)
+
+
+def _fetch_from_xml():
+    """دریافت داده از XML فید فارکس فکتوری"""
+    events = []
+    
+    # فقط XML این هفته (چون nextweek احتمالاً 404 می‌ده)
+    for url in [FF_XML_THIS_WEEK]:
+        try:
+            res = requests.get(url, headers=HEADERS, timeout=20)
+            print(f"[DEBUG] XML status={res.status_code}, size={len(res.content)}", flush=True)
+            
+            if res.status_code == 429:
+                print("[DEBUG] Rate limited! Using cache if available.", flush=True)
+                return []
+            
+            if res.status_code != 200:
+                continue
+            
+            root = ET.fromstring(res.content)
+            count = 0
+            for ev in root.findall('.//event'):
+                title = (ev.findtext('title') or '').strip()
+                currency = (ev.findtext('country') or '').strip()
+                date_str = (ev.findtext('date') or '').strip()
+                time_str = (ev.findtext('time') or '').strip()
+                impact = (ev.findtext('impact') or 'Low').strip()
+                forecast = (ev.findtext('forecast') or '').strip()
+                previous = (ev.findtext('previous') or '').strip()
                 
-                if not title or not currency:
+                parsed_date = _parse_date(date_str)
+                if not title or not currency or not parsed_date:
                     continue
                 
-                currency = str(currency).strip().upper()
-                impact_str = str(impact).capitalize()
-                if impact_str not in ['High', 'Medium', 'Low']:
-                    impact_str = 'High'
-                
-                parsed_date = _parse_date(str(date_str)) if date_str else today
-                
                 events.append({
-                    'title': str(title).strip(),
+                    'title': title,
                     'currency': currency,
-                    'date': str(date_str),
-                    'parsed_date': parsed_date or today,
-                    'time': str(time_str),
-                    'impact': impact_str,
+                    'date': date_str,
+                    'parsed_date': parsed_date,
+                    'time': time_str,
+                    'impact': impact,
                     'forecast': forecast,
                     'previous': previous,
                 })
-            except Exception as e:
-                continue
-        
-        print(f"[DEBUG] Total events parsed: {len(events)}", flush=True)
-        
-        # حذف تکراری‌ها
-        seen = set()
-        unique_events = []
-        for ev in events:
-            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-            if key not in seen:
-                seen.add(key)
-                unique_events.append(ev)
-        
-        print(f"[DEBUG] Unique events: {len(unique_events)}", flush=True)
-        return unique_events
-        
-    except ImportError:
-        print("[DEBUG] Biquote not installed. Run: pip install biquote", flush=True)
-        return []
-    except Exception as e:
-        print(f"[DEBUG] Biquote error: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
-        return []
+                count += 1
+            
+            print(f"[DEBUG] XML parsed: {count} events", flush=True)
+            
+        except Exception as e:
+            print(f"[DEBUG] XML error: {e}", flush=True)
+            continue
+    
+    return events
+
+
+def fetch_events(days_ahead=7):
+    """دریافت رویدادها با cache"""
+    print("[DEBUG] fetch_events STARTED", flush=True)
+    
+    # اول cache رو چک کن
+    cached = _load_cache()
+    if cached:
+        return cached
+    
+    # اگه cache نبود، از XML بگیر
+    events = _fetch_from_xml()
+    
+    # اگه داده گرفتیم، cache کن
+    if events:
+        _save_cache(events)
+    
+    # حذف تکراری‌ها
+    seen = set()
+    unique_events = []
+    for ev in events:
+        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+        if key not in seen:
+            seen.add(key)
+            unique_events.append(ev)
+    
+    print(f"[DEBUG] Total unique events: {len(unique_events)}", flush=True)
+    return unique_events
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
@@ -404,13 +288,10 @@ def get_news_explanation(title):
 
 def analyze_sentiment(events):
     if not events:
-        return {
-            'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
-            'events': [], 'summary': _format_summary([], 'neutral', 0, 0)
-        }
+        return {'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
+                'events': [], 'summary': _format_summary([], 'neutral', 0, 0)}
     
-    bull = 0
-    bear = 0
+    bull = 0; bear = 0
     for ev in events:
         t = ev['title'].lower()
         forecast = _parse_value(ev['forecast'])
@@ -418,37 +299,26 @@ def analyze_sentiment(events):
         
         if 'non-farm' in t or 'adp' in t:
             if forecast is not None and previous is not None:
-                if forecast < previous:
-                    bull += 3
-                else:
-                    bear += 2
+                if forecast < previous: bull += 3
+                else: bear += 2
         elif 'cpi' in t:
             if forecast is not None and previous is not None:
-                if forecast > previous:
-                    bull += 2
-                else:
-                    bear += 2
+                if forecast > previous: bull += 2
+                else: bear += 2
         elif 'gdp' in t:
             if forecast is not None and previous is not None:
-                if forecast < previous:
-                    bull += 2
-                else:
-                    bear += 1
+                if forecast < previous: bull += 2
+                else: bear += 1
         elif 'interest rate' in t or 'fomc' in t or 'federal funds' in t:
             bear += 1
     
     net = bull - bear
-    if net >= 3:
-        bias = 'bullish'
-    elif net <= -3:
-        bias = 'bearish'
-    else:
-        bias = 'neutral'
+    if net >= 3: bias = 'bullish'
+    elif net <= -3: bias = 'bearish'
+    else: bias = 'neutral'
     
-    return {
-        'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
-        'events': events, 'summary': _format_summary(events, bias, bull, bear)
-    }
+    return {'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
+            'events': events, 'summary': _format_summary(events, bias, bull, bear)}
 
 
 def _format_summary(events, bias, bull, bear):
@@ -467,21 +337,15 @@ def _format_summary(events, bias, bull, bear):
     msg += f"📊 **{len(events)} خبر در این بازه:**\n\n"
     
     for ev in events[:20]:
-        impact_emoji = {
-            'High': '🔴', 'Medium': '🟡', 'Low': '🟢', '': '⚪'
-        }.get(ev['impact'], '⚪')
-        
+        impact_emoji = {'High': '🔴', 'Medium': '🟡', 'Low': '🟢', '': '⚪'}.get(ev['impact'], '⚪')
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
         
         date_label = ''
         if ev.get('parsed_date'):
             ev_date = ev['parsed_date']
-            if ev_date == today:
-                date_label = '📅 امروز'
-            elif ev_date == today + timedelta(days=1):
-                date_label = '📅 فردا'
-            else:
-                date_label = f"📅 {ev_date.strftime('%m/%d')}"
+            if ev_date == today: date_label = '📅 امروز'
+            elif ev_date == today + timedelta(days=1): date_label = '📅 فردا'
+            else: date_label = f"📅 {ev_date.strftime('%m/%d')}"
         
         msg += f"{impact_emoji} **{currency_name}** — `{ev['title']}`\n"
         
@@ -509,7 +373,6 @@ def _format_summary(events, bias, bull, bear):
         msg += f"\n... و {len(events) - 20} خبر دیگر"
     
     msg += f"\n\n📈 امتیاز صعودی: `{bull}`\n"
-    msg += f"\n📉 امتیاز نزولی: `{bear}`\n"
+    msg += f"📉 امتیاز نزولی: `{bear}`\n"
     msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
-    
     return msg
