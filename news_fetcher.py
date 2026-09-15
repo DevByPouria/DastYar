@@ -190,38 +190,100 @@ def get_news_explanation(title):
 
 
 def analyze_sentiment(events):
+    """
+    تحلیل احساسات با در نظر گرفتن همه‌ی اخبار مهم
+    فقط اخبار High و Medium و فقط با forecast/previous معتبر
+    """
     if not events:
         return {'bias': 'neutral', 'score': 0, 'bullish': 0, 'bearish': 0,
+                'analyzed_count': 0,
                 'events': [], 'summary': _format_summary([], 'neutral', 0, 0)}
     
-    bull = 0; bear = 0
+    bull = 0
+    bear = 0
+    analyzed_count = 0
+    
     for ev in events:
         t = ev['title'].lower()
+        impact = ev.get('impact', 'low')
         forecast = _parse_value(ev['forecast'])
         previous = _parse_value(ev['previous'])
         
+        # فقط اخبار High و Medium
+        if impact == 'low':
+            continue
+        
+        # اگه عدد نداریم، رد کن
+        if forecast is None or previous is None:
+            continue
+        
+        # ===== NFP / ADP =====
         if 'non-farm' in t or 'adp' in t:
-            if forecast is not None and previous is not None:
-                if forecast < previous: bull += 3
-                else: bear += 2
-        elif 'cpi' in t:
-            if forecast is not None and previous is not None:
-                if forecast > previous: bull += 2
-                else: bear += 2
+            analyzed_count += 1
+            if forecast < previous:
+                bull += 3  # اشتغال ضعیف → طلا صعودی
+            else:
+                bear += 3  # اشتغال قوی → طلا نزولی
+        
+        # ===== CPI / Inflation =====
+        elif 'cpi' in t or 'inflation' in t:
+            analyzed_count += 1
+            if forecast > previous:
+                bull += 2  # تورم بالا → طلا صعودی
+            else:
+                bear += 2  # تورم کم → طلا نزولی
+        
+        # ===== GDP =====
         elif 'gdp' in t:
-            if forecast is not None and previous is not None:
-                if forecast < previous: bull += 2
-                else: bear += 1
-        elif 'interest rate' in t or 'fomc' in t or 'federal funds' in t:
-            bear += 1
+            analyzed_count += 1
+            if forecast < previous:
+                bull += 2  # GDP ضعیف → طلا صعودی
+            else:
+                bear += 2  # GDP قوی → طلا نزولی
+        
+        # ===== Retail Sales =====
+        elif 'retail sales' in t:
+            analyzed_count += 1
+            if forecast > previous:
+                bear += 1  # خرده‌فروشی قوی → طلا نزولی
+            else:
+                bull += 1  # خرده‌فروشی ضعیف → طلا صعودی
+        
+        # ===== Unemployment =====
+        elif 'unemployment' in t:
+            analyzed_count += 1
+            if forecast < previous:
+                bear += 1  # بیکاری کم → طلا نزولی
+            else:
+                bull += 1  # بیکاری زیاد → طلا صعودی
+        
+        # ===== Interest Rate / FOMC / Bank Rate =====
+        elif ('interest rate' in t or 'fomc' in t or 
+              'federal funds' in t or 'bank rate' in t):
+            analyzed_count += 1
+            if forecast > previous:
+                bear += 2  # افزایش نرخ → طلا نزولی
+            elif forecast < previous:
+                bull += 2  # کاهش نرخ → طلا صعودی
+            # اگه برابر بود، خنثی
     
     net = bull - bear
-    if net >= 3: bias = 'bullish'
-    elif net <= -3: bias = 'bearish'
-    else: bias = 'neutral'
+    if net >= 3:
+        bias = 'bullish'
+    elif net <= -3:
+        bias = 'bearish'
+    else:
+        bias = 'neutral'
     
-    return {'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
-            'events': events, 'summary': _format_summary(events, bias, bull, bear)}
+    print(f"[DEBUG] Sentiment: bull={bull}, bear={bear}, net={net}, analyzed={analyzed_count}/{len(events)}", flush=True)
+    
+    result = {
+        'bias': bias, 'score': net, 'bullish': bull, 'bearish': bear,
+        'analyzed_count': analyzed_count,
+        'events': events,
+        'summary': _format_summary(events, bias, bull, bear)
+    }
+    return result
 
 
 def _format_summary(events, bias, bull, bear):
