@@ -1,6 +1,8 @@
 import os
+from datetime import datetime
 import random
 import logging
+from pdf_generator import generate_news_pdf
 from threading import Thread
 from flask import Flask
 from telegram import (
@@ -239,16 +241,18 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """هندلر دکمه‌های اخبار - 3 گزینه"""
+    """هندلر دکمه‌های اخبار - 3 گزینه + PDF"""
     query = update.callback_query
     await query.answer("⏳ در حال دریافت اخبار...")
 
     data = query.data
+    pdf_title = ""
 
     if data == "news_today":
         events = fetch_events(days_ahead=1)
         filtered = filter_today_events(events, days_ahead=0, min_impact='All')
         analysis = analyze_sentiment(filtered)
+        pdf_title = "اخبار امروز"
         if not filtered:
             analysis['summary'] = (
                 "📰 **اخبار امروز**\n"
@@ -261,24 +265,22 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         events = fetch_events(days_ahead=7)
         filtered = filter_today_events(events, days_ahead=7, min_impact='All')
         analysis = analyze_sentiment(filtered)
+        pdf_title = "اخبار این هفته"
         if not filtered:
             analysis['summary'] = (
-                "📰 **اخبار این هفته**\n"
-                "━━━━━━━━━━━━━━━━━━━━\n\n"
-                "⚠️ هیچ خبری در این هفته پیدا نشد.\n"
-                "🔹 لطفاً بعداً دوباره تلاش کن."
+                "📰 **اخبار این هفته**\n\n"
+                "⚠️ هیچ خبری در این هفته پیدا نشد."
             )
 
     elif data == "news_important":
         events = fetch_events(days_ahead=7)
         filtered = filter_today_events(events, days_ahead=7, min_impact='High')
         analysis = analyze_sentiment(filtered)
+        pdf_title = "اخبار مهم هفته"
         if not filtered:
             analysis['summary'] = (
-                "🔥 **اخبار مهم هفته**\n"
-                "━━━━━━━━━━━━━━━━━━━━\n\n"
-                "✅ **این هفته خبر خیلی مهمی در راه نیست.**\n\n"
-                "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
+                "🔥 **اخبار مهم هفته**\n\n"
+                "✅ **این هفته خبر خیلی مهمی در راه نیست.**"
             )
     else:
         return
@@ -289,6 +291,7 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
     ])
 
+    # ===== ارسال خلاصه (متن) =====
     try:
         await query.edit_message_text(
             analysis['summary'],
@@ -297,11 +300,52 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=back_keyboard
         )
     except Exception as e:
-        if "not modified" in str(e).lower():
-            pass
-        else:
+        if "not modified" not in str(e).lower():
             print(f"[DEBUG] Edit error: {e}", flush=True)
 
+    # ===== ساخت و ارسال PDF =====
+    if filtered:
+        try:
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text="📄 در حال ساخت فایل PDF با تمام اخبار...",
+            )
+            
+            pdf_path = generate_news_pdf(
+                events=filtered,
+                bias=analysis['bias'],
+                bull=analysis['bullish'],
+                bear=analysis['bearish'],
+                title=pdf_title
+            )
+            
+            if pdf_path and os.path.exists(pdf_path):
+                with open(pdf_path, 'rb') as pdf_file:
+                    await context.bot.send_document(
+                        chat_id=query.message.chat_id,
+                        document=pdf_file,
+                        filename=f"DastYar_News_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                        caption=f"📄 **{pdf_title}** — {len(filtered)} خبر\n\n⚠️ این تحلیل صرفاً آماری است.",
+                        parse_mode='Markdown'
+                    )
+                # حذف فایل بعد از ارسال
+                try:
+                    os.remove(pdf_path)
+                except:
+                    pass
+            else:
+                await context.bot.send_message(
+                    chat_id=query.message.chat_id,
+                    text="❌ متأسفانه ساخت PDF ناموفق بود.",
+                )
+        except Exception as e:
+            print(f"[DEBUG] PDF error: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text=f"❌ خطا در ساخت PDF: {str(e)[:100]}",
+            )
 # ================== اجرا ==================
 def main():
     if not TOKEN:
