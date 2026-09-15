@@ -78,7 +78,6 @@ async def scrape_forexfactory():
         
         page = await context.new_page()
         
-        # صفحه اصلی این هفته
         print("[INFO] Loading ForexFactory calendar...")
         await page.goto(
             "https://www.forexfactory.com/calendar?week=this",
@@ -86,7 +85,6 @@ async def scrape_forexfactory():
             timeout=60000
         )
         
-        # منتظر جدول تقویم
         try:
             await page.wait_for_selector("table.calendar__table", timeout=30000)
             print("[INFO] Calendar table loaded")
@@ -94,15 +92,14 @@ async def scrape_forexfactory():
             print(f"[ERROR] Table not found: {e}")
             html = await page.content()
             print(f"[DEBUG] HTML length: {len(html)}")
+            Path("debug_calendar.html").write_text(html, encoding='utf-8')
             await browser.close()
             return []
         
-        # ذخیره HTML در فایل برای دیباگ
         html_content = await page.content()
         Path("debug_calendar.html").write_text(html_content, encoding='utf-8')
         print(f"[INFO] Saved debug HTML ({len(html_content)} chars)")
         
-        # استخراج سطرها
         rows = await page.query_selector_all("tr.calendar__row")
         print(f"[INFO] Found {len(rows)} rows")
         
@@ -112,7 +109,6 @@ async def scrape_forexfactory():
         
         for row in rows:
             try:
-                # تاریخ
                 date_cell = await row.query_selector("td.calendar__date")
                 if date_cell:
                     date_text = (await date_cell.inner_text()).strip()
@@ -121,7 +117,6 @@ async def scrape_forexfactory():
                         if parsed:
                             current_date = datetime.fromisoformat(parsed).date()
                 
-                # ارز
                 currency_cell = await row.query_selector("td.calendar__currency")
                 if not currency_cell:
                     continue
@@ -129,7 +124,6 @@ async def scrape_forexfactory():
                 if not currency:
                     continue
                 
-                # عنوان خبر
                 event_cell = await row.query_selector("td.calendar__event")
                 if not event_cell:
                     continue
@@ -137,11 +131,9 @@ async def scrape_forexfactory():
                 if not title:
                     continue
                 
-                # فیلتر تاریخ
                 if not (today <= current_date <= max_date):
                     continue
                 
-                # اهمیت
                 impact_cell = await row.query_selector("td.calendar__impact span")
                 impact = "low"
                 if impact_cell:
@@ -155,11 +147,9 @@ async def scrape_forexfactory():
                     elif "holiday" in classes.lower():
                         impact = "holiday"
                 
-                # زمان
                 time_cell = await row.query_selector("td.calendar__time")
                 time_str = (await time_cell.inner_text()).strip() if time_cell else ""
                 
-                # مقادیر
                 actual_cell = await row.query_selector("td.calendar__actual")
                 forecast_cell = await row.query_selector("td.calendar__forecast")
                 previous_cell = await row.query_selector("td.calendar__previous")
@@ -184,7 +174,6 @@ async def scrape_forexfactory():
         
         await browser.close()
     
-    # حذف تکراری‌ها
     seen = set()
     unique = []
     for ev in events:
