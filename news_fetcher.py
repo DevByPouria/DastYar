@@ -198,49 +198,64 @@ def _save_cache(events):
 
 
 def _fetch_from_xml():
+    """دریافت داده از XML فید با استفاده از Proxy رایگان"""
     events = []
     
+    # لیست proxy های رایگان (اگه اولی کار نکرد، دومی رو امتحان می‌کنه)
+    proxies = [
+        "https://api.allorigins.win/raw?url=",
+        "https://corsproxy.io/?",
+        "https://api.codetabs.com/v1/proxy?quest=",
+    ]
+    
+    xml_text = None
+    for proxy in proxies:
+        try:
+            url = proxy + FF_XML_THIS_WEEK
+            print(f"[DEBUG] Trying proxy: {proxy[:30]}...", flush=True)
+            
+            res = requests.get(url, headers=HEADERS, timeout=25)
+            print(f"[DEBUG] Proxy status={res.status_code}, size={len(res.content)}", flush=True)
+            
+            if res.status_code == 200 and len(res.content) > 1000:
+                xml_text = res.text
+                print(f"[DEBUG] Proxy SUCCESS! Got {len(xml_text)} chars", flush=True)
+                break
+        except Exception as e:
+            print(f"[DEBUG] Proxy error: {e}", flush=True)
+            continue
+    
+    if not xml_text:
+        print("[DEBUG] All proxies failed!", flush=True)
+        return []
+    
+    # پارس XML
     try:
-        res = requests.get(FF_XML_THIS_WEEK, headers=HEADERS, timeout=20)
-        print(f"[DEBUG] XML status={res.status_code}, size={len(res.content)}", flush=True)
-        
-        if res.status_code == 429:
-            print("[DEBUG] Rate limited!", flush=True)
-            return []
-        
-        if res.status_code != 200:
-            return []
-        
-        # ⬇️ چاپ 1500 کاراکتر اول XML برای دیباگ
+        # چاپ 800 کاراکتر اول برای دیباگ
         print("=" * 60, flush=True)
-        print("[DEBUG] XML PREVIEW (first 1500 chars):", flush=True)
-        print(res.text[:1500], flush=True)
+        print("[DEBUG] XML PREVIEW:", flush=True)
+        print(xml_text[:800], flush=True)
         print("=" * 60, flush=True)
         
-        root = ET.fromstring(res.content)
+        root = ET.fromstring(xml_text)
         print(f"[DEBUG] Root tag: {root.tag}", flush=True)
         
-        # پیدا کردن همه eventها
         all_events = root.findall('.//event')
-        print(f"[DEBUG] Found {len(all_events)} <event> elements", flush=True)
+        print(f"[DEBUG] Found {len(all_events)} event elements", flush=True)
         
-        # اگه هیچی پیدا نشد، ساختار رو چاپ کن
         if not all_events:
             print("[DEBUG] No <event> tags found. Structure:", flush=True)
             for child in root:
-                print(f"[DEBUG]   <{child.tag}> with {len(list(child))} children", flush=True)
+                print(f"[DEBUG]   <{child.tag}>", flush=True)
             return []
         
-        # چاپ 3 نمونه اول
-        for i, ev in enumerate(all_events[:3]):
-            print(f"[DEBUG] Event {i} children: {[c.tag for c in ev]}", flush=True)
-            print(f"[DEBUG] Event {i} title='{ev.findtext('title')}' date='{ev.findtext('date')}' country='{ev.findtext('country')}'", flush=True)
+        # چاپ نمونه
+        if all_events:
+            ev0 = all_events[0]
+            print(f"[DEBUG] Sample event 0: children={[c.tag for c in ev0]}", flush=True)
+            print(f"[DEBUG] Sample data: title='{ev0.findtext('title')}' date='{ev0.findtext('date')}' country='{ev0.findtext('country')}'", flush=True)
         
         count = 0
-        skip_no_title = 0
-        skip_no_date = 0
-        skip_date_parse = 0
-        
         for ev in all_events:
             title = (ev.findtext('title') or '').strip()
             currency = (ev.findtext('country') or '').strip()
@@ -250,18 +265,11 @@ def _fetch_from_xml():
             forecast = (ev.findtext('forecast') or '').strip()
             previous = (ev.findtext('previous') or '').strip()
             
-            if not title:
-                skip_no_title += 1
-                continue
-            if not date_str:
-                skip_no_date += 1
+            if not title or not currency or not date_str:
                 continue
             
             parsed_date = _parse_date(date_str)
             if not parsed_date:
-                skip_date_parse += 1
-                continue
-            if not currency:
                 continue
             
             events.append({
@@ -276,11 +284,10 @@ def _fetch_from_xml():
             })
             count += 1
         
-        print(f"[DEBUG] Parsed OK: {count}", flush=True)
-        print(f"[DEBUG] Skipped - no title: {skip_no_title}, no date: {skip_no_date}, date parse fail: {skip_date_parse}", flush=True)
+        print(f"[DEBUG] XML parsed OK: {count} events", flush=True)
         
     except Exception as e:
-        print(f"[DEBUG] XML error: {e}", flush=True)
+        print(f"[DEBUG] XML parse error: {e}", flush=True)
         import traceback
         traceback.print_exc()
     
