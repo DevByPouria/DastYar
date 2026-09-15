@@ -9,3 +9,6 @@ pandas-ta-classic
 matplotlib
 lxml
 jdatetime
+fpdf2
+arabic-reshaper
+python-bidi
