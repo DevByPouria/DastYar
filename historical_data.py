@@ -28,17 +28,16 @@ HEADERS = {
 #  - EURUSD=X : Euro/USD
 # ============================================================
 YAHOO_SYMBOLS = {
-    # طلا و فلزات
-    'gold_gram18': 'XAUUSD=X',      # طلای نقدی (به جای آتی)
-    'gold_ons': 'XAUUSD=X',         # اونس طلا
+    # طلا و فلزات - برگشت به GC=F
+    'gold_gram18': 'GC=F',          # آتی طلا
+    'gold_ons': 'GC=F',             # آونس طلا
     'silver': 'SI=F',               # نقره
     'oil': 'CL=F',                  # نفت
 
     # ارز
-    'dollar': 'USDIRR=X',           # دلار ایران (اگه موجود باشه)
-    'eur': 'EURUSD=X',              # یورو/دلار
-    'gbp': 'GBPUSD=X',              # پوند/دلار
-    'jpy': 'USDJPY=X',              # دلار/ین
+    'eur': 'EURUSD=X',
+    'gbp': 'GBPUSD=X',
+    'jpy': 'USDJPY=X',
 
     # کریپتو
     'bitcoin': 'BTC-USD',
@@ -46,7 +45,7 @@ YAHOO_SYMBOLS = {
 
     # شاخص‌ها
     'sp500': '^GSPC',
-    'dxy': 'DX-Y.NYB',              # شاخص دلار
+    'dxy': 'DX-Y.NYB',
 }
 
 # ============================================================
