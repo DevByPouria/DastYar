@@ -1,9 +1,13 @@
-import asyncio
-from playwright.async_api import async_playwright
+import os
+import requests
 from datetime import datetime, timedelta
 import re
 
 # ==================== تنظیمات ====================
+RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
+RAPIDAPI_HOST = "economic-calendar-api3.p.rapidapi.com"
+
+# همه ارزهای اصلی
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
@@ -11,6 +15,12 @@ NEWS_EXPLANATIONS = {
     'Federal Funds Rate': {
         'desc': 'نرخ بهره کلیدی آمریکا که توسط فدرال رزرو تعیین می‌شود.',
         'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف. کاهش نرخ → برعکس.',
+        'gold': '🔴 نزولی (با افزایش)',
+        'dollar': '🟢 صعودی (با افزایش)'
+    },
+    'Fed Interest Rate': {
+        'desc': 'نرخ بهره کلیدی آمریکا (فدرال رزرو).',
+        'effect': 'افزایش → دلار قوی، طلا ضعیف. کاهش → برعکس.',
         'gold': '🔴 نزولی (با افزایش)',
         'dollar': '🟢 صعودی (با افزایش)'
     },
@@ -29,6 +39,12 @@ NEWS_EXPLANATIONS = {
     'FOMC Press Conference': {
         'desc': 'کنفرانس خبری رئیس فدرال رزرو.',
         'effect': 'هر کلمه می‌تونه بازار رو تکان بده.',
+        'gold': '⚠️ بستگی به صحبت‌ها دارد',
+        'dollar': '⚠️ بستگی به صحبت‌ها دارد'
+    },
+    'FOMC Member': {
+        'desc': 'سخنرانی یکی از اعضای فدرال رزرو.',
+        'effect': 'می‌تونه انتظارات نرخ بهره رو تغییر بده.',
         'gold': '⚠️ بستگی به صحبت‌ها دارد',
         'dollar': '⚠️ بستگی به صحبت‌ها دارد'
     },
@@ -68,6 +84,18 @@ NEWS_EXPLANATIONS = {
         'gold': '🔴 نزولی (با بیکاری کم)',
         'dollar': '🟢 صعودی (با بیکاری کم)'
     },
+    'Jobless Claims': {
+        'desc': 'تعداد مدعیان بیمه بیکاری.',
+        'effect': 'عدد کمتر → اشتغال قوی → دلار قوی.',
+        'gold': '🔴 نزولی',
+        'dollar': '🟢 صعودی'
+    },
+    'Unemployment Claims': {
+        'desc': 'تعداد مدعیان بیمه بیکاری.',
+        'effect': 'عدد کمتر → اشتغال قوی → دلار قوی.',
+        'gold': '🔴 نزولی',
+        'dollar': '🟢 صعودی'
+    },
     'GDP': {
         'desc': 'تولید ناخالص داخلی.',
         'effect': 'GDP قوی → دلار قوی، طلا ضعیف.',
@@ -91,6 +119,18 @@ NEWS_EXPLANATIONS = {
         'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف.',
         'gold': '🔴 نزولی (با افزایش)',
         'dollar': '🟢 صعودی (با افزایش)'
+    },
+    'BoE Interest Rate': {
+        'desc': 'نرخ بهره بانک مرکزی انگلستان.',
+        'effect': 'افزایش → پوند قوی، طلا ضعیف (به دلار).',
+        'gold': '🔴 نزولی',
+        'dollar': '🟢 صعودی (غیرمستقیم)'
+    },
+    'BoJ Interest Rate': {
+        'desc': 'نرخ بهره بانک مرکزی ژاپن.',
+        'effect': 'افزایش → ین قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
     },
     'Employment Change': {
         'desc': 'تغییر اشتغال.',
@@ -146,9 +186,33 @@ NEWS_EXPLANATIONS = {
         'gold': '⚠️ غیرمستقیم',
         'dollar': '⚠️ غیرمستقیم'
     },
+    'Building Permits': {
+        'desc': 'مجوزهای ساخت و ساز.',
+        'effect': 'بالا → اقتصاد قوی → دلار قوی.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '🟢 صعودی'
+    },
     'Bond Auction': {
         'desc': 'حراج اوراق قرضه دولتی.',
         'effect': 'تقاضای بالا → ارز قوی‌تر.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Lagarde': {
+        'desc': 'سخنرانی رئیس بانک مرکزی اروپا (ECB).',
+        'effect': 'هر کلمه‌ای می‌تونه یورو رو تکان بده.',
+        'gold': '⚠️ غیرمستقیم',
+        'dollar': '⚠️ غیرمستقیم'
+    },
+    'Powell': {
+        'desc': 'سخنرانی رئیس فدرال رزرو.',
+        'effect': 'مهم‌ترین سخنران بازار.',
+        'gold': '⚠️ بستگی به صحبت‌ها دارد',
+        'dollar': '⚠️ بستگی به صحبت‌ها دارد'
+    },
+    'ECB': {
+        'desc': 'سخنرانی یا تصمیم بانک مرکزی اروپا.',
+        'effect': 'روی یورو تأثیر مستقیم داره.',
         'gold': '⚠️ غیرمستقیم',
         'dollar': '⚠️ غیرمستقیم'
     },
@@ -170,6 +234,7 @@ CURRENCY_NAMES = {
 
 
 def _parse_value(v):
+    """تبدیل مقدار مثل 120K یا 2.1% به عدد"""
     if not v:
         return None
     v = str(v).strip().replace(',', '').replace('%', '')
@@ -190,17 +255,9 @@ def _parse_date(date_str):
     if not date_str:
         return None
     
-    months = {
-        'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-        'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12,
-        'january': 1, 'february': 2, 'march': 3, 'april': 4,
-        'june': 6, 'july': 7, 'august': 8, 'september': 9,
-        'october': 10, 'november': 11, 'december': 12,
-    }
-    
     date_str = str(date_str).strip()
     
-    # فرمت ISO
+    # فرمت ISO: 2026-09-16 یا 2026-09-16T10:30:00
     if re.match(r'\d{4}-\d{2}-\d{2}', date_str):
         try:
             return datetime.fromisoformat(date_str.replace('Z', '')).date()
@@ -210,159 +267,156 @@ def _parse_date(date_str):
             except:
                 pass
     
-    # فرمت متنی
-    clean = date_str.lower().replace(',', '')
-    parts = clean.split()
-    
-    month = None
-    day = None
-    year = None
-    
-    for part in parts:
-        part = part.strip('.')
-        if part in months:
-            month = months[part]
-        elif part.isdigit():
-            n = int(part)
-            if n > 31:
-                year = n
-            elif day is None:
-                day = n
-    
-    if month is None or day is None:
-        return None
-    
-    if year is None:
-        year = datetime.now().year
-    
-    try:
-        return datetime(year, month, day).date()
-    except:
-        return None
-
-
-async def _fetch_events_async():
-    """استخراج داده‌ها با Playwright"""
-    events = []
-    async with async_playwright() as p:
-        # اجرای مرورگر در حالت headless
-        browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
-        
-        try:
-            # رفتن به صفحه تقویم اقتصادی فارکس فکتوری
-            await page.goto("https://www.forexfactory.com/calendar", wait_until="networkidle", timeout=60000)
-            
-            # منتظر بارگذاری جدول تقویم می‌مانیم
-            await page.wait_for_selector("table.calendar__table", timeout=30000)
-            
-            # استخراج تمام سطرهای تقویم
-            rows = await page.query_selector_all("tr.calendar__row")
-            
-            print(f"[DEBUG] Found {len(rows)} calendar rows")
-            
-            today = datetime.now().date()
-            current_date = today
-            
-            for row in rows:
-                try:
-                    # --- استخراج تاریخ ---
-                    date_cell = await row.query_selector("td.calendar__date")
-                    if date_cell:
-                        date_text = await date_cell.inner_text()
-                        if date_text.strip():
-                            parsed = _parse_date(date_text.strip())
-                            if parsed:
-                                current_date = parsed
-                    
-                    # --- استخراج اطلاعات رویداد ---
-                    currency_cell = await row.query_selector("td.calendar__currency")
-                    event_cell = await row.query_selector("td.calendar__event")
-                    
-                    if not currency_cell or not event_cell:
-                        continue
-                    
-                    currency = (await currency_cell.inner_text()).strip()
-                    title = (await event_cell.inner_text()).strip()
-                    
-                    if not currency or not title:
-                        continue
-                    
-                    # --- استخراج میزان اهمیت ---
-                    impact_cell = await row.query_selector("td.calendar__impact")
-                    impact = "Low"
-                    if impact_cell:
-                        impact_span = await impact_cell.query_selector("span")
-                        if impact_span:
-                            classes = await impact_span.get_attribute("class") or ""
-                            if "high" in classes.lower():
-                                impact = "High"
-                            elif "medium" in classes.lower():
-                                impact = "Medium"
-                            elif "low" in classes.lower():
-                                impact = "Low"
-                    
-                    # --- استخراج زمان ---
-                    time_cell = await row.query_selector("td.calendar__time")
-                    time_str = (await time_cell.inner_text()).strip() if time_cell else ""
-                    
-                    # --- استخراج پیش‌بینی و مقدار قبلی ---
-                    forecast_cell = await row.query_selector("td.calendar__forecast")
-                    previous_cell = await row.query_selector("td.calendar__previous")
-                    
-                    forecast = (await forecast_cell.inner_text()).strip() if forecast_cell else ""
-                    previous = (await previous_cell.inner_text()).strip() if previous_cell else ""
-                    
-                    events.append({
-                        'title': title,
-                        'currency': currency,
-                        'date': current_date.strftime('%b %d'),
-                        'parsed_date': current_date,
-                        'time': time_str,
-                        'impact': impact,
-                        'forecast': forecast,
-                        'previous': previous,
-                    })
-                except Exception as e:
-                    print(f"[DEBUG] Error parsing row: {e}")
-                    continue
-        
-        except Exception as e:
-            print(f"[DEBUG] Playwright error: {e}")
-            import traceback
-            traceback.print_exc()
-        finally:
-            await browser.close()
-    
-    # حذف تکراری‌ها
-    seen = set()
-    unique_events = []
-    for ev in events:
-        key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-        if key not in seen:
-            seen.add(key)
-            unique_events.append(ev)
-    
-    print(f"[DEBUG] Total unique events: {len(unique_events)}")
-    return unique_events
+    return None
 
 
 def fetch_events(days_ahead=7):
-    """دریافت رویدادها (همگام‌سازی شده برای استفاده در main.py)"""
+    """
+    دریافت رویدادهای اقتصادی از RapidAPI
+    """
+    if not RAPIDAPI_KEY:
+        print("[DEBUG] RAPIDAPI_KEY is not set!")
+        return []
+    
+    events = []
+    
     try:
-        # اجرای تابع async در یک loop
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        events = loop.run_until_complete(_fetch_events_async())
-        loop.close()
-        return events
+        # پارامترها
+        hours = max(days_ahead * 24, 48)  # حداقل 48 ساعت
+        
+        url = f"https://{RAPIDAPI_HOST}/v1/calendar/upcoming"
+        params = {
+            'impact': '{}',
+            'hours': str(hours),
+            'currency': '{}'
+        }
+        headers = {
+            'Content-Type': 'application/json',
+            'x-rapidapi-host': RAPIDAPI_HOST,
+            'x-rapidapi-key': RAPIDAPI_KEY,
+        }
+        
+        print(f"[DEBUG] Fetching from RapidAPI: hours={hours}")
+        
+        response = requests.get(url, headers=headers, params=params, timeout=20)
+        print(f"[DEBUG] Status: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"[DEBUG] Error response: {response.text[:500]}")
+            return []
+        
+        data = response.json()
+        print(f"[DEBUG] Response type: {type(data)}")
+        
+        # استخراج لیست رویدادها
+        raw_events = None
+        if isinstance(data, list):
+            raw_events = data
+        elif isinstance(data, dict):
+            # ممکنه توی کلیدهای مختلفی باشه
+            for key in ['data', 'events', 'result', 'results', 'calendar']:
+                if key in data and isinstance(data[key], list):
+                    raw_events = data[key]
+                    break
+        
+        if not raw_events:
+            print(f"[DEBUG] No events found in response. Keys: {list(data.keys()) if isinstance(data, dict) else 'list'}")
+            return []
+        
+        print(f"[DEBUG] Raw events: {len(raw_events)}")
+        
+        # چاپ نمونه
+        if raw_events:
+            print(f"[DEBUG] Sample event: {raw_events[0]}")
+        
+        today = datetime.now().date()
+        
+        for item in raw_events:
+            try:
+                if not isinstance(item, dict):
+                    continue
+                
+                # استخراج فیلدها با انعطاف
+                title = (
+                    item.get('event') or item.get('name') or 
+                    item.get('title') or item.get('Event') or ''
+                )
+                currency = (
+                    item.get('currency') or item.get('country') or 
+                    item.get('symbol') or item.get('Currency') or ''
+                )
+                date_str = (
+                    item.get('date') or item.get('datetime') or 
+                    item.get('time') or item.get('Date') or ''
+                )
+                time_str = (
+                    item.get('time') or item.get('hour') or 
+                    item.get('Time') or ''
+                )
+                impact = (
+                    item.get('impact') or item.get('importance') or 
+                    item.get('Impact') or 'High'
+                )
+                forecast = str(
+                    item.get('forecast') or item.get('forecast_value') or 
+                    item.get('Forecast') or ''
+                )
+                previous = str(
+                    item.get('previous') or item.get('previous_value') or 
+                    item.get('Previous') or ''
+                )
+                
+                if not title or not currency:
+                    continue
+                
+                # نرمال‌سازی currency
+                currency = str(currency).strip().upper()
+                
+                # نرمال‌سازی impact
+                impact_str = str(impact).capitalize()
+                if impact_str not in ['High', 'Medium', 'Low']:
+                    impact_str = 'High'
+                
+                # پارس تاریخ
+                parsed_date = _parse_date(str(date_str)) if date_str else today
+                
+                events.append({
+                    'title': str(title).strip(),
+                    'currency': currency,
+                    'date': str(date_str),
+                    'parsed_date': parsed_date or today,
+                    'time': str(time_str),
+                    'impact': impact_str,
+                    'forecast': forecast,
+                    'previous': previous,
+                })
+            except Exception as e:
+                print(f"[DEBUG] Error parsing item: {e}")
+                continue
+        
+        print(f"[DEBUG] Total events parsed: {len(events)}")
+        
+        # حذف تکراری‌ها
+        seen = set()
+        unique_events = []
+        for ev in events:
+            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
+            if key not in seen:
+                seen.add(key)
+                unique_events.append(ev)
+        
+        print(f"[DEBUG] Unique events: {len(unique_events)}")
+        return unique_events
+        
     except Exception as e:
-        print(f"[DEBUG] Error in fetch_events: {e}")
+        print(f"[DEBUG] RapidAPI error: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
-    """فیلتر اخبار"""
+    """فیلتر اخبار بر اساس بازه و اهمیت"""
     if not events:
         return []
     
@@ -393,13 +447,14 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
         
         filtered.append(ev)
     
+    # مرتب‌سازی: اول تاریخ، بعد اهمیت
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
         impact_order.get(x['impact'], 3)
     ))
     
-    print(f"[DEBUG] Filtered: {len(filtered)} events (min_impact={min_impact}, days_ahead={days_ahead})")
+    print(f"[DEBUG] Filtered: {len(filtered)} events (min_impact={min_impact})")
     return filtered
 
 
@@ -477,10 +532,7 @@ def _format_summary(events, bias, bull, bear):
     
     for ev in events[:20]:
         impact_emoji = {
-            'High': '🔴',
-            'Medium': '🟡',
-            'Low': '🟢',
-            '': '⚪'
+            'High': '🔴', 'Medium': '🟡', 'Low': '🟢', '': '⚪'
         }.get(ev['impact'], '⚪')
         
         currency_name = CURRENCY_NAMES.get(ev['currency'], ev['currency'])
@@ -499,7 +551,7 @@ def _format_summary(events, bias, bull, bear):
         
         if date_label:
             msg += f"   {date_label}"
-            if ev.get('time'):
+            if ev.get('time') and ev['time']:
                 msg += f" | ⏰ `{ev['time']}`"
             msg += "\n"
         
