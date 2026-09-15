@@ -1,13 +1,8 @@
-import os
-import requests
+import asyncio
 from datetime import datetime, timedelta
 import re
 
 # ==================== تنظیمات ====================
-RAPIDAPI_KEY = os.getenv('RAPIDAPI_KEY')
-RAPIDAPI_HOST = "economic-calendar-api3.p.rapidapi.com"
-
-# همه ارزهای اصلی
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
 # ==================== دیکشنری توضیحات فارسی ====================
@@ -15,12 +10,6 @@ NEWS_EXPLANATIONS = {
     'Federal Funds Rate': {
         'desc': 'نرخ بهره کلیدی آمریکا که توسط فدرال رزرو تعیین می‌شود.',
         'effect': 'افزایش نرخ → دلار قوی، طلا ضعیف. کاهش نرخ → برعکس.',
-        'gold': '🔴 نزولی (با افزایش)',
-        'dollar': '🟢 صعودی (با افزایش)'
-    },
-    'Fed Interest Rate': {
-        'desc': 'نرخ بهره کلیدی آمریکا (فدرال رزرو).',
-        'effect': 'افزایش → دلار قوی، طلا ضعیف. کاهش → برعکس.',
         'gold': '🔴 نزولی (با افزایش)',
         'dollar': '🟢 صعودی (با افزایش)'
     },
@@ -85,12 +74,6 @@ NEWS_EXPLANATIONS = {
         'dollar': '🟢 صعودی (با بیکاری کم)'
     },
     'Jobless Claims': {
-        'desc': 'تعداد مدعیان بیمه بیکاری.',
-        'effect': 'عدد کمتر → اشتغال قوی → دلار قوی.',
-        'gold': '🔴 نزولی',
-        'dollar': '🟢 صعودی'
-    },
-    'Unemployment Claims': {
         'desc': 'تعداد مدعیان بیمه بیکاری.',
         'effect': 'عدد کمتر → اشتغال قوی → دلار قوی.',
         'gold': '🔴 نزولی',
@@ -234,7 +217,6 @@ CURRENCY_NAMES = {
 
 
 def _parse_value(v):
-    """تبدیل مقدار مثل 120K یا 2.1% به عدد"""
     if not v:
         return None
     v = str(v).strip().replace(',', '').replace('%', '')
@@ -251,13 +233,9 @@ def _parse_value(v):
 
 
 def _parse_date(date_str):
-    """پارس تاریخ از فرمت‌های مختلف"""
     if not date_str:
         return None
-    
     date_str = str(date_str).strip()
-    
-    # فرمت ISO: 2026-09-16 یا 2026-09-16T10:30:00
     if re.match(r'\d{4}-\d{2}-\d{2}', date_str):
         try:
             return datetime.fromisoformat(date_str.replace('Z', '')).date()
@@ -266,77 +244,39 @@ def _parse_date(date_str):
                 return datetime.strptime(date_str[:10], '%Y-%m-%d').date()
             except:
                 pass
-    
     return None
 
 
 def fetch_events(days_ahead=7):
     """
-    دریافت رویدادهای اقتصادی از RapidAPI
+    دریافت رویدادها از Biquote (بدون محدودیت و کاملاً رایگان)
     """
-    if not RAPIDAPI_KEY:
-        print("[DEBUG] RAPIDAPI_KEY is not set!")
-        return []
-    
     events = []
-    
     try:
-        # پارامترها
-        hours = max(days_ahead * 24, 48)  # حداقل 48 ساعت
+        from biquote import Biquote
+        bq = Biquote()
         
-        url = f"https://{RAPIDAPI_HOST}/v1/calendar/upcoming"
-        params = {
-            'impact': '{}',
-            'hours': str(hours),
-            'currency': '{}'
-        }
-        headers = {
-            'Content-Type': 'application/json',
-            'x-rapidapi-host': RAPIDAPI_HOST,
-            'x-rapidapi-key': RAPIDAPI_KEY,
-        }
+        print("[DEBUG] Fetching from Biquote...", flush=True)
         
-        print(f"[DEBUG] Fetching from RapidAPI: hours={hours}")
+        # دریافت رویدادهای با اهمیت بالا و متوسط
+        # برای دریافت همه اخبار، می‌توانید importance را حذف کنید
+        calendar_data = bq.calendar(importance="high") 
         
-        response = requests.get(url, headers=headers, params=params, timeout=20)
-        print(f"[DEBUG] Status: {response.status_code}")
+        print(f"[DEBUG] Biquote returned: {len(calendar_data) if calendar_data else 0} items", flush=True)
         
-        if response.status_code != 200:
-            print(f"[DEBUG] Error response: {response.text[:500]}")
+        if not calendar_data:
             return []
         
-        data = response.json()
-        print(f"[DEBUG] Response type: {type(data)}")
-        
-        # استخراج لیست رویدادها
-        raw_events = None
-        if isinstance(data, list):
-            raw_events = data
-        elif isinstance(data, dict):
-            # ممکنه توی کلیدهای مختلفی باشه
-            for key in ['data', 'events', 'result', 'results', 'calendar']:
-                if key in data and isinstance(data[key], list):
-                    raw_events = data[key]
-                    break
-        
-        if not raw_events:
-            print(f"[DEBUG] No events found in response. Keys: {list(data.keys()) if isinstance(data, dict) else 'list'}")
-            return []
-        
-        print(f"[DEBUG] Raw events: {len(raw_events)}")
-        
-        # چاپ نمونه
-        if raw_events:
-            print(f"[DEBUG] Sample event: {raw_events[0]}")
+        # چاپ یک نمونه برای دیباگ
+        if calendar_data:
+            print(f"[DEBUG] Sample item keys: {list(calendar_data[0].keys())}", flush=True)
+            print(f"[DEBUG] Sample item: {calendar_data[0]}", flush=True)
         
         today = datetime.now().date()
         
-        for item in raw_events:
+        for item in calendar_data:
             try:
-                if not isinstance(item, dict):
-                    continue
-                
-                # استخراج فیلدها با انعطاف
+                # استخراج فیلدها با انعطاف‌پذیری بالا
                 title = (
                     item.get('event') or item.get('name') or 
                     item.get('title') or item.get('Event') or ''
@@ -350,7 +290,7 @@ def fetch_events(days_ahead=7):
                     item.get('time') or item.get('Date') or ''
                 )
                 time_str = (
-                    item.get('time') or item.get('hour') or 
+                    item.get('time_only') or item.get('hour') or 
                     item.get('Time') or ''
                 )
                 impact = (
@@ -369,15 +309,11 @@ def fetch_events(days_ahead=7):
                 if not title or not currency:
                     continue
                 
-                # نرمال‌سازی currency
                 currency = str(currency).strip().upper()
-                
-                # نرمال‌سازی impact
                 impact_str = str(impact).capitalize()
                 if impact_str not in ['High', 'Medium', 'Low']:
                     impact_str = 'High'
                 
-                # پارس تاریخ
                 parsed_date = _parse_date(str(date_str)) if date_str else today
                 
                 events.append({
@@ -391,10 +327,9 @@ def fetch_events(days_ahead=7):
                     'previous': previous,
                 })
             except Exception as e:
-                print(f"[DEBUG] Error parsing item: {e}")
                 continue
         
-        print(f"[DEBUG] Total events parsed: {len(events)}")
+        print(f"[DEBUG] Total events parsed: {len(events)}", flush=True)
         
         # حذف تکراری‌ها
         seen = set()
@@ -405,18 +340,20 @@ def fetch_events(days_ahead=7):
                 seen.add(key)
                 unique_events.append(ev)
         
-        print(f"[DEBUG] Unique events: {len(unique_events)}")
+        print(f"[DEBUG] Unique events: {len(unique_events)}", flush=True)
         return unique_events
         
+    except ImportError:
+        print("[DEBUG] Biquote not installed. Run: pip install biquote", flush=True)
+        return []
     except Exception as e:
-        print(f"[DEBUG] RapidAPI error: {e}")
+        print(f"[DEBUG] Biquote error: {e}", flush=True)
         import traceback
         traceback.print_exc()
         return []
 
 
 def filter_today_events(events, days_ahead=7, min_impact='All'):
-    """فیلتر اخبار بر اساس بازه و اهمیت"""
     if not events:
         return []
     
@@ -447,14 +384,13 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
         
         filtered.append(ev)
     
-    # مرتب‌سازی: اول تاریخ، بعد اهمیت
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
     filtered.sort(key=lambda x: (
         x.get('parsed_date') or today,
         impact_order.get(x['impact'], 3)
     ))
     
-    print(f"[DEBUG] Filtered: {len(filtered)} events (min_impact={min_impact})")
+    print(f"[DEBUG] Filtered: {len(filtered)} events", flush=True)
     return filtered
 
 
@@ -573,7 +509,7 @@ def _format_summary(events, bias, bull, bear):
         msg += f"\n... و {len(events) - 20} خبر دیگر"
     
     msg += f"\n\n📈 امتیاز صعودی: `{bull}`\n"
-    msg += f"📉 امتیاز نزولی: `{bear}`\n"
+    msg += f"\n📉 امتیاز نزولی: `{bear}`\n"
     msg += "\n⚠️ _این تحلیل صرفاً آماری است و توصیه مالی نیست._"
     
     return msg
