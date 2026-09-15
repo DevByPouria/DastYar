@@ -277,7 +277,7 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
     )
     pdf.multi_cell(
         epw, 5,
-        _fa("@DevByPouria"),
+        _fa("@@DastYar_hoshmand2_bot"),
         align='C',
         new_x=XPos.LMARGIN, new_y=YPos.NEXT
     )
