@@ -1,15 +1,12 @@
-import os
-import requests
+import json
 from datetime import datetime, timedelta
-import re
+import requests
 
 # ==================== تنظیمات ====================
-FMP_API_KEY = os.getenv('FMP_API_KEY')
-FMP_BASE_URL = "https://financialmodelingprep.com/stable/economic-calendar"
+GITHUB_RAW_URL = "https://raw.githubusercontent.com/DevByPouria/DastYar/main/calendar.json"
 
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
-# ==================== دیکشنری توضیحات فارسی ====================
 NEWS_EXPLANATIONS = {
     'Federal Funds Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Fed Interest Rate': {'desc': 'نرخ بهره کلیدی آمریکا.', 'effect': 'افزایش → دلار قوی، طلا ضعیف.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
@@ -24,7 +21,6 @@ NEWS_EXPLANATIONS = {
     'ADP': {'desc': 'اشتغال بخش خصوصی.', 'effect': 'ADP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Unemployment': {'desc': 'نرخ بیکاری.', 'effect': 'بیکاری کم → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Jobless Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
-    'Unemployment Claims': {'desc': 'مدعیان بیمه بیکاری.', 'effect': 'عدد کمتر → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'GDP': {'desc': 'تولید ناخالص داخلی.', 'effect': 'GDP قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'Retail Sales': {'desc': 'فروش خرده‌فروشی.', 'effect': 'قوی → دلار قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
     'PMI': {'desc': 'شاخص مدیران خرید.', 'effect': 'بالای ۵۰ → ارز قوی.', 'gold': '🔴 نزولی', 'dollar': '🟢 صعودی'},
@@ -61,130 +57,93 @@ def _parse_value(v):
         return None
     v = str(v).strip().replace(',', '').replace('%', '')
     try:
-        if v.endswith('K'):
-            return float(v[:-1]) * 1000
-        if v.endswith('M'):
-            return float(v[:-1]) * 1_000_000
-        if v.endswith('B'):
-            return float(v[:-1]) * 1_000_000_000
+        if v.endswith('K'): return float(v[:-1]) * 1000
+        if v.endswith('M'): return float(v[:-1]) * 1_000_000
+        if v.endswith('B'): return float(v[:-1]) * 1_000_000_000
         return float(v)
     except:
         return None
 
 
-def _impact_from_string(impact_str):
-    """تبدیل impact FMP به High/Medium/Low"""
-    if not impact_str:
-        return 'Low'
-    s = str(impact_str).lower()
-    if 'high' in s:
-        return 'High'
-    if 'medium' in s:
-        return 'Medium'
-    return 'Low'
-
-
 def fetch_events(days_ahead=7):
-    """دریافت رویدادهای اقتصادی از FMP"""
-    if not FMP_API_KEY:
-        print("[DEBUG] FMP_API_KEY not set!", flush=True)
-        return []
-    
+    """دریافت رویدادها از calendar.json توی گیت‌هاب"""
     try:
-        today = datetime.now().date()
-        end_date = today + timedelta(days=days_ahead)
-        
-        params = {
-            'from': today.strftime('%Y-%m-%d'),
-            'to': end_date.strftime('%Y-%m-%d'),
-            'apikey': FMP_API_KEY,
-        }
-        
-        print(f"[DEBUG] Fetching FMP: {today} to {end_date}", flush=True)
-        
-        res = requests.get(FMP_BASE_URL, params=params, timeout=20)
-        print(f"[DEBUG] FMP status: {res.status_code}", flush=True)
+        print(f"[DEBUG] Fetching from GitHub: {GITHUB_RAW_URL}", flush=True)
+        res = requests.get(GITHUB_RAW_URL, timeout=15)
         
         if res.status_code != 200:
-            print(f"[DEBUG] FMP error: {res.text[:300]}", flush=True)
+            print(f"[DEBUG] GitHub returned {res.status_code}", flush=True)
             return []
         
         data = res.json()
-        print(f"[DEBUG] FMP returned: {len(data) if isinstance(data, list) else 'not a list'}", flush=True)
+        raw_events = data.get('events', [])
         
-        if not isinstance(data, list) or not data:
-            return []
-        
-        # چاپ نمونه
-        print(f"[DEBUG] Sample keys: {list(data[0].keys())}", flush=True)
-        print(f"[DEBUG] Sample: {data[0]}", flush=True)
+        print(f"[DEBUG] Got {len(raw_events)} events from GitHub", flush=True)
         
         events = []
-        for item in data:
+        for item in raw_events:
             try:
-                # استخراج فیلدها
-                title = item.get('event') or item.get('name') or ''
-                currency = item.get('currency') or ''
-                date_str = item.get('date') or ''
-                impact = item.get('impact') or ''
-                forecast = item.get('forecast') or ''
-                previous = item.get('previous') or ''
-                actual = item.get('actual') or ''
+                title = item.get('title', '')
+                currency = item.get('currency', '').upper()
+                date_str = item.get('date', '')
+                time_str = item.get('time', '')
+                impact = item.get('impact', 'low')
+                forecast = str(item.get('forecast', ''))
+                previous = str(item.get('previous', ''))
+                actual = str(item.get('actual', ''))
                 
-                if not title or not currency:
+                if not title or not currency or not date_str:
                     continue
                 
-                currency = str(currency).strip().upper()
-                impact_str = _impact_from_string(impact)
+                # نرمال‌سازی impact
+                impact_str = str(impact).capitalize()
+                if impact_str not in ['High', 'Medium', 'Low']:
+                    impact_str = 'Low'
                 
-                # پارس تاریخ (فرمت FMP: YYYY-MM-DD یا YYYY-MM-DD HH:MM:SS)
-                parsed_date = None
-                time_str = ''
-                if date_str:
+                # پارس تاریخ
+                try:
+                    parsed_date = datetime.strptime(date_str[:10], '%Y-%m-%d').date()
+                except:
+                    continue
+                
+                # استخراج ساعت از time (مثلاً "9:30am")
+                time_only = time_str
+                if time_str:
                     try:
-                        if ' ' in str(date_str):
-                            parts = str(date_str).split(' ')
-                            parsed_date = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                            time_str = parts[1][:5]  # HH:MM
-                        else:
-                            parsed_date = datetime.strptime(str(date_str)[:10], '%Y-%m-%d').date()
-                    except Exception as e:
-                        print(f"[DEBUG] Date parse error: {e} for {date_str}", flush=True)
-                        continue
-                
-                if not parsed_date:
-                    continue
+                        # تبدیل "9:30am" به "09:30"
+                        import re
+                        m = re.match(r'(\d{1,2}):(\d{2})(am|pm)?', time_str.lower())
+                        if m:
+                            hour = int(m.group(1))
+                            minute = m.group(2)
+                            ampm = m.group(3)
+                            if ampm == 'pm' and hour < 12:
+                                hour += 12
+                            elif ampm == 'am' and hour == 12:
+                                hour = 0
+                            time_only = f"{hour:02d}:{minute}"
+                    except:
+                        pass
                 
                 events.append({
-                    'title': str(title).strip(),
+                    'title': title.strip(),
                     'currency': currency,
-                    'date': str(date_str),
+                    'date': date_str,
                     'parsed_date': parsed_date,
-                    'time': time_str,
+                    'time': time_only,
                     'impact': impact_str,
-                    'forecast': str(forecast),
-                    'previous': str(previous),
-                    'actual': str(actual),
+                    'forecast': forecast,
+                    'previous': previous,
+                    'actual': actual,
                 })
             except Exception as e:
                 continue
         
-        print(f"[DEBUG] Total events parsed: {len(events)}", flush=True)
-        
-        # حذف تکراری‌ها
-        seen = set()
-        unique_events = []
-        for ev in events:
-            key = (ev['title'], ev['currency'], str(ev['parsed_date']))
-            if key not in seen:
-                seen.add(key)
-                unique_events.append(ev)
-        
-        print(f"[DEBUG] Unique events: {len(unique_events)}", flush=True)
-        return unique_events
+        print(f"[DEBUG] Parsed {len(events)} events", flush=True)
+        return events
         
     except Exception as e:
-        print(f"[DEBUG] FMP error: {e}", flush=True)
+        print(f"[DEBUG] Fetch error: {e}", flush=True)
         import traceback
         traceback.print_exc()
         return []
@@ -211,14 +170,11 @@ def filter_today_events(events, days_ahead=7, min_impact='All'):
             continue
         if ev['currency'] not in ALL_CURRENCIES:
             continue
-        
         ev_date = ev.get('parsed_date')
         if ev_date is None:
             continue
-        
         if not (today <= ev_date <= max_date):
             continue
-        
         filtered.append(ev)
     
     impact_order = {'High': 0, 'Medium': 1, 'Low': 2, '': 3}
@@ -301,7 +257,7 @@ def _format_summary(events, bias, bull, bear):
         
         if date_label:
             msg += f"   {date_label}"
-            if ev.get('time') and ev['time']:
+            if ev.get('time'):
                 msg += f" | ⏰ `{ev['time']}`"
             msg += "\n"
         
@@ -311,9 +267,9 @@ def _format_summary(events, bias, bull, bear):
             msg += f"   💡 {explanation['effect']}\n"
             msg += f"   🥇 طلا: {explanation['gold']} | 💵 دلار: {explanation['dollar']}\n"
         
-        if ev['forecast']:
+        if ev['forecast'] and ev['forecast'] != 'None':
             msg += f"   📊 پیش‌بینی: `{ev['forecast']}`"
-            if ev['previous']:
+            if ev['previous'] and ev['previous'] != 'None':
                 msg += f" | قبلی: `{ev['previous']}`"
             msg += "\n"
         
