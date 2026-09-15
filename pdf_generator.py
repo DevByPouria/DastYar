@@ -45,6 +45,11 @@ def _fa(text):
         return str(text)
 
 
+def _to_fa_num(n):
+    """تبدیل عدد انگلیسی به فارسی برای حل مشکل Bidi"""
+    return str(n).translate(str.maketrans('0123456789', '۰۱۲۳۴۵۶۷۸۹'))
+
+
 def _strip_emoji(text):
     """حذف ایموجی‌ها (فونت فارسی ازشون پشتیبانی نمی‌کنه)"""
     if not text:
@@ -141,7 +146,8 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
             impact_text = impact_map.get(ev.get('impact', 'Low'), 'اهمیت کم')
             
             pdf.set_font("Vazir", size=11)
-            title_text = f"{i}. [{impact_text}] {ev.get('currency', '?')} - {ev.get('title', '')}"
+            # ⭐ تغییر: شماره با اعداد فارسی + مرتب‌سازی جدید
+            title_text = f"{_to_fa_num(i)}. [{impact_text}] {ev.get('currency', '?')} - {ev.get('title', '')}"
             pdf.multi_cell(
                 epw, 6,
                 _fa(_strip_emoji(title_text)),
