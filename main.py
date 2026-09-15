@@ -76,6 +76,7 @@ SIGNAL_MENU = InlineKeyboardMarkup([
     [InlineKeyboardButton("🥇 طلا", callback_data="sig_gold"),
      InlineKeyboardButton("💵 دلار", callback_data="sig_dollar")],
     [InlineKeyboardButton("🪙 سکه", callback_data="sig_coin")],
+    [InlineKeyboardButton("🔙 بازگشت به منو", callback_data="back_to_main")],
 ])
 
 # ================== منوی اخبار ==================
@@ -85,6 +86,7 @@ def get_news_menu():
         [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today")],
         [InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
         [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
+        [InlineKeyboardButton("🔙 بازگشت به منو", callback_data="back_to_main")],
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -115,6 +117,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "یک گزینه را انتخاب کنید یا نام محصول مورد نظر را بفرستید:",
             reply_markup=KEYBOARD
         )
+
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
@@ -184,6 +187,17 @@ async def refresh_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         pass
 
 
+async def back_to_main_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """بازگشت به منوی اصلی"""
+    query = update.callback_query
+    await query.answer()
+    await query.edit_message_text(
+        "👋 به منوی اصلی برگشتی.\n\n"
+        "از دکمه‌های پایین صفحه استفاده کن:",
+        parse_mode='Markdown'
+    )
+
+
 async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """هندلر دکمه‌های سیگنال"""
     query = update.callback_query
@@ -198,56 +212,72 @@ async def signal_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     asset_key, asset_name = asset_map.get(data, ('gold_gram18', 'طلا'))
 
     # ===== دریافت تاریخچه =====
-    rows = hist.get_history(asset_key, limit=200)
+    rows = hist.get_history(asset_key, limit=500)
 
     if len(rows) < 20:
         await query.edit_message_text(
             f"⚠️ **داده کافی برای تحلیل {asset_name} موجود نیست.**\n\n"
-            f"📊 تعداد رکورد: `{len(rows)}`",
-            parse_mode='Markdown'
+            f"📊 تعداد رکورد: `{len(rows)}`\n\n"
+            f"🔹 برای دارایی دلار و سکه، داده‌ی تاریخی از Yahoo موجود نیست.\n"
+            f"🔹 به زودی راه‌حل جایگزین اضافه خواهد شد.",
+            parse_mode='Markdown',
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔙 بازگشت", callback_data="back_to_main")]
+            ])
         )
         return
 
-    # ===== تحلیل تکنیکال =====
+    # ===== ۱. تحلیل تکنیکال =====
     df = pd.DataFrame(rows, columns=['price', 'timestamp'])
     df['price'] = df['price'].astype(float)
 
     analyzer = TechnicalAnalyzer(df)
     tech_result = analyzer.run_all()
 
-    # تعیین جهت سیگنال بر اساس امتیاز
-    tech_net = tech_result.get('net_score', 0)
-    if tech_net >= 2:
-        direction = 'BUY'
-    elif tech_net <= -2:
-        direction = 'SELL'
-    else:
-        direction = 'BUY'  # خنثی: پیش‌فرض
-
-    sl, tp, rr = analyzer.get_risk_levels(direction=direction)
-    tech_result['stop_loss'] = sl
-    tech_result['take_profit'] = tp
-    tech_result['risk_reward'] = rr
-
-    # ===== تحلیل فاندامنتال =====
+    # ===== ۲. تحلیل فاندامنتال (قبل از تعیین جهت) =====
     events = fetch_events(days_ahead=7)
     filtered = filter_today_events(events, days_ahead=7, min_impact='High')
     fund_result = analyze_sentiment(filtered)
 
-    # ===== سیگنال نهایی =====
+    # ===== ۳. تعیین جهت از ترکیب تکنیکال + فاندامنتال ⭐ =====
+    tech_net = tech_result.get('net_score', 0)
+    fund_score = fund_result.get('score', 0)
+
+    # همون وزن‌های SignalEngine
+    tech_weight = 0.65
+    fund_weight = 0.35
+    norm_tech = max(-10, min(10, tech_net))
+    norm_fund = max(-10, min(10, fund_score))
+    combined_score = (norm_tech * tech_weight) + (norm_fund * fund_weight)
+
+    # ⭐ جهت از امتیاز ترکیبی
+    signal_direction = 'BUY' if combined_score >= 0 else 'SELL'
+
+    print(f"[DEBUG] Combined score: {combined_score:.2f}, Direction: {signal_direction}", flush=True)
+
+    sl, tp, rr = analyzer.get_risk_levels(direction=signal_direction)
+    tech_result['stop_loss'] = sl
+    tech_result['take_profit'] = tp
+    tech_result['risk_reward'] = rr
+
+    # ===== ۴. سیگنال نهایی =====
     engine = SignalEngine()
     msg = engine.generate(tech_result, fund_result, asset_name)
 
-    await query.edit_message_text(
-        msg,
-        parse_mode='Markdown',
-        disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("🔄 تحلیل مجدد", callback_data=data)],
-            [InlineKeyboardButton("📰 اخبار بازار", callback_data="news_today")],
-            [InlineKeyboardButton("🔙 بازگشت", callback_data="back_to_main")],
-        ])
-    )
+    try:
+        await query.edit_message_text(
+            msg,
+            parse_mode='Markdown',
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("🔄 تحلیل مجدد", callback_data=data)],
+                [InlineKeyboardButton("📰 اخبار بازار", callback_data="news_today")],
+                [InlineKeyboardButton("🔙 بازگشت", callback_data="back_to_main")],
+            ])
+        )
+    except Exception as e:
+        if "not modified" not in str(e).lower():
+            print(f"[DEBUG] Signal edit error: {e}", flush=True)
 
 
 async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -299,6 +329,7 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today"),
          InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
         [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
+        [InlineKeyboardButton("🔙 بازگشت به منو", callback_data="back_to_main")],
     ])
 
     # ===== ارسال خلاصه (متن) =====
@@ -338,7 +369,6 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         caption=f"📄 **{pdf_title}** — {len(filtered)} خبر\n\n⚠️ این تحلیل صرفاً آماری است.",
                         parse_mode='Markdown'
                     )
-                # حذف فایل بعد از ارسال
                 try:
                     os.remove(pdf_path)
                 except:
@@ -356,6 +386,8 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id=query.message.chat_id,
                 text=f"❌ خطا در ساخت PDF: {str(e)[:100]}",
             )
+
+
 # ================== اجرا ==================
 def main():
     if not TOKEN:
@@ -369,6 +401,7 @@ def main():
     app.add_handler(CallbackQueryHandler(refresh_callback, pattern="^refresh_prices$"))
     app.add_handler(CallbackQueryHandler(signal_callback, pattern="^sig_"))
     app.add_handler(CallbackQueryHandler(news_callback, pattern="^news_"))
+    app.add_handler(CallbackQueryHandler(back_to_main_callback, pattern="^back_to_main$"))
 
     print("🚀 Bot is running...")
     app.run_polling()
