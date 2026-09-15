@@ -60,33 +60,62 @@ class TechnicalAnalyzer:
         )
 
     # ============================================
-    # ۲. کراس‌آور SMA 50/200 (روند بلندمدت)
+    # ۲. کراس‌آور SMA 50/200 + Fallback به SMA_50
     # ============================================
     def strategy_ma_50_200(self):
-        if len(self.df) < 200 or 'SMA_200' not in self.df:
+        # حداقل ۵۰ رکورد برای SMA_50
+        if len(self.df) < 50:
             return
-        if self.df['SMA_200'].isna().all():
+        if 'SMA_50' not in self.df or self.df['SMA_50'].isna().all():
             return
-
+        
         latest = self.df.iloc[-1]
+        price = latest['price']
+        
+        if pd.isna(latest['SMA_50']):
+            return
+        
+        # ===== اگه SMA_200 نداریم، فقط SMA_50 رو چک کن =====
+        if 'SMA_200' not in self.df or self.df['SMA_200'].isna().all():
+            if price > latest['SMA_50'] * 1.002:
+                self.signals.append("🟢 قیمت بالای SMA 50 (روند صعودی کوتاه‌مدت)")
+                self.bull_score += 2
+                self.confidence += 8
+            elif price < latest['SMA_50'] * 0.998:
+                self.signals.append("🔴 قیمت زیر SMA 50 (روند نزولی کوتاه‌مدت)")
+                self.bear_score += 2
+                self.confidence += 8
+            return
+        
+        # ===== اگه SMA_200 داریم، تحلیل کامل =====
         prev = self.df.iloc[-2]
-
+        
         if pd.isna(prev['SMA_50']) or pd.isna(prev['SMA_200']):
             return
-
-        # Golden Cross
+        
+        # Golden Cross (تازه اتفاق افتاده)
         if prev['SMA_50'] <= prev['SMA_200'] and latest['SMA_50'] > latest['SMA_200']:
             self.signals.append("🌟 Golden Cross (SMA 50/200) — روند صعودی بلندمدت")
             self.bull_score += 4
             self.confidence += 15
-        # Death Cross
+        # Death Cross (تازه اتفاق افتاده)
         elif prev['SMA_50'] >= prev['SMA_200'] and latest['SMA_50'] < latest['SMA_200']:
             self.signals.append("💀 Death Cross (SMA 50/200) — روند نزولی بلندمدت")
             self.bear_score += 4
             self.confidence += 15
+        # SMA_50 بالای SMA_200 (روند صعودی موجود)
+        elif latest['SMA_50'] > latest['SMA_200']:
+            self.signals.append("🟢 SMA 50 بالای SMA 200 (روند صعودی)")
+            self.bull_score += 2
+            self.confidence += 8
+        # SMA_50 زیر SMA_200 (روند نزولی موجود)
+        else:
+            self.signals.append("🔴 SMA 50 زیر SMA 200 (روند نزولی)")
+            self.bear_score += 2
+            self.confidence += 8
 
     # ============================================
-    # ۳. کراس‌آور EMA 9/21 (کوتاه‌مدت)
+    # ۳. کراس‌آور EMA 9/21 (نسخه حساس‌تر)
     # ============================================
     def strategy_ema_9_21(self):
         if 'EMA_21' not in self.df or self.df['EMA_21'].isna().all():
@@ -95,21 +124,35 @@ class TechnicalAnalyzer:
         latest = self.df.iloc[-1]
         prev = self.df.iloc[-2]
 
-        if pd.isna(prev['EMA_9']) or pd.isna(prev['EMA_21']):
+        if pd.isna(latest['EMA_9']) or pd.isna(latest['EMA_21']):
             return
 
-        # کراس طلایی کوتاه‌مدت
-        if prev['EMA_9'] <= prev['EMA_21'] and latest['EMA_9'] > latest['EMA_21']:
-            self.signals.append("🟢 کراس صعودی EMA 9/21 (کوتاه‌مدت)")
-            self.bull_score += 2
-            self.confidence += 8
-        elif prev['EMA_9'] >= prev['EMA_21'] and latest['EMA_9'] < latest['EMA_21']:
-            self.signals.append("🔴 کراس نزولی EMA 9/21 (کوتاه‌مدت)")
-            self.bear_score += 2
-            self.confidence += 8
+        # ===== حالت ۱: EMA 9 بالای EMA 21 (مومنتوم صعودی) =====
+        if latest['EMA_9'] > latest['EMA_21']:
+            # چک کن آیا کراس تازه اتفاق افتاده
+            if not pd.isna(prev['EMA_9']) and not pd.isna(prev['EMA_21']):
+                if prev['EMA_9'] <= prev['EMA_21']:
+                    self.signals.append("🚀 کراس صعودی EMA 9/21 (سیگنال تازه)")
+                    self.bull_score += 2
+                    self.confidence += 8
+                else:
+                    self.signals.append("🟢 EMA 9 بالای EMA 21 (مومنتوم صعودی)")
+                    self.bull_score += 1
+                    self.confidence += 4
+        # ===== حالت ۲: EMA 9 زیر EMA 21 (مومنتوم نزولی) =====
+        else:
+            if not pd.isna(prev['EMA_9']) and not pd.isna(prev['EMA_21']):
+                if prev['EMA_9'] >= prev['EMA_21']:
+                    self.signals.append("💥 کراس نزولی EMA 9/21 (سیگنال تازه)")
+                    self.bear_score += 2
+                    self.confidence += 8
+                else:
+                    self.signals.append("🔴 EMA 9 زیر EMA 21 (مومنتوم نزولی)")
+                    self.bear_score += 1
+                    self.confidence += 4
 
     # ============================================
-    # ۴. MACD
+    # ۴. MACD (نسخه حساس‌تر)
     # ============================================
     def strategy_macd(self):
         if 'MACD' not in self.df or self.df['MACD'].isna().all():
@@ -118,30 +161,45 @@ class TechnicalAnalyzer:
         latest = self.df.iloc[-1]
         prev = self.df.iloc[-2]
 
-        if pd.isna(prev['MACD']) or pd.isna(prev['MACD_signal']):
+        if pd.isna(latest['MACD']) or pd.isna(latest['MACD_signal']):
             return
 
-        # کراس MACD
-        if prev['MACD'] <= prev['MACD_signal'] and latest['MACD'] > latest['MACD_signal']:
-            self.signals.append("📈 کراس صعودی MACD")
-            self.bull_score += 3
-            self.confidence += 10
-        elif prev['MACD'] >= prev['MACD_signal'] and latest['MACD'] < latest['MACD_signal']:
-            self.signals.append("📉 کراس نزولی MACD")
-            self.bear_score += 3
-            self.confidence += 10
+        # ===== حالت ۱: MACD بالای Signal (صعودی) =====
+        if latest['MACD'] > latest['MACD_signal']:
+            # چک کن کراس تازه اتفاق افتاده
+            if not pd.isna(prev['MACD']) and not pd.isna(prev['MACD_signal']):
+                if prev['MACD'] <= prev['MACD_signal']:
+                    self.signals.append("📈 کراس صعودی MACD (سیگنال تازه)")
+                    self.bull_score += 3
+                    self.confidence += 10
+                else:
+                    self.signals.append("🟢 MACD بالای Signal (صعودی)")
+                    self.bull_score += 1
+                    self.confidence += 4
+        # ===== حالت ۲: MACD زیر Signal (نزولی) =====
+        else:
+            if not pd.isna(prev['MACD']) and not pd.isna(prev['MACD_signal']):
+                if prev['MACD'] >= prev['MACD_signal']:
+                    self.signals.append("📉 کراس نزولی MACD (سیگنال تازه)")
+                    self.bear_score += 3
+                    self.confidence += 10
+                else:
+                    self.signals.append("🔴 MACD زیر Signal (نزولی)")
+                    self.bear_score += 1
+                    self.confidence += 4
 
-        # هیستوگرام
-        if not pd.isna(latest['MACD_hist']):
-            if latest['MACD_hist'] > 0 and latest['MACD_hist'] > prev['MACD_hist']:
-                self.signals.append("🟢 MACD Histogram صعودی")
-                self.bull_score += 1
-            elif latest['MACD_hist'] < 0 and latest['MACD_hist'] < prev['MACD_hist']:
-                self.signals.append("🔴 MACD Histogram نزولی")
-                self.bear_score += 1
+        # ===== هیستوگرام =====
+        if 'MACD_hist' in self.df and not pd.isna(latest['MACD_hist']):
+            if not pd.isna(prev['MACD_hist']):
+                if latest['MACD_hist'] > 0 and latest['MACD_hist'] > prev['MACD_hist']:
+                    self.signals.append("📊 MACD Histogram صعودی (شتاب مثبت)")
+                    self.bull_score += 1
+                elif latest['MACD_hist'] < 0 and latest['MACD_hist'] < prev['MACD_hist']:
+                    self.signals.append("📊 MACD Histogram نزولی (شتاب منفی)")
+                    self.bear_score += 1
 
     # ============================================
-    # ۵. RSI + واگرایی
+    # ۵. RSI
     # ============================================
     def strategy_rsi(self):
         if 'RSI' not in self.df or self.df['RSI'].isna().all():
@@ -189,6 +247,14 @@ class TechnicalAnalyzer:
         elif price <= latest['BB_lower'] * 1.002:
             self.signals.append("⚠️ قیمت روی Bollinger Lower (احتمال برگشت)")
             self.bull_score += 2
+        # نزدیک باند بالا (هشدار)
+        elif price >= latest['BB_upper'] * 0.99:
+            self.signals.append("📈 قیمت نزدیک Bollinger Upper")
+            self.bear_score += 1
+        # نزدیک باند پایین (فرصت)
+        elif price <= latest['BB_lower'] * 1.01:
+            self.signals.append("📉 قیمت نزدیک Bollinger Lower")
+            self.bull_score += 1
 
     # ============================================
     # ۷. Breakout + Support/Resistance
