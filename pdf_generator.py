@@ -7,6 +7,7 @@ import requests
 from datetime import datetime, timedelta
 
 from fpdf import FPDF
+from fpdf.enums import XPos, YPos
 import arabic_reshaper
 from bidi.algorithm import get_display
 
@@ -17,7 +18,7 @@ FONT_URL = "https://github.com/rastikerdar/vazirmatn/raw/master/fonts/ttf/Vazirm
 
 def _ensure_font():
     """دانلود فونت فارسی اگه وجود نداره"""
-    if os.path.exists(FONT_PATH):
+    if os.path.exists(FONT_PATH) and os.path.getsize(FONT_PATH) > 10000:
         return True
     try:
         print("[DEBUG] Downloading Vazirmatn font...", flush=True)
@@ -48,16 +49,15 @@ def _strip_emoji(text):
     """حذف ایموجی‌ها (فونت فارسی ازشون پشتیبانی نمی‌کنه)"""
     if not text:
         return ""
-    # لیست ساده از ایموجی‌های رایج
     emoji_map = {
-        '🔴': '[H]', '🟡': '[M]', '🟢': '[L]', '⚪': '[?]',
+        '🔴': '[HIGH]', '🟡': '[MED]', '🟢': '[LOW]', '⚪': '[?]',
         '📅': '', '⏰': '', '📖': '', '💡': '', '🥇': '', '💵': '',
-        '📊': '', '📈': '', '📉': '', '⚠️': '!', '✅': 'OK',
-        '━━': '=', '─': '-',
+        '📊': '', '📈': '', '📉': '', '⚠️': '!', '✅': '[OK]',
+        '━━': '=', '─': '-', '—': '-',
     }
     for emoji, replacement in emoji_map.items():
         text = text.replace(emoji, replacement)
-    return text
+    return text.strip()
 
 
 def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی"):
@@ -69,45 +69,86 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
     if not events:
         return None
     
-    pdf = FPDF()
-    pdf.add_page()
+    # ⭐ استفاده از A4 با حاشیه‌ی مناسب
+    pdf = FPDF(orientation='P', unit='mm', format='A4')
+    pdf.set_margins(left=15, top=15, right=15)
     pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_font("Vazir", "", FONT_PATH, uni=True)
-    pdf.set_font("Vazir", size=12)
+    pdf.add_page()
+    
+    # ⭐ اضافه کردن فونت
+    pdf.add_font("Vazir", "", FONT_PATH)
+    pdf.set_font("Vazir", size=11)
+    
+    # ⭐ محاسبه‌ی عرض قابل استفاده
+    epw = pdf.w - pdf.l_margin - pdf.r_margin  # Effective Page Width
     
     # ===== سرصفحه =====
-    pdf.set_font("Vazir", size=18)
-    pdf.cell(0, 12, _fa(f"تحلیل فاندامنتال — {title}"), ln=1, align='C')
-    pdf.ln(3)
+    pdf.set_font("Vazir", size=16)
+    pdf.multi_cell(
+        epw, 10,
+        _fa(f"تحلیل فاندامنتال - {title}"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.ln(2)
     
-    pdf.set_font("Vazir", size=11)
-    pdf.cell(0, 8, _fa(f"تاریخ گزارش: {datetime.now().strftime('%Y/%m/%d - %H:%M')}"), ln=1, align='C')
-    pdf.cell(0, 8, _fa(f"تعداد اخبار: {len(events)}"), ln=1, align='C')
+    pdf.set_font("Vazir", size=10)
+    pdf.multi_cell(
+        epw, 6,
+        _fa(f"تاریخ: {datetime.now().strftime('%Y/%m/%d - %H:%M')}"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.multi_cell(
+        epw, 6,
+        _fa(f"تعداد اخبار: {len(events)}"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
     
     bias_text = {'bullish': 'صعودی', 'bearish': 'نزولی', 'neutral': 'خنثی'}.get(bias, 'خنثی')
-    pdf.cell(0, 8, _fa(f"بایاس کلی: {bias_text}"), ln=1, align='C')
-    pdf.cell(0, 8, _fa(f"امتیاز صعودی: {bull} | امتیاز نزولی: {bear}"), ln=1, align='C')
+    pdf.multi_cell(
+        epw, 6,
+        _fa(f"بایاس کلی: {bias_text}  |  امتیاز صعودی: {bull}  |  امتیاز نزولی: {bear}"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
     
     pdf.ln(3)
     pdf.set_draw_color(150, 150, 150)
-    pdf.line(10, pdf.get_y(), 200, pdf.get_y())
+    y = pdf.get_y()
+    pdf.line(pdf.l_margin, y, pdf.w - pdf.r_margin, y)
     pdf.ln(5)
     
     # ===== اخبار =====
     today = datetime.now().date()
     
+    # import داخل تابع برای جلوگیری از circular import
+    try:
+        from news_fetcher import get_news_explanation
+    except:
+        def get_news_explanation(t):
+            return None
+    
     for i, ev in enumerate(events, 1):
         try:
-            # امتیاز importance
+            # چک کن فضای کافی هست، اگه نه صفحه جدید
+            if pdf.get_y() > 250:
+                pdf.add_page()
+            
+            # ===== عنوان خبر =====
             impact_map = {'High': 'اهمیت بالا', 'Medium': 'اهمیت متوسط', 'Low': 'اهمیت کم'}
             impact_text = impact_map.get(ev.get('impact', 'Low'), 'اهمیت کم')
             
-            # عنوان خبر
-            pdf.set_font("Vazir", size=12)
+            pdf.set_font("Vazir", size=11)
             title_text = f"{i}. [{impact_text}] {ev.get('currency', '?')} - {ev.get('title', '')}"
-            pdf.multi_cell(0, 7, _fa(_strip_emoji(title_text)))
+            pdf.multi_cell(
+                epw, 6,
+                _fa(_strip_emoji(title_text)),
+                new_x=XPos.LMARGIN, new_y=YPos.NEXT
+            )
             
-            # تاریخ و ساعت
+            # ===== تاریخ و ساعت =====
             date_label = ''
             if ev.get('parsed_date'):
                 ev_date = ev['parsed_date']
@@ -120,52 +161,96 @@ def generate_news_pdf(events, bias, bull, bear, title="اخبار اقتصادی
             
             time_str = ev.get('time', '')
             if date_label:
-                info_line = f"تاریخ: {date_label}"
+                info_line = f"   تاریخ: {date_label}"
                 if time_str:
                     info_line += f"  |  ساعت: {time_str}"
-                pdf.set_font("Vazir", size=10)
-                pdf.cell(0, 6, _fa(info_line), ln=1)
+                pdf.set_font("Vazir", size=9)
+                pdf.multi_cell(
+                    epw, 5,
+                    _fa(info_line),
+                    new_x=XPos.LMARGIN, new_y=YPos.NEXT
+                )
             
-            # توضیح فارسی
-            from news_fetcher import get_news_explanation
+            # ===== توضیح فارسی =====
             explanation = get_news_explanation(ev.get('title', ''))
             if explanation:
-                pdf.set_font("Vazir", size=10)
-                pdf.multi_cell(0, 6, _fa(f"توضیح: {explanation['desc']}"))
-                pdf.multi_cell(0, 6, _fa(f"تأثیر: {explanation['effect']}"))
-                pdf.multi_cell(0, 6, _fa(f"طلا: {_strip_emoji(explanation['gold'])}  |  دلار: {_strip_emoji(explanation['dollar'])}"))
+                pdf.set_font("Vazir", size=9)
+                pdf.multi_cell(
+                    epw, 5,
+                    _fa(f"   توضیح: {explanation['desc']}"),
+                    new_x=XPos.LMARGIN, new_y=YPos.NEXT
+                )
+                pdf.multi_cell(
+                    epw, 5,
+                    _fa(f"   تأثیر: {explanation['effect']}"),
+                    new_x=XPos.LMARGIN, new_y=YPos.NEXT
+                )
+                pdf.multi_cell(
+                    epw, 5,
+                    _fa(f"   طلا: {_strip_emoji(explanation['gold'])}  |  دلار: {_strip_emoji(explanation['dollar'])}"),
+                    new_x=XPos.LMARGIN, new_y=YPos.NEXT
+                )
             
-            # پیش‌بینی و قبلی
+            # ===== پیش‌بینی و قبلی =====
             forecast = ev.get('forecast', '')
             previous = ev.get('previous', '')
+            actual = ev.get('actual', '')
+            
             if forecast and forecast != 'None':
-                line = f"پیش‌بینی: {forecast}"
+                line = f"   پیش‌بینی: {forecast}"
                 if previous and previous != 'None':
                     line += f"  |  قبلی: {previous}"
-                pdf.set_font("Vazir", size=10)
-                pdf.cell(0, 6, _fa(line), ln=1)
+                if actual and actual != 'None':
+                    line += f"  |  واقعی: {actual}"
+                pdf.set_font("Vazir", size=9)
+                pdf.multi_cell(
+                    epw, 5,
+                    _fa(line),
+                    new_x=XPos.LMARGIN, new_y=YPos.NEXT
+                )
             
-            # خط جداکننده
-            pdf.ln(2)
-            pdf.set_draw_color(200, 200, 200)
-            pdf.line(15, pdf.get_y(), 195, pdf.get_y())
+            # ===== خط جداکننده =====
+            pdf.ln(1)
+            pdf.set_draw_color(220, 220, 220)
+            y = pdf.get_y()
+            pdf.line(pdf.l_margin + 3, y, pdf.w - pdf.r_margin - 3, y)
             pdf.ln(3)
         
         except Exception as e:
             print(f"[WARN] PDF row error: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
             continue
     
     # ===== پاصفحه =====
+    if pdf.get_y() > 240:
+        pdf.add_page()
+    
     pdf.ln(5)
-    pdf.set_font("Vazir", size=9)
+    pdf.set_font("Vazir", size=8)
     pdf.set_text_color(120, 120, 120)
-    pdf.multi_cell(0, 5, _fa("این تحلیل صرفاً آماری است و توصیه مالی نیست."))
-    pdf.multi_cell(0, 5, _fa("منبع: Forex Factory"))
-    pdf.multi_cell(0, 5, _fa("ربات: DastYar"))
+    pdf.multi_cell(
+        epw, 5,
+        _fa("این تحلیل صرفاً آماری است و توصیه مالی نیست."),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.multi_cell(
+        epw, 5,
+        _fa("منبع: Forex Factory"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
+    pdf.multi_cell(
+        epw, 5,
+        _fa("ربات DastYar"),
+        align='C',
+        new_x=XPos.LMARGIN, new_y=YPos.NEXT
+    )
     
     # ===== ذخیره =====
     output_path = f"/tmp/news_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     pdf.output(output_path)
     
-    print(f"[DEBUG] PDF saved: {output_path}", flush=True)
+    print(f"[DEBUG] PDF saved: {output_path} ({os.path.getsize(output_path)} bytes)", flush=True)
     return output_path
