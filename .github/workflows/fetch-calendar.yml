@@ -11,7 +11,7 @@ permissions:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
     
     steps:
       - name: Checkout repository
@@ -25,12 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install playwright
-      
-      - name: Install Chromium
-        run: |
-          playwright install chromium
-          playwright install-deps chromium
+          pip install requests
       
       - name: Scrape ForexFactory
         run: python scrape_calendar.py
@@ -39,7 +34,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          rm -f debug_calendar.html
           git add calendar.json
           if git diff --staged --quiet; then
             echo "No changes to commit"
@@ -47,12 +41,3 @@ jobs:
             git commit -m "chore: update calendar.json [skip ci]"
             git push
           fi
-      
-      - name: Upload debug HTML (always)
-        if: always()
-        uses: actions/upload-artifact@v5
-        with:
-          name: debug-html
-          path: debug_calendar.html
-          retention-days: 3
-          if-no-files-found: ignore
