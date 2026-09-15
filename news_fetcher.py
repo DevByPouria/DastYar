@@ -5,7 +5,7 @@ import re
 
 # ==================== تنظیمات ====================
 FMP_API_KEY = os.getenv('FMP_API_KEY')
-FMP_BASE_URL = "https://financialmodelingprep.com/api/v3/economic_calendar"
+FMP_BASE_URL = "https://financialmodelingprep.com/stable/economic-calendar"
 
 ALL_CURRENCIES = ['USD', 'EUR', 'GBP', 'JPY', 'XAU', 'CAD', 'AUD', 'NZD', 'CHF', 'CNY']
 
