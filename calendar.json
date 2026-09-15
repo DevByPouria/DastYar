@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-15T18:03:00.742878",
+  "scraped_at": "2026-09-15T21:59:34.894866",
   "count": 89,
   "events": [
     {
@@ -254,7 +254,7 @@
     },
     {
       "date": "2026-09-15",
-      "time": "9:00pm",
+      "time": "9:04pm",
       "currency": "NZD",
       "impact": "low",
       "title": "Westpac Consumer Sentiment",
