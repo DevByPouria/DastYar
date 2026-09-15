@@ -245,7 +245,6 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     data = query.data
 
-    # ===== اخبار امروز (همه سطوح) =====
     if data == "news_today":
         events = fetch_events(days_ahead=1)
         filtered = filter_today_events(events, days_ahead=0, min_impact='All')
@@ -255,11 +254,9 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "📰 **اخبار امروز**\n"
                 "━━━━━━━━━━━━━━━━━━━━\n\n"
                 "⚠️ **امروز هیچ خبری در تقویم نیست.**\n\n"
-                "_این یه روز آروم برای بازاره._\n\n"
                 "⚠️ این تحلیل صرفاً آماری است و توصیه مالی نیست."
             )
 
-    # ===== اخبار این هفته (همه سطوح) =====
     elif data == "news_week":
         events = fetch_events(days_ahead=7)
         filtered = filter_today_events(events, days_ahead=7, min_impact='All')
@@ -272,7 +269,6 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "🔹 لطفاً بعداً دوباره تلاش کن."
             )
 
-    # ===== اخبار مهم هفته (فقط High) =====
     elif data == "news_important":
         events = fetch_events(days_ahead=7)
         filtered = filter_today_events(events, days_ahead=7, min_impact='High')
@@ -287,14 +283,13 @@ async def news_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         return
 
-    # ===== دکمه‌های بازگشت =====
     back_keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton("📅 اخبار امروز", callback_data="news_today"),
          InlineKeyboardButton("📅 اخبار هفته", callback_data="news_week")],
         [InlineKeyboardButton("🔥 اخبار مهم هفته", callback_data="news_important")],
     ])
 
-        try:
+    try:
         await query.edit_message_text(
             analysis['summary'],
             parse_mode='Markdown',
