@@ -1,267 +1,7 @@
 {
-  "scraped_at": "2026-09-15T21:59:34.894866",
-  "count": 89,
+  "scraped_at": "2026-09-16T00:10:51.517953",
+  "count": 63,
   "events": [
-    {
-      "date": "2026-09-15",
-      "time": "10:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Current Account",
-      "actual": "",
-      "forecast": "-2.57B",
-      "previous": "-1.01B"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Core Machinery Orders m/m",
-      "actual": "",
-      "forecast": "-1.2%",
-      "previous": "9.7%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Trade Balance",
-      "actual": "",
-      "forecast": "-1.00T",
-      "previous": "-0.69T"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "12:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "ADP Weekly Employment Change",
-      "actual": "",
-      "forecast": "",
-      "previous": "12.0K"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "12:30pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "Wholesale Sales m/m",
-      "actual": "",
-      "forecast": "-0.5%",
-      "previous": "2.8%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "12:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Empire State Manufacturing Index",
-      "actual": "",
-      "forecast": "14.8",
-      "previous": "20.6"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "1:30am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "New Home Prices m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "-0.18%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Fixed Asset Investment ytd/y",
-      "actual": "",
-      "forecast": "-7.1%",
-      "previous": "-6.7%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Industrial Production y/y",
-      "actual": "",
-      "forecast": "4.8%",
-      "previous": "4.5%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "NBS Press Conference",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Retail Sales y/y",
-      "actual": "",
-      "forecast": "0.7%",
-      "previous": "0.6%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Unemployment Rate",
-      "actual": "",
-      "forecast": "5.2%",
-      "previous": "5.2%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "2:00pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "Treasury Sec Bessent Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-15",
-      "time": "3:39pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "GDT Price Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.9%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "4:30am",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Tertiary Industry Activity m/m",
-      "actual": "",
-      "forecast": "0.3%",
-      "previous": "-0.2%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "6:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German WPI m/m",
-      "actual": "",
-      "forecast": "0.1%",
-      "previous": "0.2%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "6:00am",
-      "currency": "GBP",
-      "impact": "high",
-      "title": "Claimant Count Change",
-      "actual": "",
-      "forecast": "8.3K",
-      "previous": "-11.0K"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "6:00am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Average Earnings Index 3m/y",
-      "actual": "",
-      "forecast": "3.9%",
-      "previous": "4.1%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "6:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Unemployment Rate",
-      "actual": "",
-      "forecast": "5.0%",
-      "previous": "4.9%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "6:45am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "French Final CPI m/m",
-      "actual": "",
-      "forecast": "0.7%",
-      "previous": "0.7%"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "8:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Italian Trade Balance",
-      "actual": "",
-      "forecast": "4.77B",
-      "previous": "4.23B"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "8:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "API Weekly Statistical Bulletin",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-15",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Trade Balance",
-      "actual": "",
-      "forecast": "3.7B",
-      "previous": "1.8B"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German ZEW Economic Sentiment",
-      "actual": "",
-      "forecast": "39.8",
-      "previous": "34.2"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "ZEW Economic Sentiment",
-      "actual": "",
-      "forecast": "39.2",
-      "previous": "31.4"
-    },
-    {
-      "date": "2026-09-15",
-      "time": "9:04pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Westpac Consumer Sentiment",
-      "actual": "",
-      "forecast": "",
-      "previous": "80.4"
-    },
     {
       "date": "2026-09-16",
       "time": "10:45pm",
@@ -309,7 +49,7 @@
       "impact": "medium",
       "title": "Core Retail Sales m/m",
       "actual": "",
-      "forecast": "0.5%",
+      "forecast": "0.6%",
       "previous": "-0.3%"
     },
     {
@@ -359,7 +99,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "",
+      "forecast": "-1.6M",
       "previous": "-0.4M"
     },
     {
@@ -639,7 +379,7 @@
       "impact": "medium",
       "title": "Unemployment Claims",
       "actual": "",
-      "forecast": "208K",
+      "forecast": "207K",
       "previous": "206K"
     },
     {
@@ -659,7 +399,7 @@
       "impact": "low",
       "title": "Housing Starts",
       "actual": "",
-      "forecast": "1.31M",
+      "forecast": "1.32M",
       "previous": "1.24M"
     },
     {
@@ -689,7 +429,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "49B",
       "previous": "40B"
     },
     {
@@ -747,7 +487,7 @@
       "time": "10:15am",
       "currency": "EUR",
       "impact": "low",
-      "title": "Eurogroup Meetings",
+      "title": "ECOFIN Meetings",
       "actual": "",
       "forecast": "",
       "previous": ""
@@ -757,7 +497,7 @@
       "time": "10:15am",
       "currency": "EUR",
       "impact": "low",
-      "title": "ECOFIN Meetings",
+      "title": "Eurogroup Meetings",
       "actual": "",
       "forecast": "",
       "previous": ""
