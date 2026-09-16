@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-16T05:46:55.175804",
+  "scraped_at": "2026-09-16T11:09:04.367819",
   "count": 63,
   "events": [
     {
@@ -244,7 +244,7 @@
     },
     {
       "date": "2026-09-16",
-      "time": "9:34am",
+      "time": "9:35am",
       "currency": "EUR",
       "impact": "low",
       "title": "German 30-y Bond Auction",
