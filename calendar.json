@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-17T07:23:22.281033",
+  "scraped_at": "2026-09-17T13:12:55.404712",
   "count": 38,
   "events": [
     {
@@ -194,6 +194,16 @@
     },
     {
       "date": "2026-09-17",
+      "time": "8:37am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Spanish 10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "3.74|2.3"
+    },
+    {
+      "date": "2026-09-17",
       "time": "9:00am",
       "currency": "EUR",
       "impact": "low",
@@ -211,16 +221,6 @@
       "actual": "",
       "forecast": "3.3%",
       "previous": "3.3%"
-    },
-    {
-      "date": "2026-09-17",
-      "time": "9:03am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Spanish 10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.74|2.3"
     },
     {
       "date": "2026-09-18",
