@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-18T05:39:42.217508",
-  "count": 16,
+  "scraped_at": "2026-09-18T10:51:21.338273",
+  "count": 15,
   "events": [
     {
       "date": "2026-09-18",
@@ -104,16 +104,6 @@
     },
     {
       "date": "2026-09-18",
-      "time": "5:30am",
-      "currency": "JPY",
-      "impact": "high",
-      "title": "BOJ Press Conference",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-18",
       "time": "6:00am",
       "currency": "EUR",
       "impact": "low",
@@ -134,13 +124,13 @@
     },
     {
       "date": "2026-09-18",
-      "time": "6:02am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Foreign Direct Investment ytd/y",
+      "time": "6:30am",
+      "currency": "JPY",
+      "impact": "high",
+      "title": "BOJ Press Conference",
       "actual": "",
       "forecast": "",
-      "previous": "-6.2%"
+      "previous": ""
     },
     {
       "date": "2026-09-18",
