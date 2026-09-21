@@ -1,27 +1,7 @@
 {
-  "scraped_at": "2026-09-20T23:58:18.086981",
-  "count": 75,
+  "scraped_at": "2026-09-21T04:43:56.660464",
+  "count": 73,
   "events": [
-    {
-      "date": "2026-09-20",
-      "time": "11:00pm",
-      "currency": "JPY",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-20",
-      "time": "11:01pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Rightmove HPI m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "-2.0%"
-    },
     {
       "date": "2026-09-21",
       "time": "10:00am",
