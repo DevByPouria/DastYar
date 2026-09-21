@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-21T10:30:38.811569",
-  "count": 73,
+  "scraped_at": "2026-09-21T16:52:55.372503",
+  "count": 74,
   "events": [
     {
       "date": "2026-09-21",
@@ -661,6 +661,16 @@
       "actual": "",
       "forecast": "",
       "previous": "4.6%"
+    },
+    {
+      "date": "2026-09-25",
+      "time": "5:00am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "BOJ Core CPI y/y",
+      "actual": "",
+      "forecast": "",
+      "previous": "1.6%"
     },
     {
       "date": "2026-09-25",
