@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-22T09:42:35.960367",
-  "count": 68,
+  "scraped_at": "2026-09-22T14:30:23.865604",
+  "count": 69,
   "events": [
     {
       "date": "2026-09-22",
@@ -61,6 +61,16 @@
       "actual": "",
       "forecast": "",
       "previous": "16.3K"
+    },
+    {
+      "date": "2026-09-22",
+      "time": "1:55pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "President Trump Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-09-22",
