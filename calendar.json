@@ -1,77 +1,7 @@
 {
-  "scraped_at": "2026-09-21T23:56:15.411410",
-  "count": 75,
+  "scraped_at": "2026-09-22T04:29:25.878026",
+  "count": 68,
   "events": [
-    {
-      "date": "2026-09-21",
-      "time": "10:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German Buba Monthly Report",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-21",
-      "time": "10:30am",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Goolsbee Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-21",
-      "time": "11:00pm",
-      "currency": "JPY",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-21",
-      "time": "3:00am",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Credit Card Spending y/y",
-      "actual": "",
-      "forecast": "",
-      "previous": "5.3%"
-    },
-    {
-      "date": "2026-09-21",
-      "time": "3:00pm",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "ECB President Lagarde Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-21",
-      "time": "3:05pm",
-      "currency": "CAD",
-      "impact": "medium",
-      "title": "BOC Gov Macklem Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-21",
-      "time": "7:00pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "RBA Assist Gov Hunter Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-09-22",
       "time": "10:00am",
