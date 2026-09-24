@@ -1,147 +1,7 @@
 {
-  "scraped_at": "2026-09-23T23:28:42.185743",
-  "count": 54,
+  "scraped_at": "2026-09-24T03:57:18.010006",
+  "count": 40,
   "events": [
-    {
-      "date": "2026-09-23",
-      "time": "1:45pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "53.6",
-      "previous": "53.2"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "1:45pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "55.8",
-      "previous": "56.8"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "2:05pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Barr Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-23",
-      "time": "2:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Crude Oil Inventories",
-      "actual": "",
-      "forecast": "-0.7M",
-      "previous": "-0.6M"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "4:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Goolsbee Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-23",
-      "time": "7:15am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "French Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "50.9",
-      "previous": "51.5"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "7:15am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "French Flash Services PMI",
-      "actual": "",
-      "forecast": "48.3",
-      "previous": "48.4"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "7:30am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "German Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "54.1",
-      "previous": "54.1"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "7:30am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "German Flash Services PMI",
-      "actual": "",
-      "forecast": "49.9",
-      "previous": "48.5"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "8:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "52.6",
-      "previous": "52.8"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "8:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "51.4",
-      "previous": "51.7"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "8:30am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "51.5",
-      "previous": "51.5"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "8:30am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "52.0",
-      "previous": "52.8"
-    },
-    {
-      "date": "2026-09-23",
-      "time": "9:35am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German 30-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.90|2.4"
-    },
     {
       "date": "2026-09-24",
       "time": "10:00am",
@@ -231,16 +91,6 @@
       "actual": "",
       "forecast": "",
       "previous": ""
-    },
-    {
-      "date": "2026-09-24",
-      "time": "12:35am",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "NAB Quarterly Business Confidence",
-      "actual": "",
-      "forecast": "",
-      "previous": "-19"
     },
     {
       "date": "2026-09-24",
@@ -441,6 +291,16 @@
       "actual": "",
       "forecast": "",
       "previous": ""
+    },
+    {
+      "date": "2026-09-25",
+      "time": "1:30am",
+      "currency": "AUD",
+      "impact": "low",
+      "title": "NAB Quarterly Business Confidence",
+      "actual": "",
+      "forecast": "",
+      "previous": "-19"
     },
     {
       "date": "2026-09-25",
