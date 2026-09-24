@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-24T09:13:13.437378",
-  "count": 40,
+  "scraped_at": "2026-09-24T14:44:17.153370",
+  "count": 41,
   "events": [
     {
       "date": "2026-09-24",
@@ -188,6 +188,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Paulson Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-09-24",
+      "time": "2:15pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "President Trump Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
