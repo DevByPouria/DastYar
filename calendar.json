@@ -1,16 +1,5 @@
 {
-  "scraped_at": "2026-09-26T22:32:21.023986",
-  "count": 1,
-  "events": [
-    {
-      "date": "2026-09-26",
-      "time": "2:00pm",
-      "currency": "NZD",
-      "impact": "holiday",
-      "title": "Daylight Saving Time Shift",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    }
-  ]
+  "scraped_at": "2026-09-27T01:12:31.804223",
+  "count": 0,
+  "events": []
 }
