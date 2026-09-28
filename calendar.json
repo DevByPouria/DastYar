@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-28T06:29:15.845648",
+  "scraped_at": "2026-09-28T15:07:54.357038",
   "count": 139,
   "events": [
     {
@@ -625,22 +625,22 @@
     {
       "date": "2026-09-30",
       "time": "2:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Crude Oil Inventories",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.0M"
-    },
-    {
-      "date": "2026-09-30",
-      "time": "3:00pm",
       "currency": "CHF",
       "impact": "low",
       "title": "Gov Board Member Tschudin Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
+    },
+    {
+      "date": "2026-09-30",
+      "time": "2:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Crude Oil Inventories",
+      "actual": "",
+      "forecast": "",
+      "previous": "3.0M"
     },
     {
       "date": "2026-09-30",
@@ -1299,7 +1299,7 @@
       "impact": "high",
       "title": "Non-Farm Employment Change",
       "actual": "",
-      "forecast": "98K",
+      "forecast": "89K",
       "previous": "162K"
     },
     {
@@ -1319,7 +1319,7 @@
       "impact": "low",
       "title": "Factory Orders m/m",
       "actual": "",
-      "forecast": "-0.1%",
+      "forecast": "0.1%",
       "previous": "0.9%"
     },
     {
