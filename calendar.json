@@ -1,27 +1,7 @@
 {
-  "scraped_at": "2026-09-27T21:54:59.101460",
-  "count": 141,
+  "scraped_at": "2026-09-28T00:25:13.183281",
+  "count": 139,
   "events": [
-    {
-      "date": "2026-09-27",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Monetary Policy Meeting Minutes",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-27",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "SPPI y/y",
-      "actual": "",
-      "forecast": "3.6%",
-      "previous": "3.6%"
-    },
     {
       "date": "2026-09-28",
       "time": "10:00am",
