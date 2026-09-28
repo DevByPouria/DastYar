@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-28T15:07:54.357038",
+  "scraped_at": "2026-09-28T21:41:55.027982",
   "count": 139,
   "events": [
     {
@@ -89,7 +89,7 @@
       "impact": "low",
       "title": "Prelim Industrial Production m/m",
       "actual": "",
-      "forecast": "1.2%",
+      "forecast": "1.4%",
       "previous": "0.1%"
     },
     {
@@ -99,7 +99,7 @@
       "impact": "low",
       "title": "Retail Sales y/y",
       "actual": "",
-      "forecast": "3.2%",
+      "forecast": "3.3%",
       "previous": "4.0%"
     },
     {
@@ -109,7 +109,7 @@
       "impact": "medium",
       "title": "GDP m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "0.0%",
       "previous": "0.3%"
     },
     {
@@ -139,7 +139,7 @@
       "impact": "low",
       "title": "Household Spending m/m",
       "actual": "",
-      "forecast": "0.4%",
+      "forecast": "0.3%",
       "previous": "1.1%"
     },
     {
@@ -149,7 +149,7 @@
       "impact": "medium",
       "title": "CB Consumer Confidence",
       "actual": "",
-      "forecast": "90.1",
+      "forecast": "89.2",
       "previous": "89.4"
     },
     {
@@ -289,7 +289,7 @@
       "impact": "low",
       "title": "Spanish Flash CPI y/y",
       "actual": "",
-      "forecast": "4.7%",
+      "forecast": "4.6%",
       "previous": "4.3%"
     },
     {
@@ -319,7 +319,7 @@
       "impact": "low",
       "title": "Mortgage Approvals",
       "actual": "",
-      "forecast": "57K",
+      "forecast": "56K",
       "previous": "56K"
     },
     {
@@ -439,7 +439,7 @@
       "impact": "medium",
       "title": "ADP Non-Farm Employment Change",
       "actual": "",
-      "forecast": "70K",
+      "forecast": "73K",
       "previous": "38K"
     },
     {
@@ -479,7 +479,7 @@
       "impact": "low",
       "title": "Goods Trade Balance",
       "actual": "",
-      "forecast": "-113.8B",
+      "forecast": "-116.3B",
       "previous": "-118.8B"
     },
     {
@@ -499,7 +499,7 @@
       "impact": "low",
       "title": "Personal Spending m/m",
       "actual": "",
-      "forecast": "1.0%",
+      "forecast": "0.8%",
       "previous": "0.2%"
     },
     {
@@ -509,7 +509,7 @@
       "impact": "low",
       "title": "Prelim Wholesale Inventories m/m",
       "actual": "",
-      "forecast": "1.1%",
+      "forecast": "0.5%",
       "previous": "1.3%"
     },
     {
@@ -559,7 +559,7 @@
       "impact": "low",
       "title": "Building Approvals m/m",
       "actual": "",
-      "forecast": "-0.9%",
+      "forecast": "-1.6%",
       "previous": "-3.6%"
     },
     {
@@ -589,7 +589,7 @@
       "impact": "low",
       "title": "Non-Manufacturing PMI",
       "actual": "",
-      "forecast": "49.3",
+      "forecast": "49.2",
       "previous": "49.0"
     },
     {
@@ -609,7 +609,7 @@
       "impact": "low",
       "title": "RatingDog Services PMI",
       "actual": "",
-      "forecast": "51.2",
+      "forecast": "51.3",
       "previous": "51.4"
     },
     {
@@ -619,7 +619,7 @@
       "impact": "low",
       "title": "Chicago PMI",
       "actual": "",
-      "forecast": "51.3",
+      "forecast": "51.2",
       "previous": "47.1"
     },
     {
@@ -649,7 +649,7 @@
       "impact": "low",
       "title": "Housing Starts y/y",
       "actual": "",
-      "forecast": "6.8%",
+      "forecast": "6.9%",
       "previous": "8.2%"
     },
     {
@@ -669,7 +669,7 @@
       "impact": "low",
       "title": "German Import Prices m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "0.6%",
       "previous": "0.2%"
     },
     {
@@ -679,7 +679,7 @@
       "impact": "low",
       "title": "German Retail Sales m/m",
       "actual": "",
-      "forecast": "1.4%",
+      "forecast": "1.6%",
       "previous": "-3.4%"
     },
     {
@@ -759,7 +759,7 @@
       "impact": "low",
       "title": "German Unemployment Change",
       "actual": "",
-      "forecast": "2K",
+      "forecast": "0K",
       "previous": "4K"
     },
     {
@@ -779,7 +779,7 @@
       "impact": "low",
       "title": "Italian Prelim CPI m/m",
       "actual": "",
-      "forecast": "0.0%",
+      "forecast": "0.2%",
       "previous": "0.5%"
     },
     {
@@ -919,7 +919,7 @@
       "impact": "medium",
       "title": "Unemployment Claims",
       "actual": "",
-      "forecast": "199K",
+      "forecast": "201K",
       "previous": "197K"
     },
     {
@@ -959,7 +959,7 @@
       "impact": "low",
       "title": "Goods Trade Balance",
       "actual": "",
-      "forecast": "2.10B",
+      "forecast": "2.00B",
       "previous": "1.92B"
     },
     {
@@ -999,7 +999,7 @@
       "impact": "low",
       "title": "Final Manufacturing PMI",
       "actual": "",
-      "forecast": "57.0",
+      "forecast": "56.9",
       "previous": "57.0"
     },
     {
@@ -1019,7 +1019,7 @@
       "impact": "medium",
       "title": "ISM Manufacturing PMI",
       "actual": "",
-      "forecast": "55.0",
+      "forecast": "54.8",
       "previous": "54.6"
     },
     {
@@ -1029,7 +1029,7 @@
       "impact": "low",
       "title": "Construction Spending m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "0.0%",
       "previous": "-0.5%"
     },
     {
@@ -1039,7 +1039,7 @@
       "impact": "low",
       "title": "ISM Manufacturing Prices",
       "actual": "",
-      "forecast": "72.0",
+      "forecast": "72.9",
       "previous": "71.1"
     },
     {
@@ -1049,7 +1049,7 @@
       "impact": "low",
       "title": "Omdia Total Vehicle Sales",
       "actual": "",
-      "forecast": "16.5M",
+      "forecast": "16.3M",
       "previous": "16.8M"
     },
     {
@@ -1089,7 +1089,7 @@
       "impact": "low",
       "title": "Nationwide HPI m/m",
       "actual": "",
-      "forecast": "0.2%",
+      "forecast": "0.0%",
       "previous": "0.2%"
     },
     {
@@ -1119,7 +1119,7 @@
       "impact": "low",
       "title": "Retail Sales y/y",
       "actual": "",
-      "forecast": "2.2%",
+      "forecast": "2.1%",
       "previous": "2.3%"
     },
     {
@@ -1159,7 +1159,7 @@
       "impact": "low",
       "title": "Manufacturing PMI",
       "actual": "",
-      "forecast": "56.0",
+      "forecast": "56.4",
       "previous": "57.1"
     },
     {
@@ -1179,7 +1179,7 @@
       "impact": "low",
       "title": "Italian Manufacturing PMI",
       "actual": "",
-      "forecast": "49.9",
+      "forecast": "50.1",
       "previous": "49.6"
     },
     {
@@ -1219,7 +1219,7 @@
       "impact": "low",
       "title": "Italian Monthly Unemployment Rate",
       "actual": "",
-      "forecast": "5.7%",
+      "forecast": "5.8%",
       "previous": "5.8%"
     },
     {
@@ -1299,7 +1299,7 @@
       "impact": "high",
       "title": "Non-Farm Employment Change",
       "actual": "",
-      "forecast": "89K",
+      "forecast": "90K",
       "previous": "162K"
     },
     {
