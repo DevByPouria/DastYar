@@ -1,67 +1,7 @@
 {
-  "scraped_at": "2026-09-28T21:41:55.027982",
-  "count": 139,
+  "scraped_at": "2026-09-29T01:36:57.652445",
+  "count": 133,
   "events": [
-    {
-      "date": "2026-09-28",
-      "time": "10:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Ramsden Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-28",
-      "time": "11:01pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "BRC Shop Price Index y/y",
-      "actual": "",
-      "forecast": "1.5%",
-      "previous": "1.5%"
-    },
-    {
-      "date": "2026-09-28",
-      "time": "12:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Bowman Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-28",
-      "time": "1:30pm",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "ECB President Lagarde Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-28",
-      "time": "5:25pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Cook Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-09-28",
-      "time": "5:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Barkin Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-09-29",
       "time": "10:00am",
