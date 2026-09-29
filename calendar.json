@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-09-29T08:06:50.619510",
+  "scraped_at": "2026-09-29T15:31:56.823582",
   "count": 133,
   "events": [
     {
@@ -284,23 +284,23 @@
     },
     {
       "date": "2026-09-29",
-      "time": "9:33am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Italian 10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.10|1.6"
-    },
-    {
-      "date": "2026-09-29",
-      "time": "9:33am",
+      "time": "9:02am",
       "currency": "GBP",
       "impact": "low",
       "title": "10-y Bond Auction",
       "actual": "",
       "forecast": "",
       "previous": "5.16|3.6"
+    },
+    {
+      "date": "2026-09-29",
+      "time": "9:04am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Italian 10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.10|1.6"
     },
     {
       "date": "2026-09-30",
@@ -579,7 +579,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "",
+      "forecast": "-1.9M",
       "previous": "3.0M"
     },
     {
