@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-09-30T00:09:44.671124",
-  "count": 103,
+  "scraped_at": "2026-09-30T06:26:27.903891",
+  "count": 104,
   "events": [
     {
       "date": "2026-09-30",
@@ -279,7 +279,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "-1.9M",
+      "forecast": "-0.7M",
       "previous": "3.0M"
     },
     {
@@ -388,6 +388,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Cook Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-09-30",
+      "time": "7:30pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "President Trump Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
@@ -699,7 +709,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "63B",
       "previous": "53B"
     },
     {
@@ -799,7 +809,7 @@
       "impact": "low",
       "title": "Manufacturing PMI",
       "actual": "",
-      "forecast": "56.4",
+      "forecast": "56.3",
       "previous": "57.1"
     },
     {
