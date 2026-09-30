@@ -1,12 +1,12 @@
 {
-  "scraped_at": "2026-09-30T06:26:27.903891",
+  "scraped_at": "2026-09-30T13:27:24.357487",
   "count": 104,
   "events": [
     {
       "date": "2026-09-30",
       "time": "10:00pm",
       "currency": "USD",
-      "impact": "low",
+      "impact": "medium",
       "title": "FOMC Member Kashkari Speaks",
       "actual": "",
       "forecast": "",
@@ -315,16 +315,6 @@
     {
       "date": "2026-09-30",
       "time": "6:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German Retail Sales m/m",
-      "actual": "",
-      "forecast": "1.6%",
-      "previous": "-3.4%"
-    },
-    {
-      "date": "2026-09-30",
-      "time": "6:00am",
       "currency": "GBP",
       "impact": "low",
       "title": "Current Account",
@@ -351,6 +341,16 @@
       "actual": "",
       "forecast": "1.7%",
       "previous": "1.7%"
+    },
+    {
+      "date": "2026-09-30",
+      "time": "6:04am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Retail Sales m/m",
+      "actual": "",
+      "forecast": "1.6%",
+      "previous": "-3.4%"
     },
     {
       "date": "2026-09-30",
@@ -464,7 +464,7 @@
     },
     {
       "date": "2026-09-30",
-      "time": "9:42am",
+      "time": "9:32am",
       "currency": "EUR",
       "impact": "low",
       "title": "German 10-y Bond Auction",
