@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-01T01:54:58.953039",
+  "scraped_at": "2026-10-01T08:34:43.231995",
   "count": 56,
   "events": [
     {
@@ -469,7 +469,7 @@
       "impact": "high",
       "title": "Non-Farm Employment Change",
       "actual": "",
-      "forecast": "90K",
+      "forecast": "89K",
       "previous": "162K"
     },
     {
