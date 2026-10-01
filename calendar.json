@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-01T08:34:43.231995",
+  "scraped_at": "2026-10-01T16:10:00.280739",
   "count": 56,
   "events": [
     {
@@ -414,17 +414,7 @@
     },
     {
       "date": "2026-10-01",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Unemployment Rate",
-      "actual": "",
-      "forecast": "6.4%",
-      "previous": "6.4%"
-    },
-    {
-      "date": "2026-10-01",
-      "time": "9:03am",
+      "time": "8:42am",
       "currency": "EUR",
       "impact": "low",
       "title": "Spanish 10-y Bond Auction",
@@ -434,13 +424,23 @@
     },
     {
       "date": "2026-10-01",
-      "time": "9:18am",
+      "time": "8:57am",
       "currency": "EUR",
       "impact": "low",
       "title": "French 10-y Bond Auction",
       "actual": "",
       "forecast": "",
       "previous": "4.23|2.3"
+    },
+    {
+      "date": "2026-10-01",
+      "time": "9:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Unemployment Rate",
+      "actual": "",
+      "forecast": "6.4%",
+      "previous": "6.4%"
     },
     {
       "date": "2026-10-01",
