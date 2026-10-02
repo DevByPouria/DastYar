@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-10-02T08:10:20.028565",
-  "count": 11,
+  "scraped_at": "2026-10-02T15:33:55.080198",
+  "count": 12,
   "events": [
     {
       "date": "2026-10-02",
@@ -48,6 +48,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Logan Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-02",
+      "time": "4:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Goolsbee Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
