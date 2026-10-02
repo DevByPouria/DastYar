@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-02T15:33:55.080198",
+  "scraped_at": "2026-10-02T20:30:12.692692",
   "count": 12,
   "events": [
     {
@@ -54,7 +54,7 @@
     },
     {
       "date": "2026-10-02",
-      "time": "4:00pm",
+      "time": "5:00pm",
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Goolsbee Speaks",
