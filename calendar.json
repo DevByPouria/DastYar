@@ -1,13 +1,793 @@
 {
-  "scraped_at": "2026-10-03T23:36:57.593154",
-  "count": 1,
+  "scraped_at": "2026-10-04T05:04:42.905417",
+  "count": 79,
   "events": [
     {
-      "date": "2026-10-03",
-      "time": "4:00pm",
+      "date": "2026-10-04",
+      "time": "11:01pm",
+      "currency": "CNY",
+      "impact": "holiday",
+      "title": "Bank Holiday",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-04",
+      "time": "8:00pm",
       "currency": "AUD",
       "impact": "holiday",
-      "title": "Daylight Saving Time Shift",
+      "title": "Bank Holiday",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-04",
+      "time": "9:15am",
+      "currency": "ALL",
+      "impact": "medium",
+      "title": "OPEC-JMMC Meetings",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-05",
+      "time": "11:01pm",
+      "currency": "CNY",
+      "impact": "holiday",
+      "title": "Bank Holiday",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-05",
+      "time": "11:30pm",
+      "currency": "AUD",
+      "impact": "low",
+      "title": "Westpac Consumer Sentiment",
+      "actual": "",
+      "forecast": "",
+      "previous": "-5.2%"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "12:00am",
+      "currency": "AUD",
+      "impact": "low",
+      "title": "MI Inflation Gauge m/m",
+      "actual": "",
+      "forecast": "",
+      "previous": "0.5%"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "12:00am",
+      "currency": "NZD",
+      "impact": "low",
+      "title": "ANZ Commodity Prices m/m",
+      "actual": "",
+      "forecast": "",
+      "previous": "-0.4%"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "1:45pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Final Services PMI",
+      "actual": "",
+      "forecast": "58.7",
+      "previous": "58.7"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "2:00pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "ISM Services PMI",
+      "actual": "",
+      "forecast": "55.1",
+      "previous": "55.4"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "5:00am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Consumer Confidence",
+      "actual": "",
+      "forecast": "35.3",
+      "previous": "35.5"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "7:15am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Spanish Services PMI",
+      "actual": "",
+      "forecast": "57.1",
+      "previous": "57.8"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "7:45am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Buba President Nagel Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-05",
+      "time": "7:45am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Italian Services PMI",
+      "actual": "",
+      "forecast": "54.6",
+      "previous": "55.2"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "7:50am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "French Final Services PMI",
+      "actual": "",
+      "forecast": "51.4",
+      "previous": "51.4"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "7:55am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Final Services PMI",
+      "actual": "",
+      "forecast": "52.9",
+      "previous": "52.9"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "8:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Final Services PMI",
+      "actual": "",
+      "forecast": "53.0",
+      "previous": "53.0"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "8:30am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Sentix Investor Confidence",
+      "actual": "",
+      "forecast": "4.5",
+      "previous": "5.1"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "8:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "Final Services PMI",
+      "actual": "",
+      "forecast": "51.7",
+      "previous": "51.7"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "9:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "PPI m/m",
+      "actual": "",
+      "forecast": "1.9%",
+      "previous": "1.6%"
+    },
+    {
+      "date": "2026-10-05",
+      "time": "9:00pm",
+      "currency": "NZD",
+      "impact": "low",
+      "title": "NZIER Business Confidence",
+      "actual": "",
+      "forecast": "",
+      "previous": "8"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "11:01pm",
+      "currency": "CNY",
+      "impact": "holiday",
+      "title": "Bank Holiday",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "11:30pm",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Average Cash Earnings y/y",
+      "actual": "",
+      "forecast": "3.7%",
+      "previous": "4.7%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "12:15pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "ADP Weekly Employment Change",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "12:16pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "ADP Weekly Employment Change",
+      "actual": "",
+      "forecast": "",
+      "previous": "20.0K"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "12:30am",
+      "currency": "AUD",
+      "impact": "low",
+      "title": "ANZ Job Advertisements m/m",
+      "actual": "",
+      "forecast": "",
+      "previous": "2.5%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "12:30pm",
+      "currency": "CAD",
+      "impact": "low",
+      "title": "Trade Balance",
+      "actual": "",
+      "forecast": "1.3B",
+      "previous": "0.8B"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "12:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Trade Balance",
+      "actual": "",
+      "forecast": "-95.2B",
+      "previous": "-88.6B"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "2:00pm",
+      "currency": "CAD",
+      "impact": "medium",
+      "title": "Ivey PMI",
+      "actual": "",
+      "forecast": "65.2",
+      "previous": "64.3"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "2:10pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "RCM/TIPP Economic Optimism",
+      "actual": "",
+      "forecast": "44.5",
+      "previous": "45.6"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "2:45pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Bowman Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "2:50pm",
+      "currency": "NZD",
+      "impact": "low",
+      "title": "GDT Price Index",
+      "actual": "",
+      "forecast": "",
+      "previous": "-1.1%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "3:35am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "3.00|3.3"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "6:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Factory Orders m/m",
+      "actual": "",
+      "forecast": "-1.0%",
+      "previous": "2.5%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "6:35am",
+      "currency": "JPY",
+      "impact": "high",
+      "title": "BOJ Gov Ueda Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "6:45am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "French Gov Budget Balance",
+      "actual": "",
+      "forecast": "",
+      "previous": "-145.9B"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "6:45am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "French Industrial Production m/m",
+      "actual": "",
+      "forecast": "0.2%",
+      "previous": "-0.4%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "7:00am",
+      "currency": "CHF",
+      "impact": "low",
+      "title": "Unemployment Rate",
+      "actual": "",
+      "forecast": "3.1%",
+      "previous": "3.1%"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "8:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "Construction PMI",
+      "actual": "",
+      "forecast": "45.0",
+      "previous": "44.3"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "8:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "MPC Member Mann Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "8:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "Housing Equity Withdrawal q/q",
+      "actual": "",
+      "forecast": "-11.9B",
+      "previous": "-12.6B"
+    },
+    {
+      "date": "2026-10-06",
+      "time": "8:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "API Weekly Statistical Bulletin",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
+      "time": "9:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Retail Sales m/m",
+      "actual": "",
+      "forecast": "0.3%",
+      "previous": "-0.6%"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "11:01pm",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "RICS House Price Balance",
+      "actual": "",
+      "forecast": "-30%",
+      "previous": "-28%"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "11:50pm",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Current Account",
+      "actual": "",
+      "forecast": "2.10T",
+      "previous": "2.52T"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "2:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Crude Oil Inventories",
+      "actual": "",
+      "forecast": "",
+      "previous": "0.9M"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "5:00am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Leading Indicators",
+      "actual": "",
+      "forecast": "118.1%",
+      "previous": "117.9%"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "5:01pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.83|2.7"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "6:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Industrial Production m/m",
+      "actual": "",
+      "forecast": "0.5%",
+      "previous": "-1.1%"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "6:00am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "Lloyds HPI m/m",
+      "actual": "",
+      "forecast": "0.2%",
+      "previous": "-0.2%"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "6:00pm",
+      "currency": "USD",
+      "impact": "high",
+      "title": "FOMC Meeting Minutes",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-07",
+      "time": "6:45am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "French Trade Balance",
+      "actual": "",
+      "forecast": "-6.5B",
+      "previous": "-6.7B"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "7:00am",
+      "currency": "CHF",
+      "impact": "low",
+      "title": "Foreign Currency Reserves",
+      "actual": "",
+      "forecast": "",
+      "previous": "770B"
+    },
+    {
+      "date": "2026-10-07",
+      "time": "7:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Consumer Credit m/m",
+      "actual": "",
+      "forecast": "15.4B",
+      "previous": "18.1B"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "10:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "MPC Member Pill Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "11:30am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "ECB Monetary Policy Meeting Accounts",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "11:30pm",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Household Spending y/y",
+      "actual": "",
+      "forecast": "-3.5%",
+      "previous": "-3.6%"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "12:00am",
+      "currency": "AUD",
+      "impact": "low",
+      "title": "MI Inflation Expectations",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.9%"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "12:30pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "Unemployment Claims",
+      "actual": "",
+      "forecast": "200K",
+      "previous": "197K"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "1:00pm",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "MPC Member Lombardelli Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "2:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Final Wholesale Inventories m/m",
+      "actual": "",
+      "forecast": "0.7%",
+      "previous": "0.7%"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "2:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Natural Gas Storage",
+      "actual": "",
+      "forecast": "",
+      "previous": "64B"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "3:35am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "30-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.08|3.8"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "5:00am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Economy Watchers Sentiment",
+      "actual": "",
+      "forecast": "46.6",
+      "previous": "46.4"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "5:01pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "30-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "5.31|2.6"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "5:40pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Musalem Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "6:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "German Trade Balance",
+      "actual": "",
+      "forecast": "18.9B",
+      "previous": "21.3B"
+    },
+    {
+      "date": "2026-10-08",
+      "time": "8:05am",
+      "currency": "CHF",
+      "impact": "low",
+      "title": "Gov Board Member Martin Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "8:30am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "BOE Credit Conditions Survey",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "9:15am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "MPC Member Greene Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "9:15am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Eurogroup Meetings",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-09",
+      "time": "12:30pm",
+      "currency": "CAD",
+      "impact": "high",
+      "title": "Employment Change",
+      "actual": "",
+      "forecast": "9.0K",
+      "previous": "-41.7K"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "12:30pm",
+      "currency": "CAD",
+      "impact": "high",
+      "title": "Unemployment Rate",
+      "actual": "",
+      "forecast": "6.5%",
+      "previous": "6.4%"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "2:00pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "Prelim UoM Consumer Sentiment",
+      "actual": "",
+      "forecast": "47.6",
+      "previous": "47.8"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "2:00pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "Prelim UoM Inflation Expectations",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.6%"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "6:00am",
+      "currency": "JPY",
+      "impact": "low",
+      "title": "Prelim Machine Tool Orders y/y",
+      "actual": "",
+      "forecast": "",
+      "previous": "64.7%"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "7:00am",
+      "currency": "CHF",
+      "impact": "low",
+      "title": "SECO Consumer Climate",
+      "actual": "",
+      "forecast": "-32",
+      "previous": "-33"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "8:00am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Italian Industrial Production m/m",
+      "actual": "",
+      "forecast": "0.0%",
+      "previous": "0.7%"
+    },
+    {
+      "date": "2026-10-09",
+      "time": "8:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Collins Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-09",
+      "time": "9:15am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "ECOFIN Meetings",
       "actual": "",
       "forecast": "",
       "previous": ""
