@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-10-05T15:41:56.658556",
-  "count": 76,
+  "scraped_at": "2026-10-05T22:23:24.887933",
+  "count": 79,
   "events": [
     {
       "date": "2026-10-05",
@@ -229,7 +229,7 @@
       "impact": "low",
       "title": "Trade Balance",
       "actual": "",
-      "forecast": "1.3B",
+      "forecast": "1.5B",
       "previous": "0.8B"
     },
     {
@@ -239,7 +239,7 @@
       "impact": "low",
       "title": "Trade Balance",
       "actual": "",
-      "forecast": "-95.2B",
+      "forecast": "-100.8B",
       "previous": "-88.6B"
     },
     {
@@ -294,12 +294,22 @@
     },
     {
       "date": "2026-10-06",
+      "time": "5:15pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Schmid Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-06",
       "time": "6:00am",
       "currency": "EUR",
       "impact": "low",
       "title": "German Factory Orders m/m",
       "actual": "",
-      "forecast": "-1.0%",
+      "forecast": "-0.9%",
       "previous": "2.5%"
     },
     {
@@ -389,7 +399,7 @@
       "impact": "low",
       "title": "Retail Sales m/m",
       "actual": "",
-      "forecast": "0.3%",
+      "forecast": "0.2%",
       "previous": "-0.6%"
     },
     {
@@ -544,6 +554,16 @@
     },
     {
       "date": "2026-10-08",
+      "time": "12:15pm",
+      "currency": "GBP",
+      "impact": "high",
+      "title": "BOE Gov Bailey Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
       "time": "12:30pm",
       "currency": "USD",
       "impact": "medium",
@@ -648,6 +668,16 @@
       "currency": "GBP",
       "impact": "low",
       "title": "BOE Credit Conditions Survey",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "8:30am",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "FOMC Member Waller Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
