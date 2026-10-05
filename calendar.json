@@ -1,37 +1,7 @@
 {
-  "scraped_at": "2026-10-04T21:03:27.651816",
-  "count": 79,
+  "scraped_at": "2026-10-05T00:34:14.151453",
+  "count": 76,
   "events": [
-    {
-      "date": "2026-10-04",
-      "time": "11:01pm",
-      "currency": "CNY",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-04",
-      "time": "8:00pm",
-      "currency": "AUD",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-04",
-      "time": "9:15am",
-      "currency": "ALL",
-      "impact": "medium",
-      "title": "OPEC-JMMC Meetings",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-05",
       "time": "11:01pm",
