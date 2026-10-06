@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-06T16:35:13.985626",
+  "scraped_at": "2026-10-06T21:29:05.340609",
   "count": 62,
   "events": [
     {
@@ -114,7 +114,7 @@
     },
     {
       "date": "2026-10-06",
-      "time": "3:50pm",
+      "time": "3:46pm",
       "currency": "NZD",
       "impact": "low",
       "title": "GDT Price Index",
@@ -249,7 +249,7 @@
       "impact": "low",
       "title": "Current Account",
       "actual": "",
-      "forecast": "2.13T",
+      "forecast": "2.14T",
       "previous": "2.52T"
     },
     {
@@ -259,7 +259,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "2.1M",
+      "forecast": "1.9M",
       "previous": "0.9M"
     },
     {
@@ -269,7 +269,7 @@
       "impact": "low",
       "title": "Leading Indicators",
       "actual": "",
-      "forecast": "118.3%",
+      "forecast": "118.1%",
       "previous": "117.9%"
     },
     {
@@ -299,7 +299,7 @@
       "impact": "low",
       "title": "Lloyds HPI m/m",
       "actual": "",
-      "forecast": "0.2%",
+      "forecast": "0.0%",
       "previous": "-0.2%"
     },
     {
@@ -339,7 +339,7 @@
       "impact": "low",
       "title": "Consumer Credit m/m",
       "actual": "",
-      "forecast": "14.4B",
+      "forecast": "14.5B",
       "previous": "18.1B"
     },
     {
@@ -429,7 +429,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "79B",
       "previous": "64B"
     },
     {
@@ -479,7 +479,7 @@
       "impact": "low",
       "title": "German Trade Balance",
       "actual": "",
-      "forecast": "18.9B",
+      "forecast": "19.0B",
       "previous": "21.3B"
     },
     {
@@ -539,7 +539,7 @@
       "impact": "high",
       "title": "Employment Change",
       "actual": "",
-      "forecast": "6.2K",
+      "forecast": "6.3K",
       "previous": "-41.7K"
     },
     {
@@ -559,7 +559,7 @@
       "impact": "medium",
       "title": "Prelim UoM Consumer Sentiment",
       "actual": "",
-      "forecast": "47.6",
+      "forecast": "47.5",
       "previous": "47.8"
     },
     {
