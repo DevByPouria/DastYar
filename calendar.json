@@ -1,137 +1,7 @@
 {
-  "scraped_at": "2026-10-07T21:49:15.937185",
-  "count": 40,
+  "scraped_at": "2026-10-08T01:37:42.991226",
+  "count": 28,
   "events": [
-    {
-      "date": "2026-10-07",
-      "time": "11:01pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "RICS House Price Balance",
-      "actual": "",
-      "forecast": "-30%",
-      "previous": "-28%"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Current Account",
-      "actual": "",
-      "forecast": "2.14T",
-      "previous": "2.52T"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "2:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Crude Oil Inventories",
-      "actual": "",
-      "forecast": "1.9M",
-      "previous": "0.9M"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "5:00am",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Leading Indicators",
-      "actual": "",
-      "forecast": "118.1%",
-      "previous": "117.9%"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "5:00pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "President Trump Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-07",
-      "time": "5:01pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.83|2.7"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "6:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German Industrial Production m/m",
-      "actual": "",
-      "forecast": "0.5%",
-      "previous": "-1.1%"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "6:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Lloyds HPI m/m",
-      "actual": "",
-      "forecast": "0.0%",
-      "previous": "-0.2%"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "6:00pm",
-      "currency": "USD",
-      "impact": "high",
-      "title": "FOMC Meeting Minutes",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-07",
-      "time": "6:45am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "French Trade Balance",
-      "actual": "",
-      "forecast": "-6.5B",
-      "previous": "-6.7B"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "7:00am",
-      "currency": "CHF",
-      "impact": "low",
-      "title": "Foreign Currency Reserves",
-      "actual": "",
-      "forecast": "",
-      "previous": "770B"
-    },
-    {
-      "date": "2026-10-07",
-      "time": "7:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Consumer Credit m/m",
-      "actual": "",
-      "forecast": "14.5B",
-      "previous": "18.1B"
-    },
-    {
-      "date": "2026-10-08",
-      "time": "10:30am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Pill Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-08",
       "time": "11:30am",
@@ -288,6 +158,16 @@
       "currency": "USD",
       "impact": "medium",
       "title": "FOMC Member Waller Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-08",
+      "time": "9:00am",
+      "currency": "GBP",
+      "impact": "low",
+      "title": "MPC Member Pill Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
