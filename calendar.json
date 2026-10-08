@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-08T16:12:55.402710",
+  "scraped_at": "2026-10-08T21:52:27.175065",
   "count": 28,
   "events": [
     {
@@ -199,7 +199,7 @@
       "impact": "high",
       "title": "Employment Change",
       "actual": "",
-      "forecast": "6.3K",
+      "forecast": "6.1K",
       "previous": "-41.7K"
     },
     {
