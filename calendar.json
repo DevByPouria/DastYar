@@ -1,17 +1,7 @@
 {
-  "scraped_at": "2026-10-11T20:02:34.454334",
-  "count": 109,
+  "scraped_at": "2026-10-12T00:19:35.226918",
+  "count": 108,
   "events": [
-    {
-      "date": "2026-10-11",
-      "time": "11:00pm",
-      "currency": "JPY",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-12",
       "time": "11:00am",
