@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-10-13T07:29:59.215619",
-  "count": 98,
+  "scraped_at": "2026-10-13T15:43:32.980843",
+  "count": 100,
   "events": [
     {
       "date": "2026-10-13",
@@ -144,26 +144,6 @@
     },
     {
       "date": "2026-10-13",
-      "time": "8:03am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "M2 Money Supply y/y",
-      "actual": "",
-      "forecast": "7.4%",
-      "previous": "7.5%"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "8:03am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "New Loans",
-      "actual": "",
-      "forecast": "1025B",
-      "previous": "60B"
-    },
-    {
-      "date": "2026-10-13",
       "time": "9:45pm",
       "currency": "NZD",
       "impact": "low",
@@ -171,6 +151,16 @@
       "actual": "",
       "forecast": "",
       "previous": "0.5%"
+    },
+    {
+      "date": "2026-10-14",
+      "time": "10:15am",
+      "currency": "EUR",
+      "impact": "medium",
+      "title": "EU Economic Summit",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-10-14",
@@ -374,6 +364,26 @@
     },
     {
       "date": "2026-10-14",
+      "time": "8:03am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "M2 Money Supply y/y",
+      "actual": "",
+      "forecast": "7.4%",
+      "previous": "7.5%"
+    },
+    {
+      "date": "2026-10-14",
+      "time": "8:03am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "New Loans",
+      "actual": "",
+      "forecast": "1025B",
+      "previous": "60B"
+    },
+    {
+      "date": "2026-10-14",
       "time": "8:30am",
       "currency": "EUR",
       "impact": "medium",
@@ -408,6 +418,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Bowman Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-15",
+      "time": "10:15am",
+      "currency": "EUR",
+      "impact": "medium",
+      "title": "EU Economic Summit",
       "actual": "",
       "forecast": "",
       "previous": ""
