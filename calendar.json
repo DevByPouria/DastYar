@@ -1,97 +1,7 @@
 {
-  "scraped_at": "2026-10-12T17:34:20.990508",
-  "count": 108,
+  "scraped_at": "2026-10-13T00:21:27.779777",
+  "count": 98,
   "events": [
-    {
-      "date": "2026-10-12",
-      "time": "11:00am",
-      "currency": "USD",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-12",
-      "time": "11:01pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "BRC Retail Sales Monitor y/y",
-      "actual": "",
-      "forecast": "0.8%",
-      "previous": "0.5%"
-    },
-    {
-      "date": "2026-10-12",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Bank Lending y/y",
-      "actual": "",
-      "forecast": "5.5%",
-      "previous": "5.4%"
-    },
-    {
-      "date": "2026-10-12",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "PPI y/y",
-      "actual": "",
-      "forecast": "7.6%",
-      "previous": "7.6%"
-    },
-    {
-      "date": "2026-10-12",
-      "time": "12:00pm",
-      "currency": "CAD",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-12",
-      "time": "12:50pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Mann Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-12",
-      "time": "2:15pm",
-      "currency": "ALL",
-      "impact": "low",
-      "title": "IMF Meetings",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-12",
-      "time": "4:10pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Hammack Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-12",
-      "time": "9:30am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Breeden Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-13",
       "time": "10:00am",
@@ -99,7 +9,7 @@
       "impact": "low",
       "title": "NFIB Small Business Index",
       "actual": "",
-      "forecast": "98.0",
+      "forecast": "98.1",
       "previous": "98.7"
     },
     {
@@ -159,7 +69,7 @@
       "impact": "low",
       "title": "Existing Home Sales",
       "actual": "",
-      "forecast": "3.96M",
+      "forecast": "3.95M",
       "previous": "3.98M"
     },
     {
@@ -188,16 +98,6 @@
       "currency": "GBP",
       "impact": "low",
       "title": "MPC Member Greene Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "4:00pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Dhingra Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
@@ -249,7 +149,7 @@
       "impact": "low",
       "title": "M2 Money Supply y/y",
       "actual": "",
-      "forecast": "7.5%",
+      "forecast": "7.4%",
       "previous": "7.5%"
     },
     {
@@ -259,7 +159,7 @@
       "impact": "low",
       "title": "New Loans",
       "actual": "",
-      "forecast": "300B",
+      "forecast": "1025B",
       "previous": "60B"
     },
     {
@@ -279,7 +179,7 @@
       "impact": "low",
       "title": "Core Machinery Orders m/m",
       "actual": "",
-      "forecast": "2.5%",
+      "forecast": "2.2%",
       "previous": "-3.7%"
     },
     {
@@ -289,7 +189,7 @@
       "impact": "low",
       "title": "Building Permits m/m",
       "actual": "",
-      "forecast": "3.1%",
+      "forecast": "2.9%",
       "previous": "-17.3%"
     },
     {
@@ -349,7 +249,7 @@
       "impact": "low",
       "title": "PPI y/y",
       "actual": "",
-      "forecast": "4.5%",
+      "forecast": "4.4%",
       "previous": "3.8%"
     },
     {
@@ -369,7 +269,7 @@
       "impact": "low",
       "title": "Trade Balance",
       "actual": "",
-      "forecast": "805B",
+      "forecast": "790B",
       "previous": "809B"
     },
     {
@@ -379,7 +279,7 @@
       "impact": "low",
       "title": "USD-Denominated Trade Balance",
       "actual": "",
-      "forecast": "118.1B",
+      "forecast": "116.8B",
       "previous": "119.1B"
     },
     {
@@ -439,7 +339,7 @@
       "impact": "low",
       "title": "German WPI m/m",
       "actual": "",
-      "forecast": "0.7%",
+      "forecast": "0.6%",
       "previous": "0.9%"
     },
     {
@@ -519,7 +419,7 @@
       "impact": "high",
       "title": "Employment Change",
       "actual": "",
-      "forecast": "20.0K",
+      "forecast": "19.6K",
       "previous": "39.5K"
     },
     {
@@ -549,7 +449,7 @@
       "impact": "low",
       "title": "Wholesale Sales m/m",
       "actual": "",
-      "forecast": "-1.4%",
+      "forecast": "-1.5%",
       "previous": "0.3%"
     },
     {
@@ -569,7 +469,7 @@
       "impact": "high",
       "title": "Core Retail Sales m/m",
       "actual": "",
-      "forecast": "0.5%",
+      "forecast": "0.6%",
       "previous": "1.4%"
     },
     {
@@ -579,7 +479,7 @@
       "impact": "high",
       "title": "PPI m/m",
       "actual": "",
-      "forecast": "0.5%",
+      "forecast": "0.6%",
       "previous": "0.4%"
     },
     {
@@ -599,7 +499,7 @@
       "impact": "medium",
       "title": "Philly Fed Manufacturing Index",
       "actual": "",
-      "forecast": "26.5",
+      "forecast": "28.2",
       "previous": "37.8"
     },
     {
@@ -609,7 +509,7 @@
       "impact": "medium",
       "title": "Unemployment Claims",
       "actual": "",
-      "forecast": "195K",
+      "forecast": "199K",
       "previous": "197K"
     },
     {
@@ -619,7 +519,7 @@
       "impact": "low",
       "title": "Empire State Manufacturing Index",
       "actual": "",
-      "forecast": "3.2",
+      "forecast": "12.1",
       "previous": "7.6"
     },
     {
@@ -739,7 +639,7 @@
       "impact": "low",
       "title": "Goods Trade Balance",
       "actual": "",
-      "forecast": "-21.8B",
+      "forecast": "-21.9B",
       "previous": "-21.0B"
     },
     {
@@ -749,7 +649,7 @@
       "impact": "low",
       "title": "Index of Services 3m/3m",
       "actual": "",
-      "forecast": "0.7%",
+      "forecast": "0.8%",
       "previous": "0.6%"
     },
     {
@@ -769,7 +669,7 @@
       "impact": "low",
       "title": "Manufacturing Production m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "-0.1%",
       "previous": "0.9%"
     },
     {
@@ -779,7 +679,7 @@
       "impact": "low",
       "title": "PPI m/m",
       "actual": "",
-      "forecast": "0.5%",
+      "forecast": "0.6%",
       "previous": "0.7%"
     },
     {
@@ -849,7 +749,7 @@
       "impact": "low",
       "title": "Industrial Production m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "0.0%",
       "previous": "-0.1%"
     },
     {
@@ -899,7 +799,7 @@
       "impact": "low",
       "title": "Housing Starts",
       "actual": "",
-      "forecast": "230K",
+      "forecast": "234K",
       "previous": "229K"
     },
     {
@@ -919,7 +819,7 @@
       "impact": "low",
       "title": "Import Prices m/m",
       "actual": "",
-      "forecast": "0.6%",
+      "forecast": "0.9%",
       "previous": "0.7%"
     },
     {
@@ -999,7 +899,7 @@
       "impact": "low",
       "title": "Federal Budget Balance",
       "actual": "",
-      "forecast": "75.3B",
+      "forecast": "-34.7B",
       "previous": "-166.8B"
     },
     {
@@ -1009,7 +909,7 @@
       "impact": "low",
       "title": "TIC Long-Term Purchases",
       "actual": "",
-      "forecast": "125.7B",
+      "forecast": "75.2B",
       "previous": "-27.9B"
     },
     {
