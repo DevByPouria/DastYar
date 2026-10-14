@@ -1,157 +1,7 @@
 {
-  "scraped_at": "2026-10-13T21:04:25.226508",
-  "count": 100,
+  "scraped_at": "2026-10-14T00:59:00.605439",
+  "count": 86,
   "events": [
-    {
-      "date": "2026-10-13",
-      "time": "10:00am",
-      "currency": "USD",
-      "impact": "low",
-      "title": "NFIB Small Business Index",
-      "actual": "",
-      "forecast": "98.1",
-      "previous": "98.7"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "11:30pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "MI Leading Index m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.0%"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "M2 Money Stock y/y",
-      "actual": "",
-      "forecast": "2.1%",
-      "previous": "2.0%"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "12:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "ADP Weekly Employment Change",
-      "actual": "",
-      "forecast": "",
-      "previous": "23.8K"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "12:30am",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "Monetary Policy Meeting Minutes",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "12:30am",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "NAB Business Confidence",
-      "actual": "",
-      "forecast": "",
-      "previous": "-8"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "2:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Existing Home Sales",
-      "actual": "",
-      "forecast": "3.95M",
-      "previous": "3.98M"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "2:15pm",
-      "currency": "ALL",
-      "impact": "low",
-      "title": "IMF Meetings",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "2:30pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "CB Leading Index m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.5%"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "3:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Greene Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "5:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Barkin Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "6:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German Final CPI m/m",
-      "actual": "",
-      "forecast": "0.6%",
-      "previous": "0.6%"
-    },
-    {
-      "date": "2026-10-13",
-      "time": "7:45am",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Waller Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "8:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Collins Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-13",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Visitor Arrivals m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.5%"
-    },
     {
       "date": "2026-10-14",
       "time": "10:15am",
@@ -358,6 +208,16 @@
       "currency": "CAD",
       "impact": "medium",
       "title": "BOC Gov Macklem Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-14",
+      "time": "7:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Goolsbee Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
