@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-14T12:44:17.875926",
+  "scraped_at": "2026-10-14T17:51:35.217951",
   "count": 86,
   "events": [
     {
@@ -429,7 +429,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "76B",
       "previous": "85B"
     },
     {
@@ -459,7 +459,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "",
+      "forecast": "-0.2M",
       "previous": "-3.2M"
     },
     {
