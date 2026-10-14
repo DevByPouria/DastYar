@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-14T00:59:00.605439",
+  "scraped_at": "2026-10-14T06:01:54.582057",
   "count": 86,
   "events": [
     {
@@ -104,26 +104,6 @@
     },
     {
       "date": "2026-10-14",
-      "time": "2:03am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Trade Balance",
-      "actual": "",
-      "forecast": "790B",
-      "previous": "809B"
-    },
-    {
-      "date": "2026-10-14",
-      "time": "2:04am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "USD-Denominated Trade Balance",
-      "actual": "",
-      "forecast": "116.8B",
-      "previous": "119.1B"
-    },
-    {
-      "date": "2026-10-14",
       "time": "2:10am",
       "currency": "EUR",
       "impact": "medium",
@@ -141,6 +121,26 @@
       "actual": "",
       "forecast": "",
       "previous": ""
+    },
+    {
+      "date": "2026-10-14",
+      "time": "2:31am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "Trade Balance",
+      "actual": "",
+      "forecast": "790B",
+      "previous": "809B"
+    },
+    {
+      "date": "2026-10-14",
+      "time": "2:31am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "USD-Denominated Trade Balance",
+      "actual": "",
+      "forecast": "116.8B",
+      "previous": "119.1B"
     },
     {
       "date": "2026-10-14",
@@ -689,7 +689,7 @@
       "impact": "low",
       "title": "Foreign Securities Purchases",
       "actual": "",
-      "forecast": "",
+      "forecast": "23.59B",
       "previous": "20.65B"
     },
     {
