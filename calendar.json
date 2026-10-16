@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-16T17:52:42.894039",
+  "scraped_at": "2026-10-16T20:43:19.437322",
   "count": 21,
   "events": [
     {
@@ -124,7 +124,7 @@
     },
     {
       "date": "2026-10-16",
-      "time": "6:00pm",
+      "time": "6:05pm",
       "currency": "USD",
       "impact": "low",
       "title": "Federal Budget Balance",
