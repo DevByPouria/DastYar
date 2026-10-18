@@ -1,37 +1,7 @@
 {
-  "scraped_at": "2026-10-17T22:03:14.535402",
-  "count": 4,
+  "scraped_at": "2026-10-18T00:43:52.794018",
+  "count": 1,
   "events": [
-    {
-      "date": "2026-10-17",
-      "time": "2:15pm",
-      "currency": "ALL",
-      "impact": "low",
-      "title": "IMF Meetings",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-17",
-      "time": "4:45am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German Buba President Nagel Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-17",
-      "time": "6:45am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "BOE Gov Bailey Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-18",
       "time": "12:00am",
