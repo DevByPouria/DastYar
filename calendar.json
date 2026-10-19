@@ -1,57 +1,7 @@
 {
-  "scraped_at": "2026-10-18T22:53:37.096705",
-  "count": 86,
+  "scraped_at": "2026-10-19T00:57:04.854682",
+  "count": 81,
   "events": [
-    {
-      "date": "2026-10-18",
-      "time": "11:01pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Rightmove HPI m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.7%"
-    },
-    {
-      "date": "2026-10-18",
-      "time": "11:05pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "RBA Assist Gov Kent Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-18",
-      "time": "2:15pm",
-      "currency": "ALL",
-      "impact": "low",
-      "title": "IMF Meetings",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-18",
-      "time": "9:30pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "BusinessNZ Services Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "51.2"
-    },
-    {
-      "date": "2026-10-18",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Trade Balance",
-      "actual": "",
-      "forecast": "-775M",
-      "previous": "-1349M"
-    },
     {
       "date": "2026-10-19",
       "time": "12:30pm",
