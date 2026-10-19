@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-19T05:58:50.854394",
+  "scraped_at": "2026-10-19T12:56:01.050596",
   "count": 81,
   "events": [
     {
@@ -151,16 +151,6 @@
       "actual": "",
       "forecast": "-0.3%",
       "previous": "0.4%"
-    },
-    {
-      "date": "2026-10-19",
-      "time": "9:10am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Foreign Direct Investment ytd/y",
-      "actual": "",
-      "forecast": "",
-      "previous": "-5.3%"
     },
     {
       "date": "2026-10-20",
@@ -341,6 +331,16 @@
       "actual": "",
       "forecast": "23.6",
       "previous": "25.8"
+    },
+    {
+      "date": "2026-10-20",
+      "time": "9:10am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "Foreign Direct Investment ytd/y",
+      "actual": "",
+      "forecast": "",
+      "previous": "-5.3%"
     },
     {
       "date": "2026-10-20",
