@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-19T00:57:04.854682",
+  "scraped_at": "2026-10-19T05:58:50.854394",
   "count": 81,
   "events": [
     {
@@ -154,7 +154,7 @@
     },
     {
       "date": "2026-10-19",
-      "time": "6:02am",
+      "time": "9:10am",
       "currency": "CNY",
       "impact": "low",
       "title": "Foreign Direct Investment ytd/y",
