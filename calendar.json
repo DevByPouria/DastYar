@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-19T12:56:01.050596",
+  "scraped_at": "2026-10-19T19:11:11.440245",
   "count": 81,
   "events": [
     {
@@ -169,7 +169,7 @@
       "impact": "low",
       "title": "Trade Balance",
       "actual": "",
-      "forecast": "-0.21T",
+      "forecast": "-0.26T",
       "previous": "-0.84T"
     },
     {
@@ -229,7 +229,7 @@
       "impact": "low",
       "title": "Pending Home Sales m/m",
       "actual": "",
-      "forecast": "-0.4%",
+      "forecast": "-0.7%",
       "previous": "0.3%"
     },
     {
