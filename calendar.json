@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-20T14:50:12.612269",
+  "scraped_at": "2026-10-20T19:03:23.602888",
   "count": 66,
   "events": [
     {
@@ -84,7 +84,7 @@
     },
     {
       "date": "2026-10-20",
-      "time": "2:50pm",
+      "time": "3:19pm",
       "currency": "NZD",
       "impact": "low",
       "title": "GDT Price Index",
