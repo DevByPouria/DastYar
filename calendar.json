@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-21T14:57:21.903526",
+  "scraped_at": "2026-10-21T19:12:58.981904",
   "count": 47,
   "events": [
     {
@@ -249,7 +249,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "83B",
+      "forecast": "80B",
       "previous": "67B"
     },
     {
@@ -329,7 +329,7 @@
       "impact": "medium",
       "title": "Flash Services PMI",
       "actual": "",
-      "forecast": "57.8",
+      "forecast": "57.9",
       "previous": "58.7"
     },
     {
