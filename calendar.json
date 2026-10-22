@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-10-22T09:20:27.536882",
+  "scraped_at": "2026-10-22T14:57:23.179634",
   "count": 34,
   "events": [
     {
@@ -55,6 +55,16 @@
     {
       "date": "2026-10-22",
       "time": "12:30pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "Unemployment Claims",
+      "actual": "",
+      "forecast": "200K",
+      "previous": "199K"
+    },
+    {
+      "date": "2026-10-22",
+      "time": "12:38pm",
       "currency": "CAD",
       "impact": "low",
       "title": "IPPI m/m",
@@ -64,17 +74,7 @@
     },
     {
       "date": "2026-10-22",
-      "time": "12:30pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "NHPI m/m",
-      "actual": "",
-      "forecast": "-0.1%",
-      "previous": "-0.1%"
-    },
-    {
-      "date": "2026-10-22",
-      "time": "12:30pm",
+      "time": "12:38pm",
       "currency": "CAD",
       "impact": "low",
       "title": "RMPI m/m",
@@ -84,13 +84,13 @@
     },
     {
       "date": "2026-10-22",
-      "time": "12:30pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "Unemployment Claims",
+      "time": "1:55pm",
+      "currency": "CAD",
+      "impact": "low",
+      "title": "NHPI m/m",
       "actual": "",
-      "forecast": "200K",
-      "previous": "199K"
+      "forecast": "-0.1%",
+      "previous": "-0.1%"
     },
     {
       "date": "2026-10-22",
