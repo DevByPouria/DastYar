@@ -1,27 +1,7 @@
 {
-  "scraped_at": "2026-10-25T23:05:31.318310",
-  "count": 96,
+  "scraped_at": "2026-10-26T03:59:56.394950",
+  "count": 94,
   "events": [
-    {
-      "date": "2026-10-25",
-      "time": "7:00pm",
-      "currency": "NZD",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-10-25",
-      "time": "9:10pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "RBA Assist Gov Jones Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-10-26",
       "time": "11:00am",
