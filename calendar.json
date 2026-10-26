@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-10-26T10:01:17.721030",
-  "count": 94,
+  "scraped_at": "2026-10-26T17:10:54.867304",
+  "count": 95,
   "events": [
     {
       "date": "2026-10-26",
@@ -99,7 +99,7 @@
       "impact": "medium",
       "title": "CB Consumer Confidence",
       "actual": "",
-      "forecast": "80.5",
+      "forecast": "80.7",
       "previous": "81.9"
     },
     {
@@ -139,7 +139,7 @@
       "impact": "low",
       "title": "Spanish Unemployment Rate",
       "actual": "",
-      "forecast": "",
+      "forecast": "9.8%",
       "previous": "9.9%"
     },
     {
@@ -524,6 +524,16 @@
     },
     {
       "date": "2026-10-29",
+      "time": "12:50pm",
+      "currency": "CAD",
+      "impact": "low",
+      "title": "Gov Council Member Gravelle Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-10-29",
       "time": "1:15pm",
       "currency": "EUR",
       "impact": "high",
@@ -564,7 +574,7 @@
     },
     {
       "date": "2026-10-29",
-      "time": "2:50pm",
+      "time": "3:30pm",
       "currency": "CAD",
       "impact": "low",
       "title": "Gov Council Member Vincent Speaks",
