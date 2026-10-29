@@ -1,7 +1,17 @@
 {
-  "scraped_at": "2026-10-29T09:39:08.635482",
+  "scraped_at": "2026-10-29T16:45:42.438559",
   "count": 55,
   "events": [
+    {
+      "date": "2026-10-29",
+      "time": "10:08am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Italian 10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.58|1.6"
+    },
     {
       "date": "2026-10-29",
       "time": "11:30pm",
@@ -241,16 +251,6 @@
       "actual": "",
       "forecast": "6.2B",
       "previous": "6.9B"
-    },
-    {
-      "date": "2026-10-29",
-      "time": "9:33am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Italian 10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.58|1.6"
     },
     {
       "date": "2026-10-30",
