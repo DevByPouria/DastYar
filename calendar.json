@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-10-30T15:42:52.401936",
-  "count": 30,
+  "scraped_at": "2026-10-30T20:34:26.321781",
+  "count": 31,
   "events": [
     {
       "date": "2026-10-30",
@@ -141,6 +141,16 @@
       "actual": "",
       "forecast": "2.7%",
       "previous": "6.1%"
+    },
+    {
+      "date": "2026-10-30",
+      "time": "5:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Logan Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-10-30",
