@@ -1,26 +1,5 @@
 {
-  "scraped_at": "2026-10-31T22:21:32.685336",
-  "count": 2,
-  "events": [
-    {
-      "date": "2026-10-31",
-      "time": "1:30am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Manufacturing PMI",
-      "actual": "",
-      "forecast": "49.9",
-      "previous": "50.1"
-    },
-    {
-      "date": "2026-10-31",
-      "time": "1:30am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Non-Manufacturing PMI",
-      "actual": "",
-      "forecast": "50.0",
-      "previous": "50.2"
-    }
-  ]
+  "scraped_at": "2026-11-01T01:59:23.655740",
+  "count": 0,
+  "events": []
 }
