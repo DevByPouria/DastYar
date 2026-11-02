@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-02T01:22:20.685598",
+  "scraped_at": "2026-11-02T09:04:22.755657",
   "count": 113,
   "events": [
     {
@@ -134,7 +134,7 @@
     },
     {
       "date": "2026-11-02",
-      "time": "7:30am",
+      "time": "7:33am",
       "currency": "CHF",
       "impact": "low",
       "title": "Retail Sales y/y",
