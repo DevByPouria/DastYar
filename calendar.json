@@ -1,27 +1,7 @@
 {
-  "scraped_at": "2026-11-01T21:01:24.433681",
-  "count": 116,
+  "scraped_at": "2026-11-02T01:22:20.685598",
+  "count": 113,
   "events": [
-    {
-      "date": "2026-11-01",
-      "time": "7:00am",
-      "currency": "CAD",
-      "impact": "holiday",
-      "title": "Daylight Saving Time Shift",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-01",
-      "time": "7:00am",
-      "currency": "USD",
-      "impact": "holiday",
-      "title": "Daylight Saving Time Shift",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-11-02",
       "time": "12:00am",
@@ -64,16 +44,6 @@
     },
     {
       "date": "2026-11-02",
-      "time": "12:45am",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "ANZ Job Advertisements m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "2.2%"
-    },
-    {
-      "date": "2026-11-02",
       "time": "1:45am",
       "currency": "CNY",
       "impact": "low",
@@ -109,7 +79,7 @@
       "impact": "medium",
       "title": "ISM Manufacturing PMI",
       "actual": "",
-      "forecast": "54.7",
+      "forecast": "54.5",
       "previous": "54.5"
     },
     {
@@ -119,7 +89,7 @@
       "impact": "low",
       "title": "Construction Spending m/m",
       "actual": "",
-      "forecast": "0.3%",
+      "forecast": "0.4%",
       "previous": "0.9%"
     },
     {
