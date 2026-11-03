@@ -1,10 +1,10 @@
 {
-  "scraped_at": "2026-11-03T10:35:39.878841",
+  "scraped_at": "2026-11-03T18:16:55.205705",
   "count": 91,
   "events": [
     {
       "date": "2026-11-03",
-      "time": "10:33am",
+      "time": "10:02am",
       "currency": "GBP",
       "impact": "low",
       "title": "10-y Bond Auction",
@@ -54,16 +54,6 @@
     },
     {
       "date": "2026-11-03",
-      "time": "3:10pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "RCM/TIPP Economic Optimism",
-      "actual": "",
-      "forecast": "46.2",
-      "previous": "46.8"
-    },
-    {
-      "date": "2026-11-03",
       "time": "3:15pm",
       "currency": "USD",
       "impact": "low",
@@ -81,6 +71,16 @@
       "actual": "",
       "forecast": "",
       "previous": ""
+    },
+    {
+      "date": "2026-11-03",
+      "time": "3:27pm",
+      "currency": "NZD",
+      "impact": "low",
+      "title": "GDT Price Index",
+      "actual": "",
+      "forecast": "",
+      "previous": "2.5%"
     },
     {
       "date": "2026-11-03",
@@ -111,16 +111,6 @@
       "actual": "",
       "forecast": "",
       "previous": ""
-    },
-    {
-      "date": "2026-11-03",
-      "time": "3:50pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "GDT Price Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "2.5%"
     },
     {
       "date": "2026-11-03",
@@ -171,6 +161,16 @@
       "actual": "",
       "forecast": "",
       "previous": "-159.6B"
+    },
+    {
+      "date": "2026-11-03",
+      "time": "9:00am",
+      "currency": "USD",
+      "impact": "low",
+      "title": "RCM/TIPP Economic Optimism",
+      "actual": "",
+      "forecast": "46.2",
+      "previous": "46.8"
     },
     {
       "date": "2026-11-03",
@@ -329,7 +329,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "",
+      "forecast": "-0.1M",
       "previous": "-1.9M"
     },
     {
