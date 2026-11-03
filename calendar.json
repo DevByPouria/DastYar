@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-03T18:16:55.205705",
+  "scraped_at": "2026-11-03T23:53:24.979924",
   "count": 91,
   "events": [
     {
@@ -134,7 +134,7 @@
     },
     {
       "date": "2026-11-03",
-      "time": "5:00pm",
+      "time": "6:00pm",
       "currency": "EUR",
       "impact": "low",
       "title": "German Buba President Nagel Speaks",
@@ -329,7 +329,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "-0.1M",
+      "forecast": "-1.7M",
       "previous": "-1.9M"
     },
     {
@@ -589,7 +589,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "81B",
       "previous": "80B"
     },
     {
