@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-05T09:11:42.535330",
+  "scraped_at": "2026-11-05T17:54:44.959060",
   "count": 51,
   "events": [
     {
@@ -11,26 +11,6 @@
       "actual": "",
       "forecast": "2.5%",
       "previous": "1.9%"
-    },
-    {
-      "date": "2026-11-05",
-      "time": "10:03am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Spanish 10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.18|1.6"
-    },
-    {
-      "date": "2026-11-05",
-      "time": "10:18am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "French 10-y Bond Auction",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.93|2.0"
     },
     {
       "date": "2026-11-05",
@@ -291,6 +271,26 @@
       "actual": "",
       "forecast": "46.4",
       "previous": "46.1"
+    },
+    {
+      "date": "2026-11-05",
+      "time": "9:39am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "Spanish 10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.18|1.6"
+    },
+    {
+      "date": "2026-11-05",
+      "time": "9:55am",
+      "currency": "EUR",
+      "impact": "low",
+      "title": "French 10-y Bond Auction",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.93|2.0"
     },
     {
       "date": "2026-11-06",
