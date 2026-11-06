@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-06T13:57:41.707693",
-  "count": 22,
+  "scraped_at": "2026-11-06T20:22:02.668230",
+  "count": 23,
   "events": [
     {
       "date": "2026-11-06",
@@ -138,6 +138,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Bowman Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-11-06",
+      "time": "6:00pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Daly Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
