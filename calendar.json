@@ -1,17 +1,7 @@
 {
-  "scraped_at": "2026-11-08T20:59:07.941562",
-  "count": 101,
+  "scraped_at": "2026-11-09T00:44:43.568987",
+  "count": 100,
   "events": [
-    {
-      "date": "2026-11-08",
-      "time": "10:30pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "RBA Assist Gov Hunter Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-11-09",
       "time": "10:15am",
