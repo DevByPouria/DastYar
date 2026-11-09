@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-09T07:44:51.122729",
-  "count": 100,
+  "scraped_at": "2026-11-09T18:30:54.177725",
+  "count": 101,
   "events": [
     {
       "date": "2026-11-09",
@@ -161,26 +161,6 @@
       "actual": "",
       "forecast": "19.2B",
       "previous": "19.5B"
-    },
-    {
-      "date": "2026-11-09",
-      "time": "9:03am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "M2 Money Supply y/y",
-      "actual": "",
-      "forecast": "7.3%",
-      "previous": "7.2%"
-    },
-    {
-      "date": "2026-11-09",
-      "time": "9:03am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "New Loans",
-      "actual": "",
-      "forecast": "80B",
-      "previous": "1080B"
     },
     {
       "date": "2026-11-09",
@@ -434,6 +414,26 @@
     },
     {
       "date": "2026-11-10",
+      "time": "9:03am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "M2 Money Supply y/y",
+      "actual": "",
+      "forecast": "7.3%",
+      "previous": "7.2%"
+    },
+    {
+      "date": "2026-11-10",
+      "time": "9:03am",
+      "currency": "CNY",
+      "impact": "low",
+      "title": "New Loans",
+      "actual": "",
+      "forecast": "80B",
+      "previous": "1080B"
+    },
+    {
+      "date": "2026-11-10",
       "time": "9:30pm",
       "currency": "USD",
       "impact": "low",
@@ -531,6 +531,16 @@
       "actual": "",
       "forecast": "0.7%",
       "previous": "-1.3%"
+    },
+    {
+      "date": "2026-11-11",
+      "time": "9:45am",
+      "currency": "EUR",
+      "impact": "medium",
+      "title": "ECB President Lagarde Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-11",
