@@ -1,26 +1,5 @@
 {
-  "scraped_at": "2026-11-14T21:12:20.162853",
-  "count": 2,
-  "events": [
-    {
-      "date": "2026-11-14",
-      "time": "11:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Greene Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-14",
-      "time": "12:00am",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Jefferson Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    }
-  ]
+  "scraped_at": "2026-11-15T01:35:45.767910",
+  "count": 0,
+  "events": []
 }
