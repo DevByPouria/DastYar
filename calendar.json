@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-16T01:39:39.804955",
-  "count": 116,
+  "scraped_at": "2026-11-16T09:13:25.377359",
+  "count": 117,
   "events": [
     {
       "date": "2026-11-16",
@@ -198,6 +198,16 @@
       "currency": "USD",
       "impact": "high",
       "title": "Fed Chairman Warsh Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-11-16",
+      "time": "7:15pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Hammack Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
