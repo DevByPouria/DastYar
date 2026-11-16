@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-16T09:13:25.377359",
+  "scraped_at": "2026-11-16T20:06:23.231776",
   "count": 117,
   "events": [
     {
@@ -174,7 +174,7 @@
     },
     {
       "date": "2026-11-16",
-      "time": "2:48pm",
+      "time": "2:45pm",
       "currency": "USD",
       "impact": "low",
       "title": "Cleveland Fed Inflation Expectations",
@@ -970,7 +970,7 @@
       "title": "Natural Gas Storage",
       "actual": "",
       "forecast": "",
-      "previous": ""
+      "previous": "61B"
     },
     {
       "date": "2026-11-19",
