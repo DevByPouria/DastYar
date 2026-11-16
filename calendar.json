@@ -1,37 +1,7 @@
 {
-  "scraped_at": "2026-11-15T21:32:09.705690",
-  "count": 119,
+  "scraped_at": "2026-11-16T01:39:39.804955",
+  "count": 116,
   "events": [
-    {
-      "date": "2026-11-15",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Prelim GDP Price Index y/y",
-      "actual": "",
-      "forecast": "2.6%",
-      "previous": "2.6%"
-    },
-    {
-      "date": "2026-11-15",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Prelim GDP q/q",
-      "actual": "",
-      "forecast": "0.1%",
-      "previous": "0.3%"
-    },
-    {
-      "date": "2026-11-15",
-      "time": "9:30pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "BusinessNZ Services Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "50.9"
-    },
     {
       "date": "2026-11-16",
       "time": "10:00am",
@@ -766,7 +736,7 @@
       "date": "2026-11-18",
       "time": "7:30am",
       "currency": "GBP",
-      "impact": "high",
+      "impact": "medium",
       "title": "BOE Gov Bailey Speaks",
       "actual": "",
       "forecast": "",
@@ -1076,7 +1046,7 @@
       "date": "2026-11-20",
       "time": "1:25pm",
       "currency": "USD",
-      "impact": "medium",
+      "impact": "low",
       "title": "FOMC Member Waller Speaks",
       "actual": "",
       "forecast": "",
