@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-17T12:54:58.421804",
+  "scraped_at": "2026-11-17T21:35:59.781698",
   "count": 97,
   "events": [
     {
@@ -184,6 +184,16 @@
     },
     {
       "date": "2026-11-17",
+      "time": "2:29pm",
+      "currency": "NZD",
+      "impact": "low",
+      "title": "GDT Price Index",
+      "actual": "",
+      "forecast": "",
+      "previous": "3.0%"
+    },
+    {
+      "date": "2026-11-17",
       "time": "2:30pm",
       "currency": "USD",
       "impact": "low",
@@ -211,16 +221,6 @@
       "actual": "",
       "forecast": "29",
       "previous": "29"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "3:50pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "GDT Price Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.0%"
     },
     {
       "date": "2026-11-17",
@@ -409,7 +409,7 @@
       "impact": "low",
       "title": "Pending Home Sales m/m",
       "actual": "",
-      "forecast": "-2.1%",
+      "forecast": "-1.8%",
       "previous": "-7.3%"
     },
     {
@@ -419,7 +419,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "",
+      "forecast": "-0.3M",
       "previous": "4.7M"
     },
     {
