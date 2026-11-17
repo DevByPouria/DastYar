@@ -1,237 +1,7 @@
 {
-  "scraped_at": "2026-11-16T20:06:23.231776",
-  "count": 117,
+  "scraped_at": "2026-11-17T03:31:36.296310",
+  "count": 97,
   "events": [
-    {
-      "date": "2026-11-16",
-      "time": "10:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Industrial Production m/m",
-      "actual": "",
-      "forecast": "0.3%",
-      "previous": "-0.5%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "10:00am",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Barr Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "10:50pm",
-      "currency": "AUD",
-      "impact": "high",
-      "title": "RBA Gov Bullock Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "12:01am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Rightmove HPI m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "1.0%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "New Home Prices m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "-0.14%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "high",
-      "title": "CPI m/m",
-      "actual": "",
-      "forecast": "0.3%",
-      "previous": "0.1%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "high",
-      "title": "Median CPI y/y",
-      "actual": "",
-      "forecast": "2.0%",
-      "previous": "1.9%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "high",
-      "title": "Trimmed CPI y/y",
-      "actual": "",
-      "forecast": "1.9%",
-      "previous": "1.8%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "medium",
-      "title": "Common CPI y/y",
-      "actual": "",
-      "forecast": "2.5%",
-      "previous": "2.4%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "Core CPI m/m",
-      "actual": "",
-      "forecast": "0.2%",
-      "previous": "0.0%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "1:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Empire State Manufacturing Index",
-      "actual": "",
-      "forecast": "17.6",
-      "previous": "25.5"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Fixed Asset Investment ytd/y",
-      "actual": "",
-      "forecast": "-7.0%",
-      "previous": "-7.2%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Industrial Production y/y",
-      "actual": "",
-      "forecast": "5.3%",
-      "previous": "5.5%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "NBS Press Conference",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Retail Sales y/y",
-      "actual": "",
-      "forecast": "0.8%",
-      "previous": "1.1%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:00am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Unemployment Rate",
-      "actual": "",
-      "forecast": "5.2%",
-      "previous": "5.2%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:05pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Williams Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "2:45pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Cleveland Fed Inflation Expectations",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.3%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "4:30am",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Revised Industrial Production m/m",
-      "actual": "",
-      "forecast": "2.2%",
-      "previous": "2.2%"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "5:00pm",
-      "currency": "USD",
-      "impact": "high",
-      "title": "Fed Chairman Warsh Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "7:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Hammack Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "8:00pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "RBNZ Financial Stability Report",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-16",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "FPI m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "0.0%"
-    },
     {
       "date": "2026-11-17",
       "time": "10:00am",
@@ -249,7 +19,7 @@
       "impact": "low",
       "title": "ZEW Economic Sentiment",
       "actual": "",
-      "forecast": "18.3",
+      "forecast": "19.1",
       "previous": "18.5"
     },
     {
@@ -259,7 +29,7 @@
       "impact": "low",
       "title": "German ZEW Economic Sentiment",
       "actual": "",
-      "forecast": "28.3",
+      "forecast": "28.8",
       "previous": "28.1"
     },
     {
@@ -279,8 +49,18 @@
       "impact": "low",
       "title": "Trade Balance",
       "actual": "",
-      "forecast": "-0.88T",
+      "forecast": "-0.90T",
       "previous": "-0.70T"
+    },
+    {
+      "date": "2026-11-17",
+      "time": "12:00am",
+      "currency": "NZD",
+      "impact": "medium",
+      "title": "RBNZ Gov Breman Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-17",
@@ -309,7 +89,7 @@
       "impact": "low",
       "title": "Housing Starts",
       "actual": "",
-      "forecast": "243K",
+      "forecast": "241K",
       "previous": "249K"
     },
     {
@@ -349,7 +129,7 @@
       "impact": "high",
       "title": "Retail Sales m/m",
       "actual": "",
-      "forecast": "0.2%",
+      "forecast": "0.1%",
       "previous": "0.8%"
     },
     {
@@ -399,7 +179,7 @@
       "impact": "low",
       "title": "Industrial Production m/m",
       "actual": "",
-      "forecast": "0.1%",
+      "forecast": "0.0%",
       "previous": "0.7%"
     },
     {
@@ -449,7 +229,7 @@
       "impact": "low",
       "title": "Tertiary Industry Activity m/m",
       "actual": "",
-      "forecast": "0.0%",
+      "forecast": "0.1%",
       "previous": "-0.1%"
     },
     {
@@ -469,7 +249,7 @@
       "impact": "low",
       "title": "Claimant Count Change",
       "actual": "",
-      "forecast": "28.1K",
+      "forecast": "25.4K",
       "previous": "30.3K"
     },
     {
@@ -549,7 +329,7 @@
       "impact": "low",
       "title": "Core Machinery Orders m/m",
       "actual": "",
-      "forecast": "1.4%",
+      "forecast": "1.3%",
       "previous": "5.2%"
     },
     {
@@ -559,7 +339,7 @@
       "impact": "medium",
       "title": "Wage Price Index q/q",
       "actual": "",
-      "forecast": "0.9%",
+      "forecast": "1.0%",
       "previous": "0.8%"
     },
     {
@@ -629,7 +409,7 @@
       "impact": "low",
       "title": "Pending Home Sales m/m",
       "actual": "",
-      "forecast": "-2.3%",
+      "forecast": "-2.1%",
       "previous": "-7.3%"
     },
     {
@@ -641,6 +421,16 @@
       "actual": "",
       "forecast": "",
       "previous": "4.7M"
+    },
+    {
+      "date": "2026-11-18",
+      "time": "5:15pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Daly Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-18",
@@ -869,7 +659,7 @@
       "impact": "high",
       "title": "Employment Change",
       "actual": "",
-      "forecast": "25.2K",
+      "forecast": "25.5K",
       "previous": "-39.3K"
     },
     {
@@ -938,6 +728,16 @@
       "currency": "USD",
       "impact": "low",
       "title": "FOMC Member Hammack Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
+    },
+    {
+      "date": "2026-11-19",
+      "time": "2:25pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Jefferson Speaks",
       "actual": "",
       "forecast": "",
       "previous": ""
