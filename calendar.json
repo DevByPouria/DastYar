@@ -1,307 +1,7 @@
 {
-  "scraped_at": "2026-11-17T21:35:59.781698",
-  "count": 97,
+  "scraped_at": "2026-11-18T03:26:05.208075",
+  "count": 67,
   "events": [
-    {
-      "date": "2026-11-17",
-      "time": "10:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "EU Economic Forecasts",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "10:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "ZEW Economic Sentiment",
-      "actual": "",
-      "forecast": "19.1",
-      "previous": "18.5"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "10:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German ZEW Economic Sentiment",
-      "actual": "",
-      "forecast": "28.8",
-      "previous": "28.1"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "11:30pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "MI Leading Index m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "-0.1%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Trade Balance",
-      "actual": "",
-      "forecast": "-0.90T",
-      "previous": "-0.70T"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "12:00am",
-      "currency": "NZD",
-      "impact": "medium",
-      "title": "RBNZ Gov Breman Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "12:30am",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "Monetary Policy Meeting Minutes",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "12:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Musalem Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:15pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "Housing Starts",
-      "actual": "",
-      "forecast": "241K",
-      "previous": "249K"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "ADP Weekly Employment Change",
-      "actual": "",
-      "forecast": "",
-      "previous": "19.8K"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:30pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "Foreign Securities Purchases",
-      "actual": "",
-      "forecast": "14.85B",
-      "previous": "-17.31B"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:30pm",
-      "currency": "USD",
-      "impact": "high",
-      "title": "Core Retail Sales m/m",
-      "actual": "",
-      "forecast": "0.4%",
-      "previous": "0.9%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:30pm",
-      "currency": "USD",
-      "impact": "high",
-      "title": "Retail Sales m/m",
-      "actual": "",
-      "forecast": "0.1%",
-      "previous": "0.8%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "1:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Import Prices m/m",
-      "actual": "",
-      "forecast": "0.7%",
-      "previous": "1.1%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:00am",
-      "currency": "NZD",
-      "impact": "high",
-      "title": "Inflation Expectations q/q",
-      "actual": "",
-      "forecast": "",
-      "previous": "2.34%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:10pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Waller Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Capacity Utilization Rate",
-      "actual": "",
-      "forecast": "76.8%",
-      "previous": "76.9%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Industrial Production m/m",
-      "actual": "",
-      "forecast": "0.0%",
-      "previous": "0.7%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:29pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "GDT Price Index",
-      "actual": "",
-      "forecast": "",
-      "previous": "3.0%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "2:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Hammack Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "3:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Business Inventories m/m",
-      "actual": "",
-      "forecast": "0.5%",
-      "previous": "0.4%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "3:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "NAHB Housing Market Index",
-      "actual": "",
-      "forecast": "29",
-      "previous": "29"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "4:30am",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Tertiary Industry Activity m/m",
-      "actual": "",
-      "forecast": "0.1%",
-      "previous": "-0.1%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "7:00am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Average Earnings Index 3m/y",
-      "actual": "",
-      "forecast": "3.5%",
-      "previous": "3.7%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "7:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Claimant Count Change",
-      "actual": "",
-      "forecast": "25.4K",
-      "previous": "30.3K"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "7:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "Unemployment Rate",
-      "actual": "",
-      "forecast": "4.7%",
-      "previous": "4.7%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "7:25pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Williams Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "9:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "API Weekly Statistical Bulletin",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-17",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "PPI Input q/q",
-      "actual": "",
-      "forecast": "1.5%",
-      "previous": "2.9%"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "PPI Output q/q",
-      "actual": "",
-      "forecast": "1.1%",
-      "previous": "1.6%"
-    },
     {
       "date": "2026-11-18",
       "time": "10:00am",
@@ -409,7 +109,7 @@
       "impact": "low",
       "title": "Pending Home Sales m/m",
       "actual": "",
-      "forecast": "-1.8%",
+      "forecast": "-2.0%",
       "previous": "-7.3%"
     },
     {
@@ -419,7 +119,7 @@
       "impact": "low",
       "title": "Crude Oil Inventories",
       "actual": "",
-      "forecast": "-0.3M",
+      "forecast": "0.4M",
       "previous": "4.7M"
     },
     {
@@ -679,7 +379,7 @@
       "impact": "low",
       "title": "IPPI m/m",
       "actual": "",
-      "forecast": "1.2%",
+      "forecast": "0.4%",
       "previous": "2.0%"
     },
     {
@@ -689,7 +389,7 @@
       "impact": "low",
       "title": "RMPI m/m",
       "actual": "",
-      "forecast": "2.0%",
+      "forecast": "0.9%",
       "previous": "4.8%"
     },
     {
@@ -709,7 +409,7 @@
       "impact": "medium",
       "title": "Philly Fed Manufacturing Index",
       "actual": "",
-      "forecast": "19.2",
+      "forecast": "20.6",
       "previous": "20.9"
     },
     {
@@ -719,7 +419,7 @@
       "impact": "medium",
       "title": "Unemployment Claims",
       "actual": "",
-      "forecast": "199K",
+      "forecast": "198K",
       "previous": "200K"
     },
     {
@@ -769,7 +469,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "25B",
       "previous": "61B"
     },
     {
@@ -909,7 +609,7 @@
       "impact": "medium",
       "title": "Revised UoM Consumer Sentiment",
       "actual": "",
-      "forecast": "52.1",
+      "forecast": "51.7",
       "previous": "51.0"
     },
     {
