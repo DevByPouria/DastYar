@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-19T11:28:05.903121",
+  "scraped_at": "2026-11-19T20:14:25.225563",
   "count": 38,
   "events": [
     {
@@ -154,16 +154,6 @@
     },
     {
       "date": "2026-11-19",
-      "time": "3:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Mortgage Delinquencies",
-      "actual": "",
-      "forecast": "",
-      "previous": "4.37%"
-    },
-    {
-      "date": "2026-11-19",
       "time": "3:30pm",
       "currency": "USD",
       "impact": "low",
@@ -171,6 +161,16 @@
       "actual": "",
       "forecast": "25B",
       "previous": "61B"
+    },
+    {
+      "date": "2026-11-19",
+      "time": "3:46pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Mortgage Delinquencies",
+      "actual": "",
+      "forecast": "",
+      "previous": "4.37%"
     },
     {
       "date": "2026-11-19",
