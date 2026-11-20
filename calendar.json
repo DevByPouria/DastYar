@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-20T02:07:40.796346",
-  "count": 17,
+  "scraped_at": "2026-11-20T11:05:34.757777",
+  "count": 16,
   "events": [
     {
       "date": "2026-11-20",
@@ -151,16 +151,6 @@
       "actual": "",
       "forecast": "18.0B",
       "previous": "24.5B"
-    },
-    {
-      "date": "2026-11-20",
-      "time": "7:02am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Foreign Direct Investment ytd/y",
-      "actual": "",
-      "forecast": "",
-      "previous": "-4.3%"
     },
     {
       "date": "2026-11-20",
