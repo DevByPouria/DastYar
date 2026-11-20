@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-20T11:05:34.757777",
-  "count": 16,
+  "scraped_at": "2026-11-20T19:47:51.974666",
+  "count": 17,
   "events": [
     {
       "date": "2026-11-20",
@@ -111,6 +111,16 @@
       "actual": "",
       "forecast": "",
       "previous": "4.3%"
+    },
+    {
+      "date": "2026-11-20",
+      "time": "5:00pm",
+      "currency": "USD",
+      "impact": "medium",
+      "title": "President Trump Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-20",
