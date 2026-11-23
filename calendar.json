@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-23T08:44:02.502455",
-  "count": 71,
+  "scraped_at": "2026-11-23T20:59:29.735281",
+  "count": 70,
   "events": [
     {
       "date": "2026-11-23",
@@ -24,7 +24,7 @@
     },
     {
       "date": "2026-11-23",
-      "time": "1:30pm",
+      "time": "1:32pm",
       "currency": "CAD",
       "impact": "low",
       "title": "Corporate Profits q/q",
@@ -149,7 +149,7 @@
       "impact": "low",
       "title": "CBI Realized Sales",
       "actual": "",
-      "forecast": "-24",
+      "forecast": "-27",
       "previous": "-10"
     },
     {
@@ -209,7 +209,7 @@
       "impact": "low",
       "title": "Belgian NBB Business Climate",
       "actual": "",
-      "forecast": "-9.3",
+      "forecast": "-9.4",
       "previous": "-9.8"
     },
     {
@@ -239,7 +239,7 @@
       "impact": "medium",
       "title": "CB Consumer Confidence",
       "actual": "",
-      "forecast": "92.1",
+      "forecast": "92.4",
       "previous": "91.7"
     },
     {
@@ -249,7 +249,7 @@
       "impact": "low",
       "title": "Richmond Manufacturing Index",
       "actual": "",
-      "forecast": "-3",
+      "forecast": "-2",
       "previous": "-2"
     },
     {
@@ -264,22 +264,12 @@
     },
     {
       "date": "2026-11-24",
-      "time": "7:02am",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "Foreign Direct Investment ytd/y",
-      "actual": "",
-      "forecast": "",
-      "previous": "-4.3%"
-    },
-    {
-      "date": "2026-11-24",
       "time": "9:00am",
       "currency": "EUR",
       "impact": "low",
       "title": "German ifo Business Climate",
       "actual": "",
-      "forecast": "90.6",
+      "forecast": "90.5",
       "previous": "90.2"
     },
     {
@@ -319,7 +309,7 @@
       "impact": "high",
       "title": "CPI y/y",
       "actual": "",
-      "forecast": "4.8%",
+      "forecast": "4.7%",
       "previous": "4.3%"
     },
     {
@@ -376,16 +366,6 @@
       "date": "2026-11-25",
       "time": "1:30pm",
       "currency": "USD",
-      "impact": "medium",
-      "title": "Unemployment Claims",
-      "actual": "",
-      "forecast": "201K",
-      "previous": "203K"
-    },
-    {
-      "date": "2026-11-25",
-      "time": "1:30pm",
-      "currency": "USD",
       "impact": "low",
       "title": "Core Durable Goods Orders m/m",
       "actual": "",
@@ -399,7 +379,7 @@
       "impact": "low",
       "title": "Durable Goods Orders m/m",
       "actual": "",
-      "forecast": "0.5%",
+      "forecast": "0.7%",
       "previous": "1.8%"
     },
     {
@@ -424,12 +404,22 @@
     },
     {
       "date": "2026-11-25",
+      "time": "1:30pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "Unemployment Claims",
+      "actual": "",
+      "forecast": "201K",
+      "previous": "203K"
+    },
+    {
+      "date": "2026-11-25",
       "time": "3:00pm",
       "currency": "USD",
       "impact": "low",
       "title": "New Home Sales",
       "actual": "",
-      "forecast": "649K",
+      "forecast": "650K",
       "previous": "676K"
     },
     {
@@ -459,7 +449,7 @@
       "impact": "low",
       "title": "Natural Gas Storage",
       "actual": "",
-      "forecast": "",
+      "forecast": "-19B",
       "previous": "20B"
     },
     {
@@ -539,7 +529,7 @@
       "impact": "low",
       "title": "Private Capital Expenditure q/q",
       "actual": "",
-      "forecast": "4.4%",
+      "forecast": "4.5%",
       "previous": "-3.6%"
     },
     {
