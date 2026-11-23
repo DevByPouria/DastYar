@@ -1,47 +1,7 @@
 {
-  "scraped_at": "2026-11-22T18:20:37.926150",
-  "count": 75,
+  "scraped_at": "2026-11-23T00:04:41.658484",
+  "count": 71,
   "events": [
-    {
-      "date": "2026-11-22",
-      "time": "10:00pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "",
-      "previous": "49.7"
-    },
-    {
-      "date": "2026-11-22",
-      "time": "10:00pm",
-      "currency": "AUD",
-      "impact": "low",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "",
-      "previous": "47.8"
-    },
-    {
-      "date": "2026-11-22",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Core Retail Sales q/q",
-      "actual": "",
-      "forecast": "0.8%",
-      "previous": "0.7%"
-    },
-    {
-      "date": "2026-11-22",
-      "time": "9:45pm",
-      "currency": "NZD",
-      "impact": "low",
-      "title": "Retail Sales q/q",
-      "actual": "",
-      "forecast": "0.5%",
-      "previous": "-0.5%"
-    },
     {
       "date": "2026-11-23",
       "time": "12:00am",
