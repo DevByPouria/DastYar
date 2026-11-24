@@ -1,147 +1,7 @@
 {
-  "scraped_at": "2026-11-23T20:59:29.735281",
-  "count": 70,
+  "scraped_at": "2026-11-24T05:15:43.644242",
+  "count": 56,
   "events": [
-    {
-      "date": "2026-11-23",
-      "time": "12:00am",
-      "currency": "JPY",
-      "impact": "holiday",
-      "title": "Bank Holiday",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-23",
-      "time": "1:00pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Pill Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-23",
-      "time": "1:32pm",
-      "currency": "CAD",
-      "impact": "low",
-      "title": "Corporate Profits q/q",
-      "actual": "",
-      "forecast": "",
-      "previous": "8.7%"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "2:45pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "54.5",
-      "previous": "56.0"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "2:45pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "55.6",
-      "previous": "57.9"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "8:15am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "French Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "49.8",
-      "previous": "49.3"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "8:15am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "French Flash Services PMI",
-      "actual": "",
-      "forecast": "47.4",
-      "previous": "48.4"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "8:30am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "German Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "54.1",
-      "previous": "54.2"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "8:30am",
-      "currency": "EUR",
-      "impact": "medium",
-      "title": "German Flash Services PMI",
-      "actual": "",
-      "forecast": "52.4",
-      "previous": "51.7"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "52.7",
-      "previous": "52.4"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "51.8",
-      "previous": "51.7"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "9:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "FOMC Member Williams Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-23",
-      "time": "9:30am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "53.0",
-      "previous": "52.8"
-    },
-    {
-      "date": "2026-11-23",
-      "time": "9:30am",
-      "currency": "GBP",
-      "impact": "medium",
-      "title": "Flash Services PMI",
-      "actual": "",
-      "forecast": "53.0",
-      "previous": "53.1"
-    },
     {
       "date": "2026-11-24",
       "time": "11:00am",
@@ -519,7 +379,7 @@
       "impact": "medium",
       "title": "Tokyo Core CPI y/y",
       "actual": "",
-      "forecast": "2.9%",
+      "forecast": "3.0%",
       "previous": "2.6%"
     },
     {
@@ -619,7 +479,7 @@
       "impact": "low",
       "title": "Current Account",
       "actual": "",
-      "forecast": "9.6B",
+      "forecast": "9.5B",
       "previous": "8.8B"
     },
     {
@@ -629,7 +489,7 @@
       "impact": "low",
       "title": "Goods Trade Balance",
       "actual": "",
-      "forecast": "-134.4B",
+      "forecast": "-135.9B",
       "previous": "-134.9B"
     },
     {
@@ -639,7 +499,7 @@
       "impact": "low",
       "title": "Prelim Wholesale Inventories m/m",
       "actual": "",
-      "forecast": "0.7%",
+      "forecast": "0.5%",
       "previous": "0.6%"
     },
     {
@@ -649,7 +509,7 @@
       "impact": "low",
       "title": "French Consumer Spending m/m",
       "actual": "",
-      "forecast": "0.2%",
+      "forecast": "0.1%",
       "previous": "-0.5%"
     },
     {
@@ -669,7 +529,7 @@
       "impact": "low",
       "title": "French Prelim CPI m/m",
       "actual": "",
-      "forecast": "-0.1%",
+      "forecast": "-0.2%",
       "previous": "0.4%"
     },
     {
@@ -689,7 +549,7 @@
       "impact": "low",
       "title": "Spanish Flash CPI y/y",
       "actual": "",
-      "forecast": "4.8%",
+      "forecast": "4.7%",
       "previous": "4.9%"
     },
     {
