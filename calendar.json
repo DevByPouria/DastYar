@@ -1,5 +1,5 @@
 {
-  "scraped_at": "2026-11-24T05:15:43.644242",
+  "scraped_at": "2026-11-24T17:14:35.068142",
   "count": 56,
   "events": [
     {
@@ -54,7 +54,7 @@
     },
     {
       "date": "2026-11-24",
-      "time": "2:00pm",
+      "time": "1:51pm",
       "currency": "CNY",
       "impact": "low",
       "title": "CB Leading Index m/m",
