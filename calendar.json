@@ -1,147 +1,7 @@
 {
-  "scraped_at": "2026-11-24T17:14:35.068142",
-  "count": 56,
+  "scraped_at": "2026-11-25T02:02:16.686710",
+  "count": 43,
   "events": [
-    {
-      "date": "2026-11-24",
-      "time": "11:00am",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "CBI Realized Sales",
-      "actual": "",
-      "forecast": "-27",
-      "previous": "-10"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "11:50pm",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "SPPI y/y",
-      "actual": "",
-      "forecast": "3.6%",
-      "previous": "3.7%"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "12:30am",
-      "currency": "JPY",
-      "impact": "low",
-      "title": "Flash Manufacturing PMI",
-      "actual": "",
-      "forecast": "53.5",
-      "previous": "53.3"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "12:30pm",
-      "currency": "GBP",
-      "impact": "low",
-      "title": "MPC Member Greene Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-24",
-      "time": "1:15pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "ADP Weekly Employment Change",
-      "actual": "",
-      "forecast": "",
-      "previous": "23.8K"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "1:51pm",
-      "currency": "CNY",
-      "impact": "low",
-      "title": "CB Leading Index m/m",
-      "actual": "",
-      "forecast": "",
-      "previous": "-0.1%"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "2:00pm",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "Belgian NBB Business Climate",
-      "actual": "",
-      "forecast": "-9.4",
-      "previous": "-9.8"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "2:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "HPI m/m",
-      "actual": "",
-      "forecast": "0.2%",
-      "previous": "0.3%"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "2:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "S&P/CS Composite-20 HPI y/y",
-      "actual": "",
-      "forecast": "2.7%",
-      "previous": "2.7%"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "3:00pm",
-      "currency": "USD",
-      "impact": "medium",
-      "title": "CB Consumer Confidence",
-      "actual": "",
-      "forecast": "92.4",
-      "previous": "91.7"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "3:00pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "Richmond Manufacturing Index",
-      "actual": "",
-      "forecast": "-2",
-      "previous": "-2"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "5:25pm",
-      "currency": "CAD",
-      "impact": "medium",
-      "title": "BOC Gov Macklem Speaks",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
-    {
-      "date": "2026-11-24",
-      "time": "9:00am",
-      "currency": "EUR",
-      "impact": "low",
-      "title": "German ifo Business Climate",
-      "actual": "",
-      "forecast": "90.5",
-      "previous": "90.2"
-    },
-    {
-      "date": "2026-11-24",
-      "time": "9:30pm",
-      "currency": "USD",
-      "impact": "low",
-      "title": "API Weekly Statistical Bulletin",
-      "actual": "",
-      "forecast": "",
-      "previous": ""
-    },
     {
       "date": "2026-11-25",
       "time": "10:42am",
@@ -151,6 +11,16 @@
       "actual": "",
       "forecast": "",
       "previous": "3.37|1.1"
+    },
+    {
+      "date": "2026-11-25",
+      "time": "12:25pm",
+      "currency": "USD",
+      "impact": "low",
+      "title": "FOMC Member Bowman Speaks",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-25",
@@ -460,7 +330,7 @@
       "title": "Italian 10-y Bond Auction",
       "actual": "",
       "forecast": "",
-      "previous": ""
+      "previous": "4.49|1.6"
     },
     {
       "date": "2026-11-27",
