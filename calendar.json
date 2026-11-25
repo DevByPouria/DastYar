@@ -1,6 +1,6 @@
 {
-  "scraped_at": "2026-11-25T12:20:46.668604",
-  "count": 43,
+  "scraped_at": "2026-11-25T22:13:30.454591",
+  "count": 44,
   "events": [
     {
       "date": "2026-11-25",
@@ -141,6 +141,16 @@
       "actual": "",
       "forecast": "201K",
       "previous": "203K"
+    },
+    {
+      "date": "2026-11-25",
+      "time": "2:15pm",
+      "currency": "GBP",
+      "impact": "medium",
+      "title": "Monetary Policy Report Hearings",
+      "actual": "",
+      "forecast": "",
+      "previous": ""
     },
     {
       "date": "2026-11-25",
